@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <title>KUB Cafe - Admin Panel</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+  <style>
+    body { text-align: center; font-family: sans-serif; padding: 20px; background: #fdfdfd; color: #2d3436; }
+    h2 { font-weight: 800; margin-bottom: 5px; }
+    p.desc { color: #636e72; font-size: 14px; margin-bottom: 20px; }
+    .btn-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; max-width: 500px; margin: 0 auto 15px auto; }
+    .point-btn { padding: 15px 0; font-size: 20px; background: #c1f2a1; color: #2d3436; border: none; border-radius: 12px; cursor: pointer; font-weight: 900; box-shadow: 0 4px 6px rgba(0,0,0,0.05); transition: 0.2s; }
+    .point-btn:active { transform: scale(0.95); background: #a8e6cf; }
+    .line-btn { background: #06C755 !important; color: white !important; font-size: 14px !important; font-weight: bold !important; line-height: 1.2; display: flex; align-items: center; justify-content: center; }
+    .line-btn:active { background: #05b04b !important; transform: scale(0.95); }
+    .custom-input-container { background: #f1f2f6; padding: 15px; border-radius: 15px; max-width: 500px; margin: 0 auto 20px auto; display: flex; align-items: center; justify-content: center; gap: 10px; }
+    .custom-input { width: 80px; font-size: 22px; padding: 8px; text-align: center; border: 2px solid #c1f2a1; border-radius: 10px; font-weight: bold; outline: none; color: #2d3436; }
+    .qr-container { margin-top: 10px; padding: 20px; background: #fff; border-radius: 20px; box-shadow: 0 10px 20px rgba(0,0,0,0.05); display: none; max-width: 320px; margin-left: auto; margin-right: auto; }
+    img { border: 4px solid #c1f2a1; border-radius: 15px; width: 100%; height: auto; cursor: pointer; transition: 0.3s; }
+    img:active { transform: scale(0.95); opacity: 0.7; }
+    .alert-text { color: #e74c3c; font-weight: bold; margin-top: 15px; font-size: 13px; cursor: pointer; }
+    .point-display { font-size: 22px; font-weight: 900; color: #2d3436; margin-bottom: 10px; }
+    .copy-btn { margin-top: 15px; padding: 12px 20px; font-size: 15px; background: #e0ccff; color: #2d3436; border: none; border-radius: 12px; cursor: pointer; font-weight: bold; width: 100%; box-shadow: 0 4px 6px rgba(0,0,0,0.03); transition: 0.2s; }
+    .copy-btn:active { transform: scale(0.97); background: #d1b3ff; }
+    #login-section { margin-top: 50px; }
+    .pin-input { font-size: 24px; padding: 10px; width: 120px; text-align: center; letter-spacing: 5px; border-radius: 10px; border: 2px solid #ddd; margin-bottom: 15px; outline: none; }
+    .login-btn { background: #2d3436; color: white; border: none; padding: 12px 25px; font-size: 16px; border-radius: 10px; font-weight: bold; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <div id="login-section">
+    <h2>กรุณากรอกรหัส PIN</h2>
+    <p class="desc">เฉพาะพนักงาน KUB Cafe เท่านั้น</p>
+    <input type="password" inputmode="numeric" pattern="[0-9]*" id="pin-code" class="pin-input" maxlength="4" placeholder="****">
+    <br>
+    <button class="login-btn" id="login-submit-btn" onclick="checkPIN()">เข้าสู่ระบบ</button>
+  </div>
+
+  <div id="admin-section" style="display: none;">
+    <h2>ระบบจัดการหน้าร้าน KUB Cafe</h2>
+    <p class="desc">กดเลือกแต้ม หรือ กดปุ่ม LINE เพื่อให้ลูกค้าสแกนได้เลยค่ะ</p>
+    
+    <div class="btn-grid">
+      <button class="point-btn" onclick="generateBarQR(1, true)">1</button>
+      <button class="point-btn" onclick="generateBarQR(2, true)">2</button>
+      <button class="point-btn" onclick="generateBarQR(3, true)">3</button>
+      <button class="point-btn" onclick="generateBarQR(4, true)">4</button>
+      <button class="point-btn" onclick="generateBarQR(5, true)">5</button>
+      <button class="point-btn line-btn" onclick="showStoreLineQR()">LINE<br>ร้าน</button>
+      <button class="point-btn" onclick="generateBarQR(6, true)">6</button>
+      <button class="point-btn" onclick="generateBarQR(7, true)">7</button>
+      <button class="point-btn" onclick="generateBarQR(8, true)">8</button>
+      <button class="point-btn" onclick="generateBarQR(9, true)">9</button>
+      <button class="point-btn" onclick="generateBarQR(10, true)">10</button>
+      <div style="visibility: hidden;"></div>
+    </div>
+
+    <div class="custom-input-container">
+      <label style="font-weight:bold; color:#2d3436;">ระบุแต้มเอง:</label>
+      <input type="number" inputmode="numeric" pattern="[0-9]*" id="custom-point" class="custom-input" min="1" placeholder="0" oninput="handleCustomInput(this.value)">
+    </div>
+
+    <div class="qr-container" id="qr-container">
+      <div class="point-display" id="qr-title-display">สแกนรับ <span id="show-points" style="color: #27ae60;">0</span> แต้ม ☕</div>
+      <img id="qr-img" src="" onclick="refreshQR()">
+      <div id="timer-display" style="color:#8e44ad; font-weight:bold; font-size:13px; margin-top:8px;">รีเฟรชใหม่ใน: 10:00</div>
+      <button class="copy-btn" id="copy-btn" onclick="copyToClipboard()">📋 คัดลอกลิงก์ส่งให้ลูกค้า (สแกนเดี่ยว 2 ชม.)</button>
+      <p class="alert-text" id="qr-footer-desc" onclick="refreshQR()">
+        🔄 กดที่รูปคิวอาร์โค้ดเพื่อสุ่มรหัสใหม่<br>
+        <span style="font-size: 11px; color:#636e72;">(⚠️ QR บนจอนี้มีอายุ 10 นาที)</span>
+      </p>
+    </div>
+  </div>
+
+  <script>
+    const API_URL = "https://script.google.com/macros/s/AKfycbxpWU8NlPwIk4EChzbG93IJ0RxFf3qSbs4TDT5MSVOgVWLO3cQAYseD_xAWzOeewJvHrg/exec";
+    const SCAN_LIFF_ID = "2010206186-u1XRJldq"; 
+    const SECRET_SALT = 'KUB_SECRET_TOKEN_2026'; 
+    const STORE_LINE_OA_LINK = "https://line.me/R/ti/p/@848dmzja"; 
+    
+    let currentPointsToIssue = 0; let currentMode = "points"; 
+    let timerInterval;
+
+    async function checkPIN() { /* ฟังก์ชันเดิมของคุณบี */
+      const pinInput = document.getElementById('pin-code').value;
+      const loginBtn = document.getElementById('login-submit-btn');
+      if(pinInput.length < 4) { alert("กรุณากรอกรหัสให้ครบ 4 หลักค่ะ"); return; }
+      loginBtn.innerText = "กำลังตรวจสอบ..."; loginBtn.disabled = true;
+      try {
+        const response = await fetch(`${API_URL}?action=checkAdminPIN&pin=${pinInput}`);
+        const data = await response.json();
+        if(data.status === "success") {
+          document.getElementById('login-section').style.display = "none";
+          document.getElementById('admin-section').style.display = "block";
+        } else {
+          alert(data.message); document.getElementById('pin-code').value = "";
+          loginBtn.innerText = "เข้าสู่ระบบ"; loginBtn.disabled = false;
+        }
+      } catch (err) { alert("การเชื่อมต่อระบบหลังบ้านขัดข้อง"); loginBtn.innerText = "เข้าสู่ระบบ"; loginBtn.disabled = false; }
+    }
+
+    function handleCustomInput(val) {
+      const pts = parseInt(val);
+      if (pts > 0) { generateBarQR(pts, false); } else { document.getElementById('qr-container').style.display = "none"; }
+    }
+
+    // หน้าบาร์: สร้างรหัส KUBBAR- (จับเวลา 10 นาที)
+    function generateBarQR(points, clearInput = false) {
+      if (clearInput) { document.getElementById('custom-point').value = ""; }
+      currentPointsToIssue = points; currentMode = "points";
+      
+      const timestamp = new Date().getTime();
+      const rawString = points + "-" + timestamp + "-" + SECRET_SALT;
+      const hash = CryptoJS.MD5(rawString).toString();
+      const secretCode = "KUBBAR-" + points + "-" + timestamp + "-" + hash; 
+      const liffUrl = "https://liff.line.me/" + SCAN_LIFF_ID + "?code=" + secretCode;
+      
+      document.getElementById('qr-title-display').innerHTML = `สแกนรับ <span style="color: #27ae60;">${points}</span> แต้ม ☕`;
+      document.getElementById('qr-img').src = "https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=" + encodeURIComponent(liffUrl);
+      document.getElementById('qr-container').style.display = "block";
+      
+      startTimer(10); // 10 นาที
+    }
+
+    function startTimer(minutes) {
+      clearInterval(timerInterval);
+      let seconds = minutes * 60;
+      const display = document.getElementById('timer-display');
+      display.style.display = "block";
+      
+      timerInterval = setInterval(() => {
+        let m = Math.floor(seconds / 60);
+        let s = seconds % 60;
+        display.innerText = `รีเฟรชใหม่ใน: ${m}:${s < 10 ? '0'+s : s}`;
+        if (--seconds < 0) {
+          clearInterval(timerInterval);
+          refreshQR();
+        }
+      }, 1000);
+    }
+
+    function refreshQR() {
+      if (currentMode === "points" && currentPointsToIssue > 0) generateBarQR(currentPointsToIssue, false);
+    }
+
+    // คัดลอกลิงก์: สร้างรหัส KUB- (อายุ 2 ชั่วโมง)
+    function copyToClipboard() {
+      if (currentMode !== "points" || currentPointsToIssue <= 0) return;
+      
+      const timestamp = new Date().getTime();
+      const rawString = currentPointsToIssue + "-" + timestamp + "-" + SECRET_SALT;
+      const hash = CryptoJS.MD5(rawString).toString();
+      const secretCode = "KUB-" + currentPointsToIssue + "-" + timestamp + "-" + hash; 
+      const link = "https://liff.line.me/" + SCAN_LIFF_ID + "?code=" + secretCode;
+
+      const text = "☕ รับแต้มสะสม KUB Cafe: " + link;
+      navigator.clipboard.writeText(text).then(() => {
+        const btn = document.getElementById('copy-btn');
+        btn.innerText = "✅ คัดลอกสำเร็จ (รหัส KUB-)";
+        setTimeout(() => { btn.innerText = "📋 คัดลอกลิงก์ส่งให้ลูกค้า (สแกนเดี่ยว 2 ชม.)"; }, 2500);
+      });
+    }
+
+    function showStoreLineQR() { /* โค้ดเดิม */
+      document.getElementById('custom-point').value = ""; currentPointsToIssue = 0; currentMode = "store_line";
+      clearInterval(timerInterval);
+      document.getElementById('qr-title-display').innerHTML = `<span style="color: #06C755;">LINE Official Account</span> 💬`;
+      document.getElementById('qr-img').src = "https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=" + encodeURIComponent(STORE_LINE_OA_LINK);
+      document.getElementById('timer-display').style.display = "none";
+      document.getElementById('qr-container').style.display = "block";
+    }
+  </script>
+</body>
+</html>
