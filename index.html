@@ -20,79 +20,26 @@
             justify-content: center;
             min-height: 90vh;
         }
-        .header-text {
-            margin-bottom: 30px;
-            color: #4a5568;
-            font-weight: 600;
-            font-size: 18px;
-        }
-        .sub-text {
-            font-size: 14px;
-            font-weight: 400;
-            color: #a0aec0;
-            margin-top: 5px;
-        }
-        /* วงกลมแสดงคะแนนสไตล์พาสเทล */
+        .header-text { margin-bottom: 30px; color: #4a5568; font-weight: 600; font-size: 18px; }
+        .sub-text { font-size: 14px; font-weight: 400; color: #a0aec0; margin-top: 5px; }
         .point-circle {
-            width: 200px;
-            height: 200px;
-            border-radius: 50%;
+            width: 200px; height: 200px; border-radius: 50%;
             background: linear-gradient(135deg, #c1f2a1, #e0ccff);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
-            border: 8px solid white;
-            margin-bottom: 40px;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05); border: 8px solid white; margin-bottom: 40px;
         }
-        .point-number {
-            font-size: 90px;
-            font-weight: bold;
-            line-height: 1;
-            color: #2d3436;
-        }
-        .point-label {
-            font-size: 16px;
-            letter-spacing: 2px;
-            color: #4a5568;
-            margin-top: -5px;
-        }
-        /* กล่องข้อความ Info */
+        .point-number { font-size: 90px; font-weight: bold; line-height: 1; color: #2d3436; }
+        .point-label { font-size: 16px; letter-spacing: 2px; color: #4a5568; margin-top: -5px; }
         .info-box {
-            background: white;
-            padding: 20px;
-            border-radius: 16px;
-            font-size: 14px;
-            color: #636e72;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
-            width: 100%;
-            max-width: 350px;
-            margin-bottom: 20px;
-            line-height: 1.6;
+            background: white; padding: 20px; border-radius: 16px; font-size: 14px; color: #636e72;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02); width: 100%; max-width: 350px; margin-bottom: 20px; line-height: 1.6;
         }
-        .divider {
-            border-top: 1px dashed #e2e8f0;
-            margin: 15px 0;
-        }
-        /* ปุ่มปิดหน้าต่าง */
+        .divider { border-top: 1px dashed #e2e8f0; margin: 15px 0; }
         .btn-close {
-            display: block;
-            width: 100%;
-            max-width: 350px;
-            padding: 16px;
-            background: #edf2f7;
-            color: #4a5568;
-            border: none;
-            border-radius: 25px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.3s;
+            display: block; width: 100%; max-width: 350px; padding: 16px; background: #edf2f7; color: #4a5568;
+            border: none; border-radius: 25px; font-size: 16px; font-weight: 600; cursor: pointer; transition: background 0.3s;
         }
-        .btn-close:active {
-            background: #e2e8f0;
-        }
+        .btn-close:active { background: #e2e8f0; }
     </style>
 </head>
 <body>
@@ -118,17 +65,14 @@
     <button class="btn-close" onclick="liff.closeWindow()">✕ ปิดหน้าต่างนี้ / Close</button>
 
     <script>
-        // API URL ตัวล่าสุดเวอร์ชัน V.25 ของคุณบีค่ะ
         const API_URL = "https://script.google.com/macros/s/AKfycbxpWU8NlPwIk4EChzbG93IJ0RxFf3qSbs4TDT5MSVOgVWLO3cQAYseD_xAWzOeewJvHrg/exec"; 
 
         async function initializeLiff() {
             try {
-                // อัปเดตรหัส LIFF ID ล่าสุดเรียบร้อยแล้วค่ะ
                 await liff.init({ liffId: "2010206186-8JwWgQug" }); 
-                
                 if (liff.isLoggedIn()) {
                     const profile = await liff.getProfile();
-                    fetchUserPoints(profile.userId, profile.displayName);
+                    fetchUserPoints(profile.userId, profile.displayName || '');
                 } else {
                     liff.login();
                 }
@@ -139,12 +83,17 @@
         }
 
         function fetchUserPoints(userId, displayName) {
-            const url = `${API_URL}?action=getProfile&userId=${userId}&displayName=${encodeURIComponent(displayName)}`;
+            // ทำการทำความสะอาดข้อความเพื่อลดการเกิด URI Malformed จากตัวอักษรพิเศษ (Sanitization)
+            const cleanedName = encodeURIComponent(displayName.replace(/[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF]/g, ''));
+            const url = `${API_URL}?action=getProfile&userId=${userId}&displayName=${cleanedName}`;
             
             fetch(url)
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) throw new Error('Network response error');
+                    return response.json();
+                })
                 .then(data => {
-                    if (data.status === "success") {
+                    if (data && data.status === "success") {
                         document.getElementById('pointDisplay').innerText = data.points;
                     } else {
                         document.getElementById('pointDisplay').innerText = "0";
@@ -156,8 +105,12 @@
                 });
         }
 
-        // เริ่มทำงานเมื่อเปิดหน้าเว็บ
-        initializeLiff();
+        // มั่นใจได้ว่า DOM และ SDK โหลดเสร็จทั้งหมดอย่างแน่นอนตามหลัก Clean Architecture
+        if (document.readyState === "complete" || document.readyState === "interactive") {
+            initializeLiff();
+        } else {
+            document.addEventListener("DOMContentLoaded", initializeLiff);
+        }
     </script>
 </body>
 </html>
