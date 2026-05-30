@@ -58,7 +58,7 @@
 
     <div class="custom-input-container">
       <label style="font-weight:bold; color:#2d3436;">ระบุแต้มเอง:</label>
-      <input type="number" inputmode="numeric" pattern="[0-9]*" id="custom-point" class="custom-input" min="1" placeholder="0" oninput="handleCustomInput(this.value)">
+      <input type="number" inputmode="numeric" pattern="[0-9]*" id="custom-point" class="custom-input" min="1" max="20" placeholder="0" oninput="handleCustomInput(this.value)">
     </div>
 
     <div class="qr-container" id="qr-container">
@@ -76,36 +76,44 @@
   <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbxpWU8NlPwIk4EChzbG93IJ0RxFf3qSbs4TDT5MSVOgVWLO3cQAYseD_xAWzOeewJvHrg/exec";
     const SCAN_LIFF_ID = "2010206186-u1XRJldq"; 
-    const SECRET_SALT = 'KUB_SECRET_TOKEN_2026'; 
+    const SECRET_SALT = 'KUB_SECRET_TOKEN_2026'; // หมายเหตุ: ควรย้ายไปตรวจความถูกต้องแฮชที่ไฟล์ .gs ฝั่ง Server ทั้งหมดเพื่อความปลอดภัยแบบ 100%
     const STORE_LINE_OA_LINK = "https://line.me/R/ti/p/@848dmzja"; 
     
     let currentPointsToIssue = 0; let currentMode = "points"; 
     let timerInterval;
 
-    async function checkPIN() { /* ฟังก์ชันเดิมของคุณบี */
+    async function checkPIN() {
       const pinInput = document.getElementById('pin-code').value;
       const loginBtn = document.getElementById('login-submit-btn');
-      if(pinInput.length < 4) { alert("กรุณากรอกรหัสให้ครบ 4 หลักค่ะ"); return; }
+      if(pinInput.length !== 4 || isNaN(pinInput)) { alert("กรุณากรอกรหัสเป็นตัวเลขให้ครบ 4 หลักค่ะ"); return; }
       loginBtn.innerText = "กำลังตรวจสอบ..."; loginBtn.disabled = true;
       try {
-        const response = await fetch(`${API_URL}?action=checkAdminPIN&pin=${pinInput}`);
+        const response = await fetch(`${API_URL}?action=checkAdminPIN&pin=${encodeURIComponent(pinInput)}`);
         const data = await response.json();
         if(data.status === "success") {
           document.getElementById('login-section').style.display = "none";
           document.getElementById('admin-section').style.display = "block";
         } else {
-          alert(data.message); document.getElementById('pin-code').value = "";
+          alert(data.message || "รหัส PIN ไม่ถูกต้อง"); document.getElementById('pin-code').value = "";
           loginBtn.innerText = "เข้าสู่ระบบ"; loginBtn.disabled = false;
         }
       } catch (err) { alert("การเชื่อมต่อระบบหลังบ้านขัดข้อง"); loginBtn.innerText = "เข้าสู่ระบบ"; loginBtn.disabled = false; }
     }
 
     function handleCustomInput(val) {
-      const pts = parseInt(val);
-      if (pts > 0) { generateBarQR(pts, false); } else { document.getElementById('qr-container').style.display = "none"; }
+      let pts = parseInt(val, 10);
+      if (isNaN(pts) || pts <= 0) { 
+        document.getElementById('qr-container').style.display = "none"; 
+        return;
+      }
+      if (pts > 20) { // ป้องกันการใส่แต้มเวอร์เกินไป (Edge Case Guard)
+        alert("จำกัดการออกแต้มอิสระสูงสุดครั้งละ 20 แต้มค่ะ");
+        document.getElementById('custom-point').value = 20;
+        pts = 20;
+      }
+      generateBarQR(pts, false);
     }
 
-    // หน้าบาร์: สร้างรหัส KUBBAR- (จับเวลา 10 นาที)
     function generateBarQR(points, clearInput = false) {
       if (clearInput) { document.getElementById('custom-point').value = ""; }
       currentPointsToIssue = points; currentMode = "points";
@@ -120,7 +128,7 @@
       document.getElementById('qr-img').src = "https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=" + encodeURIComponent(liffUrl);
       document.getElementById('qr-container').style.display = "block";
       
-      startTimer(10); // 10 นาที
+      startTimer(10);
     }
 
     function startTimer(minutes) {
@@ -141,10 +149,11 @@
     }
 
     function refreshQR() {
-      if (currentMode === "points" && currentPointsToIssue > 0) generateBarQR(currentPointsToIssue, false);
+      if (currentMode === "points" && currentPointsToIssue > 0) {
+        generateBarQR(currentPointsToIssue, false);
+      }
     }
 
-    // คัดลอกลิงก์: สร้างรหัส KUB- (อายุ 2 ชั่วโมง)
     function copyToClipboard() {
       if (currentMode !== "points" || currentPointsToIssue <= 0) return;
       
@@ -159,10 +168,12 @@
         const btn = document.getElementById('copy-btn');
         btn.innerText = "✅ คัดลอกสำเร็จ (รหัส KUB-)";
         setTimeout(() => { btn.innerText = "📋 คัดลอกลิงก์ส่งให้ลูกค้า (สแกนเดี่ยว 2 ชม.)"; }, 2500);
+      }).catch(err => {
+         alert("ไม่สามารถคัดลอกลิงก์อัตโนมัติได้ กรุณาก๊อปปี้จาก URL โดยตรง");
       });
     }
 
-    function showStoreLineQR() { /* โค้ดเดิม */
+    function showStoreLineQR() {
       document.getElementById('custom-point').value = ""; currentPointsToIssue = 0; currentMode = "store_line";
       clearInterval(timerInterval);
       document.getElementById('qr-title-display').innerHTML = `<span style="color: #06C755;">LINE Official Account</span> 💬`;
