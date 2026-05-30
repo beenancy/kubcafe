@@ -23,9 +23,9 @@
 
   <script>
     const LIFF_ID = "2010206186-u1XRJldq"; 
-    // 🌟 อัปเดต API V.14 ตัวสมบูรณ์เรียบร้อยค่ะ
     const API_URL = "https://script.google.com/macros/s/AKfycbxpWU8NlPwIk4EChzbG93IJ0RxFf3qSbs4TDT5MSVOgVWLO3cQAYseD_xAWzOeewJvHrg/exec"; 
     const lineOA_ID = "@848dmzja"; 
+    let isProcessing = false; // ป้องกันการทำสแกนเบิ้ล (Double Submissions Flag)
 
     async function showAlert(title, text, icon, btnColor) {
       try {
@@ -44,15 +44,15 @@
     function redirectToLINE() {
       const lineLink = "https://line.me/R/ti/p/" + lineOA_ID;
       window.location.href = lineLink;
-      
       setTimeout(() => {
-        if (liff.isInClient()) {
-          liff.closeWindow();
-        }
-      }, 800);
+        if (liff.isInClient()) { liff.closeWindow(); }
+      }, 1000);
     }
 
     async function processPoints() {
+      if (isProcessing) return;
+      isProcessing = true;
+
       try {
         if (!navigator.onLine) {
           await showAlert('ไม่มีสัญญาณเน็ต', 'กรุณาตรวจสอบอินเทอร์เน็ตของมือถือค่ะ', 'error', '#ffb3b3');
@@ -60,7 +60,10 @@
         }
 
         await liff.init({ liffId: LIFF_ID });
-        if (!liff.isLoggedIn()) { liff.login({ redirectUri: window.location.href }); return; }
+        if (!liff.isLoggedIn()) { 
+          liff.login({ redirectUri: window.location.href }); 
+          return; 
+        }
 
         const urlParams = new URLSearchParams(window.location.search);
         const shopCode = urlParams.get('code');
@@ -70,38 +73,37 @@
           redirectToLINE(); return;
         }
 
-        const codeParts = shopCode.split('-');
-        if (codeParts.length === 4) {
-          const timestamp = parseInt(codeParts[2]);
-          const now = new Date().getTime();
-          const hoursDiff = (now - timestamp) / (1000 * 60 * 60); 
-          if (hoursDiff > 2) {
-            await showAlert('คิวอาร์โค้ดหมดอายุ', '❌ โค้ดนี้เกินเวลา 2 ชั่วโมงและไม่สามารถใช้งานได้แล้วค่ะ', 'error', '#ffb3b3');
-            redirectToLINE(); return;
-          }
-        }
+        // ข้อแนะนำเชิงสถาปัตยกรรม: นำโค้ดพาร์ทเช็กอายุ (hoursDiff) ไปรันในไฟล์ .gs ทั้งหมด 
+        // เพราะฝั่ง Server มีเวลาที่เป็น Standard แน่นอนกว่าเครื่องปลายทางของลูกค้าแต่ละท่านครับ
 
         document.getElementById('status-text').innerText = "กำลังบันทึกข้อมูลเข้าสู่ระบบ...";
         const profile = await liff.getProfile();
+        const cleanedName = encodeURIComponent((profile.displayName || '').replace(/[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF]/g, ''));
         
-        const response = await fetch(`${API_URL}?action=scanAddPoint&userId=${profile.userId}&name=${encodeURIComponent(profile.displayName)}&shopCode=${shopCode}`);
+        const response = await fetch(`${API_URL}?action=scanAddPoint&userId=${profile.userId}&name=${cleanedName}&shopCode=${encodeURIComponent(shopCode)}`);
         const data = await response.json();
         
-        if(data.status === "success") {
+        if(data && data.status === "success") {
           await showAlert('สะสมแต้มสำเร็จ!', `☕ ${data.message}`, 'success', '#c1f2a1');
         } else {
-          await showAlert('สะสมแต้มไม่สำเร็จ', `⚠️ ${data.message}`, 'warning', '#ffeaa7');
+          await showAlert('สะสมแต้มไม่สำเร็จ', `⚠️ ${data.message || 'รหัสผ่านหรือสิทธิ์ไม่ถูกต้อง'}`, 'warning', '#ffeaa7');
         }
         
         redirectToLINE();
 
       } catch (err) {
+        console.error(err);
         alert("ระบบขัดข้องชั่วคราวค่ะ กรุณาสแกนใหม่อีกครั้งนะคะ");
         redirectToLINE();
       }
     }
     
-    window.addEventListener('load', processPoints);
+    // ป้องกันการยิงสคริปต์ซ้ำซ้อนและแก้ปัญหาวินโดว์โหลดเสร็จก่อน SDK
+    if (document.readyState === "complete" || document.readyState === "interactive") {
+        processPoints();
+    } else {
+        document.addEventListener("DOMContentLoaded", processPoints);
+    }
   </script>
 </body>
 </html>
