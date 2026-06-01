@@ -64,11 +64,11 @@
     <div class="qr-container" id="qr-container">
       <div class="point-display" id="qr-title-display">สแกนรับ <span id="show-points" style="color: #27ae60;">0</span> แต้ม ☕</div>
       <img id="qr-img" src="" onclick="refreshQR()">
-      <div id="timer-display" style="color:#8e44ad; font-weight:bold; font-size:13px; margin-top:8px;">รีเฟรชใหม่ใน: 10:00</div>
+      <div id="timer-display" style="color:#8e44ad; font-weight:bold; font-size:13px; margin-top:8px;">รีเฟรชใหม่ใน: 05:00</div>
       <button class="copy-btn" id="copy-btn" onclick="copyToClipboard()">📋 คัดลอกลิงก์ส่งให้ลูกค้า (สแกนเดี่ยว 2 ชม.)</button>
       <p class="alert-text" id="qr-footer-desc" onclick="refreshQR()">
         🔄 กดที่รูปคิวอาร์โค้ดเพื่อสุ่มรหัสใหม่<br>
-        <span style="font-size: 11px; color:#636e72;">(⚠️ QR บนจอนี้มีอายุ 10 นาที)</span>
+        <span style="font-size: 11px; color:#636e72;">(⚠️ QR บนจอนี้มีอายุ 5 นาที)</span>
       </p>
     </div>
   </div>
@@ -76,7 +76,7 @@
   <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbxpWU8NlPwIk4EChzbG93IJ0RxFf3qSbs4TDT5MSVOgVWLO3cQAYseD_xAWzOeewJvHrg/exec";
     const SCAN_LIFF_ID = "2010206186-u1XRJldq"; 
-    const SECRET_SALT = 'KUB_SECRET_TOKEN_2026'; // หมายเหตุ: ควรย้ายไปตรวจความถูกต้องแฮชที่ไฟล์ .gs ฝั่ง Server ทั้งหมดเพื่อความปลอดภัยแบบ 100%
+    const SECRET_SALT = 'KUB_SECRET_TOKEN_2026'; 
     const STORE_LINE_OA_LINK = "https://line.me/R/ti/p/@848dmzja"; 
     
     let currentPointsToIssue = 0; let currentMode = "points"; 
@@ -106,7 +106,7 @@
         document.getElementById('qr-container').style.display = "none"; 
         return;
       }
-      if (pts > 20) { // ป้องกันการใส่แต้มเวอร์เกินไป (Edge Case Guard)
+      if (pts > 20) { 
         alert("จำกัดการออกแต้มอิสระสูงสุดครั้งละ 20 แต้มค่ะ");
         document.getElementById('custom-point').value = 20;
         pts = 20;
@@ -128,7 +128,8 @@
       document.getElementById('qr-img').src = "https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=" + encodeURIComponent(liffUrl);
       document.getElementById('qr-container').style.display = "block";
       
-      startTimer(10);
+      // อัปเดตเวลานับถอยหลังเป็น 5 นาที
+      startTimer(5);
     }
 
     function startTimer(minutes) {
@@ -141,9 +142,14 @@
         let m = Math.floor(seconds / 60);
         let s = seconds % 60;
         display.innerText = `รีเฟรชใหม่ใน: ${m}:${s < 10 ? '0'+s : s}`;
+        
+        // 🚨 SESSION RESET LOGIC: เมื่อหมดเวลา บังคับกลับไป 1 แต้มทันที
         if (--seconds < 0) {
           clearInterval(timerInterval);
-          refreshQR();
+          if (currentMode === "points") {
+            document.getElementById('custom-point').value = ""; // ล้างช่องกรอกมือ
+            generateBarQR(1, true); // สร้างคิวอาร์ 1 แต้มและนับถอยหลังใหม่
+          }
         }
       }, 1000);
     }
@@ -181,6 +187,11 @@
       document.getElementById('timer-display').style.display = "none";
       document.getElementById('qr-container').style.display = "block";
     }
+    
+    // Safety Net: เมื่อเปิดเว็บขึ้นมาครั้งแรก ให้เคลียร์ค่า Input ป้องกันเบราว์เซอร์จำค่าเดิม
+    window.addEventListener('load', function() {
+      document.getElementById('custom-point').value = "";
+    });
   </script>
 </body>
 </html>
