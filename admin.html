@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
   <meta charset="UTF-8">
-  <title>KUB Cafe - Admin Panel (Realtime V.26.25)</title>
+  <title>KUB Cafe - Admin Panel (Realtime V.26.26)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
   
@@ -19,7 +19,11 @@
     .line-btn { background: #06C755 !important; color: white !important; font-size: 14px !important; font-weight: bold !important; line-height: 1.2; display: flex; align-items: center; justify-content: center; }
     .line-btn:active { background: #05b04b !important; transform: scale(0.95); }
     
-    /* 💵 ปุ่มสแกนเงิน ดีไซน์พรีเมียมตัดสีน้ำเงิน */
+    /* 🔸 ปุ่ม TrueMoney Wallet ดีไซน์สีส้มเด่นชัดเจน */
+    .true-btn { background: #ff6600 !important; color: white !important; font-size: 16px !important; font-weight: bold !important; line-height: 1.2; display: flex; align-items: center; justify-content: center; }
+    .true-btn:active { background: #e05500 !important; transform: scale(0.95); }
+
+    /* 💵 ปุ่มสแกนเงิน ดีไซน์พรีเมียมตัดสีน้ำเงิน ค้าขายร่ำรวย */
     .pay-btn { background: #004b87 !important; color: white !important; font-size: 13px !important; font-weight: bold !important; line-height: 1.2; display: flex; align-items: center; justify-content: center; }
     .pay-btn:active { background: #003366 !important; transform: scale(0.95); }
     
@@ -63,7 +67,7 @@
       <button class="point-btn" onclick="selectPoints(7, true)">7</button>
       <button class="point-btn" onclick="selectPoints(8, true)">8</button>
       <button class="point-btn" onclick="selectPoints(9, true)">9</button>
-      <button class="point-btn" onclick="selectPoints(10, true)">10</button>
+      <button class="point-btn true-btn" onclick="selectTruePayment()">True</button>
       <button class="point-btn pay-btn" onclick="selectPayment()">QR<br>รับเงิน</button>
     </div>
 
@@ -85,8 +89,11 @@
     const SECRET_SALT = 'KUB_SECRET_TOKEN_2026'; 
     const STORE_LINE_OA_LINK = "https://line.me/R/ti/p/@848dmzja"; 
     const PAYMENT_IMAGE_URL = "https://raw.githubusercontent.com/beenancy/kubcafe/eccfab9beafd7e3dbab13523292cd3cb15dbff74/qr%20kshop.jpg";
+    
+    // 🔸 แปลงโครงสร้างลิ้งก์เป็นแบบ Raw Data อ้างอิงตรงตามคลัง GitHub ของคุณบีสำเร็จ 100%
+    const TRUE_IMAGE_URL = "https://raw.githubusercontent.com/beenancy/kubcafe/914d5947e4c635a2bf03f3f123dd837c2b0b29a2/truescan.jpg";
 
-    // 🔴 ข้อมูล Firebase Config ที่ดึงมาจากรูปภาพของคุณบี 🔴
+    // ข้อมูลโปรไฟล์ Firebase เชื่อมต่อท่อส่งข้อมูลตรงตามสัญญาระบบเดิม
     const firebaseConfig = {
       apiKey: "AIzaSyAi-8gxkAs3N4b5r3EULZHckqq3tHa6tlE",
       authDomain: "kub-cafe-pos.firebaseapp.com",
@@ -98,7 +105,6 @@
       measurementId: "G-FTTX7BDSYD"
     };
 
-    // เริ่มต้นเชื่อมต่อฐานข้อมูลเรียลไทม์
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
@@ -116,7 +122,7 @@
         if(data.status === "success") {
           document.getElementById('login-section').style.display = "none";
           document.getElementById('admin-section').style.display = "block";
-          initRealtimeListener(); // เปิดระบบดักฟังความเคลื่อนไหวเมื่อล็อกอินผ่าน
+          initRealtimeListener(); 
         } else {
           alert(data.message || "รหัส PIN ไม่ถูกต้อง"); document.getElementById('pin-code').value = "";
           loginBtn.innerText = "เข้าสู่ระบบ"; loginBtn.disabled = false;
@@ -125,7 +131,7 @@
     }
 
     // ========================================================
-    // 📡 PHASE 1: EMITTER FUNCTIONS (พนักงานกด -> ส่งไปที่เซิร์ฟเวอร์กลาง)
+    // 📡 PHASE 1: EMITTER FUNCTIONS (สั่งเปลี่ยนหน้าจอระบบกลาง)
     // ========================================================
     
     function selectPoints(points, clearInput = false) {
@@ -133,7 +139,7 @@
       db.ref('pos_display').set({
         mode: "points",
         points: points,
-        timestamp: new Date().getTime() // ล็อกเวลาวินาทีเดียวกันให้กับทุกเครื่องทั่วร้าน
+        timestamp: new Date().getTime() 
       });
     }
 
@@ -145,6 +151,12 @@
     function selectPayment() {
       document.getElementById('custom-point').value = "";
       db.ref('pos_display').set({ mode: "payment" });
+    }
+
+    // 🔸 ฟังก์ชันยิงสถานะเปิดภาพ True ราบรื่นไร้รอยต่อ
+    function selectTruePayment() {
+      document.getElementById('custom-point').value = "";
+      db.ref('pos_display').set({ mode: "true_payment" });
     }
 
     function handleCustomInput(val) {
@@ -165,27 +177,26 @@
     }
 
     // ========================================================
-    // 🎧 PHASE 2: REALTIME LISTENER & RENDERER (ทุกหน้าจอเปลี่ยนตามเซิร์ฟเวอร์)
+    // 🎧 PHASE 2: REALTIME LISTENER & RENDERER (ซิงค์ภาพทุกหน้าจอ)
     // ========================================================
 
     function initRealtimeListener() {
       db.ref('pos_display').on('value', (snapshot) => {
         const data = snapshot.val();
         if (!data) return;
-        currentGlobalState = data; // บันทึกสถานะปัจจุบันเก็บไว้ในเครื่อง
+        currentGlobalState = data; 
         renderPOSDisplay(data);
       });
     }
 
     function renderPOSDisplay(data) {
-      clearInterval(timerInterval); // เคลียร์เวลาเก่าทิ้งก่อนเสมอ
+      clearInterval(timerInterval); 
       const imgElement = document.getElementById('qr-img');
       
       if (data.mode === "points") {
         const points = data.points;
         const timestamp = data.timestamp;
         
-        // ทุกเครื่องคำนวณ MD5 จากเลขเวลาตัวเดียวกัน ทำให้ Hash ตรงกันชัวร์ 100%
         const rawString = points + "-" + timestamp + "-" + SECRET_SALT;
         const hash = CryptoJS.MD5(rawString).toString();
         const secretCode = "KUBBAR-" + points + "-" + timestamp + "-" + hash; 
@@ -234,14 +245,30 @@
         `;
         document.getElementById('qr-container').style.display = "block";
       }
+      
+      // 🔸 โมดูลเรนเดอร์ภาพคิวอาร์สแกน True ของจริงความละเอียดสูง
+      else if (data.mode === "true_payment") {
+        document.getElementById('dynamic-qr-header').innerHTML = "";
+        document.getElementById('dynamic-qr-footer').innerHTML = "";
+        
+        imgElement.style.border = "none";
+        imgElement.style.padding = "0";
+        imgElement.src = TRUE_IMAGE_URL; 
+        
+        document.getElementById('dynamic-qr-footer').innerHTML = `
+          <div style="margin-top: 15px; padding: 10px; background: #e3f2fd; border: 1px solid #90caf9; color: #0d47a1; border-radius: 10px; font-size: 12px; font-weight: bold; line-height: 1.4;">
+            🔸 รองรับการสแกนผ่าน <span style="color:#ff6600;">TrueMoney Wallet</span> และแอปธนาคาร
+          </div>
+        `;
+        document.getElementById('qr-container').style.display = "block";
+      }
     }
 
-    // ฟังก์ชันนับถอยหลังโดยอิงจากเวลาเริ่มสร้างคิวอาร์โค้ดจริง (ป้องกันการดีเลย์ของวินาที)
     function startSynchronizedTimer(startTimeMs) {
       const display = document.getElementById('timer-display');
       if (!display) return;
       
-      const limitSeconds = 5 * 60; // 5 นาที
+      const limitSeconds = 5 * 60; 
       
       timerInterval = setInterval(() => {
         const nowMs = new Date().getTime();
@@ -250,7 +277,6 @@
         
         if (remainingSeconds < 0) {
           clearInterval(timerInterval);
-          // 🚨 SESSION RESET LOGIC: หน้าจอไหนหมดเวลาค้างไว้ก่อน จะสั่งรีเซ็ตระบบกลางกลับไปที่ 1 แต้มทันที
           if (currentGlobalState.mode === "points") {
             selectPoints(1, true);
           }
@@ -266,7 +292,6 @@
     function copyToClipboard(generatedLiffUrl) {
       if (currentGlobalState.mode !== "points") return;
       
-      // ดัดแปลงให้ออกโค้ด KUB- สำหรับส่งให้ลูกค้าสแกนทางไกลแบบสแกนเดี่ยว 2 ชั่วโมง
       const timestamp = currentGlobalState.timestamp;
       const points = currentGlobalState.points;
       const rawString = points + "-" + timestamp + "-" + SECRET_SALT;
