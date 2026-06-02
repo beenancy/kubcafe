@@ -2,9 +2,13 @@
 <html lang="th">
 <head>
   <meta charset="UTF-8">
-  <title>KUB Cafe - Admin Panel</title>
+  <title>KUB Cafe - Admin Panel (Realtime V.26.25)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+  
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+  
   <style>
     body { text-align: center; font-family: sans-serif; padding: 20px; background: #fdfdfd; color: #2d3436; }
     h2 { font-weight: 800; margin-bottom: 5px; }
@@ -46,21 +50,21 @@
 
   <div id="admin-section" style="display: none;">
     <h2>ระบบจัดการหน้าร้าน KUB Cafe</h2>
-    <p class="desc">กดเลือกแต้ม หรือ กดปุ่มชำระเงิน/LINE เพื่อให้บริการลูกค้าได้ทันทีค่ะ</p>
+    <p class="desc">เปิดหน้าจอนี้ได้หลายเครื่องพร้อมกัน ระบบจะซิงค์รูปภาพตามเครื่องที่กดทันทีค่ะ</p>
     
     <div class="btn-grid">
-      <button class="point-btn" onclick="generateBarQR(1, true)">1</button>
-      <button class="point-btn" onclick="generateBarQR(2, true)">2</button>
-      <button class="point-btn" onclick="generateBarQR(3, true)">3</button>
-      <button class="point-btn" onclick="generateBarQR(4, true)">4</button>
-      <button class="point-btn" onclick="generateBarQR(5, true)">5</button>
-      <button class="point-btn line-btn" onclick="showStoreLineQR()">LINE<br>ร้าน</button>
-      <button class="point-btn" onclick="generateBarQR(6, true)">6</button>
-      <button class="point-btn" onclick="generateBarQR(7, true)">7</button>
-      <button class="point-btn" onclick="generateBarQR(8, true)">8</button>
-      <button class="point-btn" onclick="generateBarQR(9, true)">9</button>
-      <button class="point-btn" onclick="generateBarQR(10, true)">10</button>
-      <button class="point-btn pay-btn" onclick="showPaymentQR()">QR<br>รับเงิน</button>
+      <button class="point-btn" onclick="selectPoints(1, true)">1</button>
+      <button class="point-btn" onclick="selectPoints(2, true)">2</button>
+      <button class="point-btn" onclick="selectPoints(3, true)">3</button>
+      <button class="point-btn" onclick="selectPoints(4, true)">4</button>
+      <button class="point-btn" onclick="selectPoints(5, true)">5</button>
+      <button class="point-btn line-btn" onclick="selectStoreLine()">LINE<br>ร้าน</button>
+      <button class="point-btn" onclick="selectPoints(6, true)">6</button>
+      <button class="point-btn" onclick="selectPoints(7, true)">7</button>
+      <button class="point-btn" onclick="selectPoints(8, true)">8</button>
+      <button class="point-btn" onclick="selectPoints(9, true)">9</button>
+      <button class="point-btn" onclick="selectPoints(10, true)">10</button>
+      <button class="point-btn pay-btn" onclick="selectPayment()">QR<br>รับเงิน</button>
     </div>
 
     <div class="custom-input-container">
@@ -80,12 +84,26 @@
     const SCAN_LIFF_ID = "2010206186-u1XRJldq"; 
     const SECRET_SALT = 'KUB_SECRET_TOKEN_2026'; 
     const STORE_LINE_OA_LINK = "https://line.me/R/ti/p/@848dmzja"; 
-    
-    // 🔴 ดึงลิงก์รูปแบบ Raw Data จาก GitHub มาแสดงผล 🔴
     const PAYMENT_IMAGE_URL = "https://raw.githubusercontent.com/beenancy/kubcafe/eccfab9beafd7e3dbab13523292cd3cb15dbff74/qr%20kshop.jpg";
 
-    let currentPointsToIssue = 0; let currentMode = "points"; 
+    // 🔴 ข้อมูล Firebase Config ที่ดึงมาจากรูปภาพของคุณบี 🔴
+    const firebaseConfig = {
+      apiKey: "AIzaSyAi-8gxkAs3N4b5r3EULZHckqq3tHa6tlE",
+      authDomain: "kub-cafe-pos.firebaseapp.com",
+      databaseURL: "https://kub-cafe-pos-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "kub-cafe-pos",
+      storageBucket: "kub-cafe-pos.firebasestorage.app",
+      messagingSenderId: "980123459582",
+      appId: "1:980123459582:web:8d1b54a7e1317975e06aaf",
+      measurementId: "G-FTTX7BDSYD"
+    };
+
+    // เริ่มต้นเชื่อมต่อฐานข้อมูลเรียลไทม์
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
     let timerInterval;
+    let currentGlobalState = {};
 
     async function checkPIN() {
       const pinInput = document.getElementById('pin-code').value;
@@ -98,6 +116,7 @@
         if(data.status === "success") {
           document.getElementById('login-section').style.display = "none";
           document.getElementById('admin-section').style.display = "block";
+          initRealtimeListener(); // เปิดระบบดักฟังความเคลื่อนไหวเมื่อล็อกอินผ่าน
         } else {
           alert(data.message || "รหัส PIN ไม่ถูกต้อง"); document.getElementById('pin-code').value = "";
           loginBtn.innerText = "เข้าสู่ระบบ"; loginBtn.disabled = false;
@@ -105,89 +124,157 @@
       } catch (err) { alert("การเชื่อมต่อระบบหลังบ้านขัดข้อง"); loginBtn.innerText = "เข้าสู่ระบบ"; loginBtn.disabled = false; }
     }
 
+    // ========================================================
+    // 📡 PHASE 1: EMITTER FUNCTIONS (พนักงานกด -> ส่งไปที่เซิร์ฟเวอร์กลาง)
+    // ========================================================
+    
+    function selectPoints(points, clearInput = false) {
+      if (clearInput) { document.getElementById('custom-point').value = ""; }
+      db.ref('pos_display').set({
+        mode: "points",
+        points: points,
+        timestamp: new Date().getTime() // ล็อกเวลาวินาทีเดียวกันให้กับทุกเครื่องทั่วร้าน
+      });
+    }
+
+    function selectStoreLine() {
+      document.getElementById('custom-point').value = "";
+      db.ref('pos_display').set({ mode: "store_line" });
+    }
+
+    function selectPayment() {
+      document.getElementById('custom-point').value = "";
+      db.ref('pos_display').set({ mode: "payment" });
+    }
+
     function handleCustomInput(val) {
       let pts = parseInt(val, 10);
-      if (isNaN(pts) || pts <= 0) { 
-        document.getElementById('qr-container').style.display = "none"; 
-        return;
-      }
+      if (isNaN(pts) || pts <= 0) { return; }
       if (pts > 20) { 
         alert("จำกัดการออกแต้มอิสระสูงสุดครั้งละ 20 แต้มค่ะ");
         document.getElementById('custom-point').value = 20;
         pts = 20;
       }
-      generateBarQR(pts, false);
-    }
-
-    function generateBarQR(points, clearInput = false) {
-      if (clearInput) { document.getElementById('custom-point').value = ""; }
-      currentPointsToIssue = points; currentMode = "points";
-      
-      const timestamp = new Date().getTime();
-      const rawString = points + "-" + timestamp + "-" + SECRET_SALT;
-      const hash = CryptoJS.MD5(rawString).toString();
-      const secretCode = "KUBBAR-" + points + "-" + timestamp + "-" + hash; 
-      const liffUrl = "https://liff.line.me/" + SCAN_LIFF_ID + "?code=" + secretCode;
-      
-      document.getElementById('dynamic-qr-header').innerHTML = `<div class="point-display" id="qr-title-display">สแกนรับ <span style="color: #27ae60;">${points}</span> แต้ม ☕</div>`;
-      document.getElementById('qr-img').style.border = "4px solid #c1f2a1";
-      document.getElementById('qr-img').style.padding = "0"; // รีเซ็ตขอบเผื่อไว้
-      document.getElementById('qr-img').src = "https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=" + encodeURIComponent(liffUrl);
-      
-      document.getElementById('dynamic-qr-footer').innerHTML = `
-        <div id="timer-display" style="color:#8e44ad; font-weight:bold; font-size:13px; margin-top:8px;">รีเฟรชใหม่ใน: 05:00</div>
-        <button class="copy-btn" id="copy-btn" onclick="copyToClipboard()">📋 คัดลอกลิงก์ส่งให้ลูกค้า (สแกนเดี่ยว 2 ชม.)</button>
-        <p class="alert-text" id="qr-footer-desc" onclick="refreshQR()">
-          🔄 กดที่รูปคิวอาร์โค้ดเพื่อสุ่มรหัสใหม่<br>
-          <span style="font-size: 11px; color:#636e72;">(⚠️ QR บนจอนี้มีอายุ 5 นาที)</span>
-        </p>
-      `;
-      document.getElementById('qr-container').style.display = "block";
-      
-      startTimer(5);
-    }
-
-    function startTimer(minutes) {
-      clearInterval(timerInterval);
-      let seconds = minutes * 60;
-      const display = document.getElementById('timer-display');
-      if (!display) return;
-      display.style.display = "block";
-      
-      timerInterval = setInterval(() => {
-        let m = Math.floor(seconds / 60);
-        let s = seconds % 60;
-        const liveDisplay = document.getElementById('timer-display');
-        if (liveDisplay) {
-          liveDisplay.innerText = `รีเฟรชใหม่ใน: ${m}:${s < 10 ? '0'+s : s}`;
-        }
-        
-        if (--seconds < 0) {
-          clearInterval(timerInterval);
-          if (currentMode === "points") {
-            document.getElementById('custom-point').value = ""; 
-            generateBarQR(1, true); 
-          }
-        }
-      }, 1000);
+      selectPoints(pts, false);
     }
 
     function refreshQR() {
-      if (currentMode === "points" && currentPointsToIssue > 0) {
-        generateBarQR(currentPointsToIssue, false);
+      if (currentGlobalState.mode === "points" && currentGlobalState.points > 0) {
+        selectPoints(currentGlobalState.points, false);
       }
     }
 
-    function copyToClipboard() {
-      if (currentMode !== "points" || currentPointsToIssue <= 0) return;
-      
-      const timestamp = new Date().getTime();
-      const rawString = currentPointsToIssue + "-" + timestamp + "-" + SECRET_SALT;
-      const hash = CryptoJS.MD5(rawString).toString();
-      const secretCode = "KUB-" + currentPointsToIssue + "-" + timestamp + "-" + hash; 
-      const link = "https://liff.line.me/" + SCAN_LIFF_ID + "?code=" + secretCode;
+    // ========================================================
+    // 🎧 PHASE 2: REALTIME LISTENER & RENDERER (ทุกหน้าจอเปลี่ยนตามเซิร์ฟเวอร์)
+    // ========================================================
 
-      const text = "☕ รับแต้มสะสม KUB Cafe: " + link;
+    function initRealtimeListener() {
+      db.ref('pos_display').on('value', (snapshot) => {
+        const data = snapshot.val();
+        if (!data) return;
+        currentGlobalState = data; // บันทึกสถานะปัจจุบันเก็บไว้ในเครื่อง
+        renderPOSDisplay(data);
+      });
+    }
+
+    function renderPOSDisplay(data) {
+      clearInterval(timerInterval); // เคลียร์เวลาเก่าทิ้งก่อนเสมอ
+      const imgElement = document.getElementById('qr-img');
+      
+      if (data.mode === "points") {
+        const points = data.points;
+        const timestamp = data.timestamp;
+        
+        // ทุกเครื่องคำนวณ MD5 จากเลขเวลาตัวเดียวกัน ทำให้ Hash ตรงกันชัวร์ 100%
+        const rawString = points + "-" + timestamp + "-" + SECRET_SALT;
+        const hash = CryptoJS.MD5(rawString).toString();
+        const secretCode = "KUBBAR-" + points + "-" + timestamp + "-" + hash; 
+        const liffUrl = "https://liff.line.me/" + SCAN_LIFF_ID + "?code=" + secretCode;
+        
+        document.getElementById('dynamic-qr-header').innerHTML = `<div class="point-display" id="qr-title-display">สแกนรับ <span style="color: #27ae60;">${points}</span> แต้ม ☕</div>`;
+        imgElement.style.border = "4px solid #c1f2a1";
+        imgElement.style.padding = "0";
+        imgElement.src = "https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=" + encodeURIComponent(liffUrl);
+        
+        document.getElementById('dynamic-qr-footer').innerHTML = `
+          <div id="timer-display" style="color:#8e44ad; font-weight:bold; font-size:13px; margin-top:8px;">รีเฟรชใหม่ใน: 05:00</div>
+          <button class="copy-btn" id="copy-btn" onclick="copyToClipboard('${liffUrl}')">📋 คัดลอกลิงก์ส่งให้ลูกค้า (สแกนเดี่ยว 2 ชม.)</button>
+          <p class="alert-text" id="qr-footer-desc" onclick="refreshQR()">
+            🔄 กดที่รูปคิวอาร์โค้ดเพื่อสุ่มรหัสใหม่<br>
+            <span style="font-size: 11px; color:#636e72;">(⚠️ QR บนจอนี้มีอายุ 5 นาที)</span>
+          </p>
+        `;
+        document.getElementById('qr-container').style.display = "block";
+        
+        startSynchronizedTimer(timestamp);
+      } 
+      
+      else if (data.mode === "store_line") {
+        document.getElementById('dynamic-qr-header').innerHTML = `<div class="point-display" id="qr-title-display"><span style="color: #06C755;">LINE Official Account</span> 💬</div>`;
+        imgElement.style.border = "4px solid #06C755";
+        imgElement.style.padding = "0";
+        imgElement.src = "https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=" + encodeURIComponent(STORE_LINE_OA_LINK);
+        document.getElementById('dynamic-qr-footer').innerHTML = "";
+        document.getElementById('qr-container').style.display = "block";
+      } 
+      
+      else if (data.mode === "payment") {
+        document.getElementById('dynamic-qr-header').innerHTML = "";
+        document.getElementById('dynamic-qr-footer').innerHTML = "";
+        
+        imgElement.style.border = "none";
+        imgElement.style.padding = "0";
+        imgElement.src = PAYMENT_IMAGE_URL; 
+        
+        document.getElementById('dynamic-qr-footer').innerHTML = `
+          <div style="margin-top: 15px; padding: 10px; background: #fff3cd; border: 1px solid #ffe69c; color: #856404; border-radius: 10px; font-size: 12px; font-weight: bold; line-height: 1.4;">
+            ⚠️ กรุณาใช้ <span style="color:#d35400;">"แอปธนาคาร"</span> สแกนจ่ายเท่านั้น<br>
+            <span style="font-size: 10px; color:#666;">(การใช้กล้อง LINE สแกน ระบบจะดึงไปที่ LINE BK)</span>
+          </div>
+        `;
+        document.getElementById('qr-container').style.display = "block";
+      }
+    }
+
+    // ฟังก์ชันนับถอยหลังโดยอิงจากเวลาเริ่มสร้างคิวอาร์โค้ดจริง (ป้องกันการดีเลย์ของวินาที)
+    function startSynchronizedTimer(startTimeMs) {
+      const display = document.getElementById('timer-display');
+      if (!display) return;
+      
+      const limitSeconds = 5 * 60; // 5 นาที
+      
+      timerInterval = setInterval(() => {
+        const nowMs = new Date().getTime();
+        const elapsedSeconds = Math.floor((nowMs - startTimeMs) / 1000);
+        const remainingSeconds = limitSeconds - elapsedSeconds;
+        
+        if (remainingSeconds < 0) {
+          clearInterval(timerInterval);
+          // 🚨 SESSION RESET LOGIC: หน้าจอไหนหมดเวลาค้างไว้ก่อน จะสั่งรีเซ็ตระบบกลางกลับไปที่ 1 แต้มทันที
+          if (currentGlobalState.mode === "points") {
+            selectPoints(1, true);
+          }
+          return;
+        }
+        
+        let m = Math.floor(remainingSeconds / 60);
+        let s = remainingSeconds % 60;
+        display.innerText = `รีเฟรชใหม่ใน: ${m}:${s < 10 ? '0'+s : s}`;
+      }, 1000);
+    }
+
+    function copyToClipboard(generatedLiffUrl) {
+      if (currentGlobalState.mode !== "points") return;
+      
+      // ดัดแปลงให้ออกโค้ด KUB- สำหรับส่งให้ลูกค้าสแกนทางไกลแบบสแกนเดี่ยว 2 ชั่วโมง
+      const timestamp = currentGlobalState.timestamp;
+      const points = currentGlobalState.points;
+      const rawString = points + "-" + timestamp + "-" + SECRET_SALT;
+      const hash = CryptoJS.MD5(rawString).toString();
+      const secretCode = "KUB-" + points + "-" + timestamp + "-" + hash; 
+      const remoteLink = "https://liff.line.me/" + SCAN_LIFF_ID + "?code=" + secretCode;
+
+      const text = "☕ รับแต้มสะสม KUB Cafe: " + remoteLink;
       navigator.clipboard.writeText(text).then(() => {
         const btn = document.getElementById('copy-btn');
         btn.innerText = "✅ คัดลอกสำเร็จ (รหัส KUB-)";
@@ -195,44 +282,6 @@
       }).catch(err => {
          alert("ไม่สามารถคัดลอกลิงก์อัตโนมัติได้ กรุณาก๊อปปี้จาก URL โดยตรง");
       });
-    }
-
-    function showStoreLineQR() {
-      document.getElementById('custom-point').value = ""; currentPointsToIssue = 0; currentMode = "store_line";
-      clearInterval(timerInterval);
-      
-      document.getElementById('dynamic-qr-header').innerHTML = `<div class="point-display" id="qr-title-display"><span style="color: #06C755;">LINE Official Account</span> 💬</div>`;
-      document.getElementById('qr-img').style.border = "4px solid #06C755";
-      document.getElementById('qr-img').style.padding = "0";
-      document.getElementById('qr-img').src = "https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=" + encodeURIComponent(STORE_LINE_OA_LINK);
-      document.getElementById('dynamic-qr-footer').innerHTML = "";
-      document.getElementById('qr-container').style.display = "block";
-    }
-
-    // 💵 ฟังก์ชันโชว์รูปภาพรับเงินของจริง
-    function showPaymentQR() {
-      document.getElementById('custom-point').value = ""; currentPointsToIssue = 0; currentMode = "payment";
-      clearInterval(timerInterval); // หยุดการรันไทเมอร์สะสมแต้ม
-      
-      // ล้างส่วนหัวและส่วนท้ายออกให้หมด ปล่อยให้รูปภาพโชว์ความสมบูรณ์ด้วยตัวมันเอง
-      document.getElementById('dynamic-qr-header').innerHTML = "";
-      document.getElementById('dynamic-qr-footer').innerHTML = "";
-      
-      // นำรูปภาพเต็มมาโชว์ (ลบขอบ CSS ออก เพราะรูปมีขอบของตัวเองอยู่แล้ว)
-      const imgElement = document.getElementById('qr-img');
-      imgElement.style.border = "none";
-      imgElement.style.padding = "0";
-      imgElement.src = PAYMENT_IMAGE_URL; 
-      
-      // เพิ่มป้ายเตือนไว้ด้านล่างรูปภาพ เพื่อป้องกันลูกค้าใช้กล้อง LINE สแกนจ่าย
-      document.getElementById('dynamic-qr-footer').innerHTML = `
-        <div style="margin-top: 15px; padding: 10px; background: #fff3cd; border: 1px solid #ffe69c; color: #856404; border-radius: 10px; font-size: 12px; font-weight: bold; line-height: 1.4;">
-          ⚠️ กรุณาใช้ <span style="color:#d35400;">"แอปธนาคาร"</span> สแกนจ่ายเท่านั้น<br>
-          <span style="font-size: 10px; color:#666;">(การใช้กล้อง LINE สแกน ระบบจะดึงไปที่ LINE BK)</span>
-        </div>
-      `;
-      
-      document.getElementById('qr-container').style.display = "block";
     }
     
     window.addEventListener('load', function() {
