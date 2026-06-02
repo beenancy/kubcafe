@@ -14,9 +14,16 @@
     .point-btn:active { transform: scale(0.95); background: #a8e6cf; }
     .line-btn { background: #06C755 !important; color: white !important; font-size: 14px !important; font-weight: bold !important; line-height: 1.2; display: flex; align-items: center; justify-content: center; }
     .line-btn:active { background: #05b04b !important; transform: scale(0.95); }
+    
+    /* 💵 ปุ่มสแกนเงิน ดีไซน์พรีเมียมตัดสีน้ำเงินตามป้าย Thai QR */
+    .pay-btn { background: #004b87 !important; color: white !important; font-size: 13px !important; font-weight: bold !important; line-height: 1.2; display: flex; align-items: center; justify-content: center; }
+    .pay-btn:active { background: #003366 !important; transform: scale(0.95); }
+    
     .custom-input-container { background: #f1f2f6; padding: 15px; border-radius: 15px; max-width: 500px; margin: 0 auto 20px auto; display: flex; align-items: center; justify-content: center; gap: 10px; }
     .custom-input { width: 80px; font-size: 22px; padding: 8px; text-align: center; border: 2px solid #c1f2a1; border-radius: 10px; font-weight: bold; outline: none; color: #2d3436; }
-    .qr-container { margin-top: 10px; padding: 20px; background: #fff; border-radius: 20px; box-shadow: 0 10px 20px rgba(0,0,0,0.05); display: none; max-width: 320px; margin-left: auto; margin-right: auto; }
+    
+    /* 🖥️ Container หลักสำหรับสแกน */
+    .qr-container { margin-top: 10px; padding: 20px; background: #fff; border-radius: 20px; box-shadow: 0 10px 20px rgba(0,0,0,0.05); display: none; max-width: 320px; margin-left: auto; margin-right: auto; overflow: hidden; }
     img { border: 4px solid #c1f2a1; border-radius: 15px; width: 100%; height: auto; cursor: pointer; transition: 0.3s; }
     img:active { transform: scale(0.95); opacity: 0.7; }
     .alert-text { color: #e74c3c; font-weight: bold; margin-top: 15px; font-size: 13px; cursor: pointer; }
@@ -26,6 +33,14 @@
     #login-section { margin-top: 50px; }
     .pin-input { font-size: 24px; padding: 10px; width: 120px; text-align: center; letter-spacing: 5px; border-radius: 10px; border: 2px solid #ddd; margin-bottom: 15px; outline: none; }
     .login-btn { background: #2d3436; color: white; border: none; padding: 12px 25px; font-size: 16px; border-radius: 10px; font-weight: bold; cursor: pointer; }
+
+    /* 🎨 โครงสร้างจำลองแถบหัว THAI QR PAYMENT เพื่อความสวยงามสมบูรณ์แบบ */
+    .thai-qr-header { background: #004b87; color: white; padding: 10px; font-weight: bold; font-size: 16px; border-radius: 12px 12px 0 0; margin: -20px -20px 15px -20px; letter-spacing: 1px; display: flex; align-items: center; justify-content: center; gap: 5px; }
+    .thai-qr-sub-bar { display: flex; justify-content: space-around; align-items: center; background: #f8f9fa; padding: 6px; margin: -15px -20px 15px -20px; border-bottom: 1px solid #eee; font-size: 11px; font-weight: bold; color: #555; }
+    .payment-footer-info { font-family: sans-serif; margin-top: 12px; text-align: center; }
+    .payment-main-title { font-size: 22px; font-weight: bold; color: #000; margin: 5px 0 2px 0; }
+    .payment-sub-detail { font-size: 13px; color: #666; margin: 2px 0; }
+    .payment-ref-detail { font-size: 11px; color: #999; margin: 2px 0; }
   </style>
 </head>
 <body>
@@ -39,7 +54,7 @@
 
   <div id="admin-section" style="display: none;">
     <h2>ระบบจัดการหน้าร้าน KUB Cafe</h2>
-    <p class="desc">กดเลือกแต้ม หรือ กดปุ่ม LINE เพื่อให้ลูกค้าสแกนได้เลยค่ะ</p>
+    <p class="desc">กดเลือกแต้ม หรือ กดปุ่มชำระเงิน/LINE เพื่อให้บริการลูกค้าได้ทันทีค่ะ</p>
     
     <div class="btn-grid">
       <button class="point-btn" onclick="generateBarQR(1, true)">1</button>
@@ -53,7 +68,8 @@
       <button class="point-btn" onclick="generateBarQR(8, true)">8</button>
       <button class="point-btn" onclick="generateBarQR(9, true)">9</button>
       <button class="point-btn" onclick="generateBarQR(10, true)">10</button>
-      <div style="visibility: hidden;"></div>
+      <!-- 💵 ปุ่มสแกนเงินติดตั้งแทนช่องว่าง เรียงตัวสวยงามตาม Grid สายตาพอดี -->
+      <button class="point-btn pay-btn" onclick="showPaymentQR()">QR<br>รับเงิน</button>
     </div>
 
     <div class="custom-input-container">
@@ -62,14 +78,13 @@
     </div>
 
     <div class="qr-container" id="qr-container">
-      <div class="point-display" id="qr-title-display">สแกนรับ <span id="show-points" style="color: #27ae60;">0</span> แต้ม ☕</div>
+      <!-- ส่วนแสดงหัวแถบแบบไดนามิก (จะถูกสับเปลี่ยนด้วย JavaScript) -->
+      <div id="dynamic-qr-header"></div>
+      
       <img id="qr-img" src="" onclick="refreshQR()">
-      <div id="timer-display" style="color:#8e44ad; font-weight:bold; font-size:13px; margin-top:8px;">รีเฟรชใหม่ใน: 05:00</div>
-      <button class="copy-btn" id="copy-btn" onclick="copyToClipboard()">📋 คัดลอกลิงก์ส่งให้ลูกค้า (สแกนเดี่ยว 2 ชม.)</button>
-      <p class="alert-text" id="qr-footer-desc" onclick="refreshQR()">
-        🔄 กดที่รูปคิวอาร์โค้ดเพื่อสุ่มรหัสใหม่<br>
-        <span style="font-size: 11px; color:#636e72;">(⚠️ QR บนจอนี้มีอายุ 5 นาที)</span>
-      </p>
+      
+      <!-- ส่วนแสดงท้ายแถบแบบไดนามิก -->
+      <div id="dynamic-qr-footer"></div>
     </div>
   </div>
 
@@ -79,6 +94,9 @@
     const SECRET_SALT = 'KUB_SECRET_TOKEN_2026'; 
     const STORE_LINE_OA_LINK = "https://line.me/R/ti/p/@848dmzja"; 
     
+    // 💵 ข้อมูลดิบถอดรหัสรหัสโครงสร้างพิกัดพร้อมเพย์อ้างอิงตรงตามรูปภาพของคุณบี
+    const PROMPTPAY_RAW_DATA = "00020101021130740016A000000677010111021310400147545040322KPS004KB00000193360053037645802TH63047249";
+
     let currentPointsToIssue = 0; let currentMode = "points"; 
     let timerInterval;
 
@@ -124,11 +142,21 @@
       const secretCode = "KUBBAR-" + points + "-" + timestamp + "-" + hash; 
       const liffUrl = "https://liff.line.me/" + SCAN_LIFF_ID + "?code=" + secretCode;
       
-      document.getElementById('qr-title-display').innerHTML = `สแกนรับ <span style="color: #27ae60;">${points}</span> แต้ม ☕`;
+      // ฉีดโครงสร้างหน้าต่างสะสมแต้มแบบปกติ
+      document.getElementById('dynamic-qr-header').innerHTML = `<div class="point-display" id="qr-title-display">สแกนรับ <span style="color: #27ae60;">${points}</span> แต้ม ☕</div>`;
+      document.getElementById('qr-img').style.border = "4px solid #c1f2a1";
       document.getElementById('qr-img').src = "https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=" + encodeURIComponent(liffUrl);
+      
+      document.getElementById('dynamic-qr-footer').innerHTML = `
+        <div id="timer-display" style="color:#8e44ad; font-weight:bold; font-size:13px; margin-top:8px;">รีเฟรชใหม่ใน: 05:00</div>
+        <button class="copy-btn" id="copy-btn" onclick="copyToClipboard()">📋 คัดลอกลิงก์ส่งให้ลูกค้า (สแกนเดี่ยว 2 ชม.)</button>
+        <p class="alert-text" id="qr-footer-desc" onclick="refreshQR()">
+          🔄 กดที่รูปคิวอาร์โค้ดเพื่อสุ่มรหัสใหม่<br>
+          <span style="font-size: 11px; color:#636e72;">(⚠️ QR บนจอนี้มีอายุ 5 นาที)</span>
+        </p>
+      `;
       document.getElementById('qr-container').style.display = "block";
       
-      // อัปเดตเวลานับถอยหลังเป็น 5 นาที
       startTimer(5);
     }
 
@@ -136,19 +164,22 @@
       clearInterval(timerInterval);
       let seconds = minutes * 60;
       const display = document.getElementById('timer-display');
+      if (!display) return;
       display.style.display = "block";
       
       timerInterval = setInterval(() => {
         let m = Math.floor(seconds / 60);
         let s = seconds % 60;
-        display.innerText = `รีเฟรชใหม่ใน: ${m}:${s < 10 ? '0'+s : s}`;
+        const liveDisplay = document.getElementById('timer-display');
+        if (liveDisplay) {
+          liveDisplay.innerText = `รีเฟรชใหม่ใน: ${m}:${s < 10 ? '0'+s : s}`;
+        }
         
-        // 🚨 SESSION RESET LOGIC: เมื่อหมดเวลา บังคับกลับไป 1 แต้มทันที
         if (--seconds < 0) {
           clearInterval(timerInterval);
           if (currentMode === "points") {
-            document.getElementById('custom-point').value = ""; // ล้างช่องกรอกมือ
-            generateBarQR(1, true); // สร้างคิวอาร์ 1 แต้มและนับถอยหลังใหม่
+            document.getElementById('custom-point').value = ""; 
+            generateBarQR(1, true); 
           }
         }
       }, 1000);
@@ -182,13 +213,45 @@
     function showStoreLineQR() {
       document.getElementById('custom-point').value = ""; currentPointsToIssue = 0; currentMode = "store_line";
       clearInterval(timerInterval);
-      document.getElementById('qr-title-display').innerHTML = `<span style="color: #06C755;">LINE Official Account</span> 💬`;
+      
+      document.getElementById('dynamic-qr-header').innerHTML = `<div class="point-display" id="qr-title-display"><span style="color: #06C755;">LINE Official Account</span> 💬</div>`;
+      document.getElementById('qr-img').style.border = "4px solid #06C755";
       document.getElementById('qr-img').src = "https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=" + encodeURIComponent(STORE_LINE_OA_LINK);
-      document.getElementById('timer-display').style.display = "none";
+      document.getElementById('dynamic-qr-footer').innerHTML = "";
+      document.getElementById('qr-container').style.display = "block";
+    }
+
+    // 💵 ฟังก์ชันสากลควบคุมการเรนเดอร์หน้าจอรับเงิน (Thai QR Payment Standard)
+    function showPaymentQR() {
+      document.getElementById('custom-point').value = ""; currentPointsToIssue = 0; currentMode = "payment";
+      clearInterval(timerInterval); // หยุดการรันไทเมอร์สะสมแต้มทันทีเพื่อป้องกัน State ตีกัน
+      
+      // ฉีดโครงสร้างแถบน้ำเงินและดีไซน์เลียนแบบป้ายของจริง
+      document.getElementById('dynamic-qr-header').innerHTML = `
+        <div class="thai-qr-header">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align:middle;"><path d="M4 4h6v6H4V4zm2 2v2h2V6H6zm8-2h6v6h-6V4zm2 2v2h2V6h-2zM4 14h6v6H4v-6zm2 2v2h2v-2H6zm10 0h2v2h-2v-2zm2-2h2v2h-2v-2zm-2 4h2v2h-2v-2zm-2-2h2v2h-2v-2zm0 4h2v2h-2v-2zm4 0h2v2h-2v-2z" fill="white"/></svg>
+          THAI QR PAYMENT
+        </div>
+        <div class="thai-qr-sub-bar">
+          <span>PromptPay</span> | <span>VISA</span> | <span>Mastercard</span> | <span>UnionPay</span>
+        </div>
+      `;
+      
+      document.getElementById('qr-img').style.border = "4px solid #004b87";
+      // ดึง API ป้อนค่าโครงสร้างข้อมูลเงินดิบตรงเข้าแผงวงจรภาพ
+      document.getElementById('qr-img').src = "https://api.qrserver.com/v1/create-qr-code/?size=350x350&data=" + encodeURIComponent(PROMPTPAY_RAW_DATA);
+      
+      // ฉีดข้อความระบุบัญชีและเลขอ้างอิงอิงตามป้ายหน้าร้าน
+      document.getElementById('dynamic-qr-footer').innerHTML = `
+        <div class="payment-footer-info">
+          <div class="payment-main-title">KUB Cafe</div>
+          <div class="payment-sub-detail">บัญชี: นาย ชัยนคร สีมา</div>
+          <div class="payment-ref-detail">เลขอ้างอิง: KPS004KB000001933600</div>
+        </div>
+      `;
       document.getElementById('qr-container').style.display = "block";
     }
     
-    // Safety Net: เมื่อเปิดเว็บขึ้นมาครั้งแรก ให้เคลียร์ค่า Input ป้องกันเบราว์เซอร์จำค่าเดิม
     window.addEventListener('load', function() {
       document.getElementById('custom-point').value = "";
     });
