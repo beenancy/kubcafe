@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
   <meta charset="UTF-8">
-  <title>KUB Cafe - Admin Panel (Realtime V.26.27)</title>
+  <title>KUB Cafe - Admin Control Panel (V.26.28)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
   
@@ -18,48 +18,22 @@
     .point-btn:active { transform: scale(0.95); background: #a8e6cf; }
     .line-btn { background: #06C755 !important; color: white !important; font-size: 14px !important; font-weight: bold !important; line-height: 1.2; display: flex; align-items: center; justify-content: center; }
     .line-btn:active { background: #05b04b !important; transform: scale(0.95); }
-    
-    /* 🔸 ปุ่ม TrueMoney Wallet ดีไซน์สีส้มเด่นชัดเจน */
     .true-btn { background: #ff6600 !important; color: white !important; font-size: 16px !important; font-weight: bold !important; line-height: 1.2; display: flex; align-items: center; justify-content: center; }
     .true-btn:active { background: #e05500 !important; transform: scale(0.95); }
-
-    /* 💵 ปุ่มสแกนเงิน ดีไซน์พรีเมียมตัดสีน้ำเงิน ค้าขายร่ำรวย */
     .pay-btn { background: #004b87 !important; color: white !important; font-size: 13px !important; font-weight: bold !important; line-height: 1.2; display: flex; align-items: center; justify-content: center; }
     .pay-btn:active { background: #003366 !important; transform: scale(0.95); }
     
     .custom-input-container { background: #f1f2f6; padding: 15px; border-radius: 15px; max-width: 500px; margin: 0 auto 20px auto; display: flex; align-items: center; justify-content: center; gap: 10px; }
     .custom-input { width: 80px; font-size: 22px; padding: 8px; text-align: center; border: 2px solid #c1f2a1; border-radius: 10px; font-weight: bold; outline: none; color: #2d3436; }
     
-    /* 🖥️ 🚨 ปรับปรุงโครงสร้าง Container ล็อกตำแหน่งให้อยู่ตรงกลางหน้าจออย่างถาวร */
-    .qr-container { 
-      margin-top: 10px; 
-      padding: 20px; 
-      background: #fff; 
-      border-radius: 20px; 
-      box-shadow: 0 10px 20px rgba(0,0,0,0.05); 
-      display: none; 
-      max-width: 320px; 
-      margin-left: auto; 
-      margin-right: auto; 
-      overflow: hidden;
-      min-height: 480px; /* 🔒 ล็อกความสูงขั้นต่ำ ป้องกันรูปเด้งขึ้นลง */
-      display: flex;
-      flex-direction: column;
-      justify-content: center; /* จัดเนื้อหาภายในให้อยู่กึ่งกลางแนวตั้งเสมอ */
-      align-items: center;
-    }
-    
-    .qr-box-inner { width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-    
-    img { border: 4px solid #c1f2a1; border-radius: 15px; width: 100%; height: auto; cursor: pointer; transition: 0.3s; margin: 0 auto; display: block; }
-    img:active { transform: scale(0.95); opacity: 0.7; }
-    .alert-text { color: #e74c3c; font-weight: bold; margin-top: 15px; font-size: 13px; cursor: pointer; }
-    .point-display { font-size: 22px; font-weight: 900; color: #2d3436; margin-bottom: 10px; width: 100%; }
+    /* 🖥️ กล่องควบคุมฝั่งบาริสต้า (ดีไซน์ให้กะทัดรัดขึ้นสำหรับกดยืนยันสถานะและส่งลิงก์) */
+    .control-status-card { margin-top: 10px; padding: 20px; background: #fff; border-radius: 20px; box-shadow: 0 10px 20px rgba(0,0,0,0.05); display: none; max-width: 320px; margin-left: auto; margin-right: auto; }
     .copy-btn { margin-top: 15px; padding: 12px 20px; font-size: 15px; background: #e0ccff; color: #2d3436; border: none; border-radius: 12px; cursor: pointer; font-weight: bold; width: 100%; box-shadow: 0 4px 6px rgba(0,0,0,0.03); transition: 0.2s; }
     .copy-btn:active { transform: scale(0.97); background: #d1b3ff; }
     #login-section { margin-top: 50px; }
     .pin-input { font-size: 24px; padding: 10px; width: 120px; text-align: center; letter-spacing: 5px; border-radius: 10px; border: 2px solid #ddd; margin-bottom: 15px; outline: none; }
     .login-btn { background: #2d3436; color: white; border: none; padding: 12px 25px; font-size: 16px; border-radius: 10px; font-weight: bold; cursor: pointer; }
+    .status-badge { display: inline-block; padding: 6px 15px; background: #e8f5e9; color: #2e7d32; font-weight: bold; border-radius: 20px; font-size: 14px; margin-top: 5px; }
   </style>
 </head>
 <body>
@@ -72,8 +46,8 @@
   </div>
 
   <div id="admin-section" style="display: none;">
-    <h2>ระบบจัดการหน้าร้าน KUB Cafe</h2>
-    <p class="desc">เปิดหน้าจอนี้ได้หลายเครื่องพร้อมกัน ระบบจะซิงค์รูปภาพตามเครื่องที่กดทันทีค่ะ</p>
+    <h2>แผงควบคุม KUB Cafe (บาริสต้า)</h2>
+    <p class="desc">กดเลือกคำสั่งด้านล่าง หน้าจอเคาน์เตอร์ของลูกค้าจะสลับภาพตามทันที</p>
     
     <div class="btn-grid">
       <button class="point-btn" onclick="selectPoints(1, true)">1</button>
@@ -95,11 +69,14 @@
       <input type="number" inputmode="numeric" pattern="[0-9]*" id="custom-point" class="custom-input" min="1" max="20" placeholder="0" oninput="handleCustomInput(this.value)">
     </div>
 
-    <div class="qr-container" id="qr-container" style="display: none;">
-      <div class="qr-box-inner">
-        <div id="dynamic-qr-header"></div>
-        <img id="qr-img" src="" onclick="refreshQR()">
-        <div id="dynamic-qr-footer"></div>
+    <div class="control-status-card" id="control-status-card">
+      <div style="font-weight: bold; color: #555;">สถานะหน้าจอเคาน์เตอร์ปัจจุบัน:</div>
+      <div id="live-status-text" class="status-badge">กำลังรอคำสั่ง...</div>
+      
+      <div id="remote-link-section" style="display: none; margin-top: 15px; border-top: 1px dashed #eee; padding-top: 15px;">
+        <div style="font-size: 13px; color:#666; font-weight: bold;">คิวอาร์สะสมแต้มล่าสุด:</div>
+        <button class="copy-btn" id="copy-btn" onclick="copyToClipboard()">📋 คัดลอกลิงก์ส่งให้ลูกค้าทางไลน์</button>
+        <div style="font-size: 11px; color:#e74c3c; font-weight:bold; margin-top:10px; cursor:pointer;" onclick="refreshQR()">🔄 สุ่มรหัสใหม่ (แต้มเดิม)</div>
       </div>
     </div>
   </div>
@@ -108,9 +85,6 @@
     const API_URL = "https://script.google.com/macros/s/AKfycbxpWU8NlPwIk4EChzbG93IJ0RxFf3qSbs4TDT5MSVOgVWLO3cQAYseD_xAWzOeewJvHrg/exec";
     const SCAN_LIFF_ID = "2010206186-u1XRJldq"; 
     const SECRET_SALT = 'KUB_SECRET_TOKEN_2026'; 
-    const STORE_LINE_OA_LINK = "https://line.me/R/ti/p/@848dmzja"; 
-    const PAYMENT_IMAGE_URL = "https://raw.githubusercontent.com/beenancy/kubcafe/eccfab9beafd7e3dbab13523292cd3cb15dbff74/qr%20kshop.jpg";
-    const TRUE_IMAGE_URL = "https://raw.githubusercontent.com/beenancy/kubcafe/914d5947e4c635a2bf03f3f123dd837c2b0b29a2/truescan.jpg";
 
     const firebaseConfig = {
       apiKey: "AIzaSyAi-8gxkAs3N4b5r3EULZHckqq3tHa6tlE",
@@ -125,9 +99,8 @@
 
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
-
-    let timerInterval;
     let currentGlobalState = {};
+    let localTimer;
 
     async function checkPIN() {
       const pinInput = document.getElementById('pin-code').value;
@@ -193,114 +166,57 @@
       db.ref('pos_display').on('value', (snapshot) => {
         const data = snapshot.val();
         if (!data) return;
-        currentGlobalState = data; 
-        renderPOSDisplay(data);
+        currentGlobalState = data;
+        updateAdminControlUI(data);
       });
     }
 
-    function renderPOSDisplay(data) {
-      clearInterval(timerInterval); 
-      const imgElement = document.getElementById('qr-img');
-      const containerElement = document.getElementById('qr-container');
+    function updateAdminControlUI(data) {
+      clearInterval(localTimer);
+      const statusText = document.getElementById('live-status-text');
+      const remoteSection = document.getElementById('remote-link-section');
+      document.getElementById('control-status-card').style.display = "block";
       
       if (data.mode === "points") {
-        const points = data.points;
-        const timestamp = data.timestamp;
+        statusText.innerText = `แสดงคิวอาร์สะสมแต้ม [ ${data.points} แต้ม ]`;
+        statusText.style.background = "#e8f5e9";
+        statusText.style.color = "#2e7d32";
+        remoteSection.style.display = "block";
         
-        const rawString = points + "-" + timestamp + "-" + SECRET_SALT;
-        const hash = CryptoJS.MD5(rawString).toString();
-        const secretCode = "KUBBAR-" + points + "-" + timestamp + "-" + hash; 
-        const liffUrl = "https://liff.line.me/" + SCAN_LIFF_ID + "?code=" + secretCode;
-        
-        document.getElementById('dynamic-qr-header').innerHTML = `<div class="point-display" id="qr-title-display">สแกนรับ <span style="color: #27ae60;">${points}</span> แต้ม ☕</div>`;
-        imgElement.style.border = "4px solid #c1f2a1";
-        imgElement.style.padding = "0";
-        imgElement.src = "https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=" + encodeURIComponent(liffUrl);
-        
-        document.getElementById('dynamic-qr-footer').innerHTML = `
-          <div id="timer-display" style="color:#8e44ad; font-weight:bold; font-size:13px; margin-top:8px;">รีเฟรชใหม่ใน: 05:00</div>
-          <button class="copy-btn" id="copy-btn" onclick="copyToClipboard('${liffUrl}')">📋 คัดลอกลิงก์ส่งให้ลูกค้า (สแกนเดี่ยว 2 ชม.)</button>
-          <p class="alert-text" id="qr-footer-desc" onclick="refreshQR()">
-            🔄 กดที่รูปคิวอาร์โค้ดเพื่อสุ่มรหัสใหม่<br>
-            <span style="font-size: 11px; color:#636e72;">(⚠️ QR บนจอนี้มีอายุ 5 นาที)</span>
-          </p>
-        `;
-        containerElement.style.display = "flex"; // ซิงค์กึ่งกลางด้วย Flexbox
-        
-        startSynchronizedTimer(timestamp);
-      } 
-      
-      else if (data.mode === "store_line") {
-        document.getElementById('dynamic-qr-header').innerHTML = `<div class="point-display" id="qr-title-display"><span style="color: #06C755;">LINE Official Account</span> 💬</div>`;
-        imgElement.style.border = "4px solid #06C755";
-        imgElement.style.padding = "0";
-        imgElement.src = "https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=" + encodeURIComponent(STORE_LINE_OA_LINK);
-        document.getElementById('dynamic-qr-footer').innerHTML = "";
-        containerElement.style.display = "flex";
-      } 
-      
-      else if (data.mode === "payment") {
-        document.getElementById('dynamic-qr-header').innerHTML = "";
-        document.getElementById('dynamic-qr-footer').innerHTML = "";
-        
-        imgElement.style.border = "none";
-        imgElement.style.padding = "0";
-        imgElement.src = PAYMENT_IMAGE_URL; 
-        
-        document.getElementById('dynamic-qr-footer').innerHTML = `
-          <div style="margin-top: 15px; padding: 10px; background: #fff3cd; border: 1px solid #ffe69c; color: #856404; border-radius: 10px; font-size: 12px; font-weight: bold; line-height: 1.4; width: 100%; box-sizing: border-box;">
-            ⚠️ กรุณาใช้ <span style="color:#d35400;">"แอปธนาคาร"</span> สแกนจ่ายเท่านั้น<br>
-            <span style="font-size: 10px; color:#666;">(การใช้กล้อง LINE สแกน ระบบจะดึงไปที่ LINE BK)</span>
-          </div>
-        `;
-        containerElement.style.display = "flex";
-      }
-      
-      else if (data.mode === "true_payment") {
-        document.getElementById('dynamic-qr-header').innerHTML = "";
-        document.getElementById('dynamic-qr-footer').innerHTML = "";
-        
-        imgElement.style.border = "none";
-        imgElement.style.padding = "0";
-        imgElement.src = TRUE_IMAGE_URL; 
-        
-        document.getElementById('dynamic-qr-footer').innerHTML = `
-          <div style="margin-top: 15px; padding: 10px; background: #e3f2fd; border: 1px solid #90caf9; color: #0d47a1; border-radius: 10px; font-size: 12px; font-weight: bold; line-height: 1.4; width: 100%; box-sizing: border-box;">
-            🔸 รองรับการสแกนผ่าน <span style="color:#ff6600;">TrueMoney Wallet</span> และแอปธนาคาร
-          </div>
-        `;
-        containerElement.style.display = "flex";
-      }
-    }
-
-    function startSynchronizedTimer(startTimeMs) {
-      const display = document.getElementById('timer-display');
-      if (!display) return;
-      
-      const limitSeconds = 5 * 60; 
-      
-      timerInterval = setInterval(() => {
-        const nowMs = new Date().getTime();
-        const elapsedSeconds = Math.floor((nowMs - startTimeMs) / 1000);
-        const remainingSeconds = limitSeconds - elapsedSeconds;
-        
-        if (remainingSeconds < 0) {
-          clearInterval(timerInterval);
-          if (currentGlobalState.mode === "points") {
-            selectPoints(1, true);
+        // ฟังก์ชันช่วยนับเวลาบนจอเครื่องบาริสต้าเพื่อความซิงค์
+        let limit = 5 * 60;
+        localTimer = setInterval(() => {
+          let elapsed = Math.floor((new Date().getTime() - data.timestamp) / 1000);
+          let remain = limit - elapsed;
+          if (remain < 0) {
+            clearInterval(localTimer);
+            selectPoints(1, true); // สั่งล้างยอดกลับเป็น 1 แต้มเมื่อหมดเวลา
+            return;
           }
-          return;
-        }
-        
-        let m = Math.floor(remainingSeconds / 60);
-        let s = remainingSeconds % 60;
-        display.innerText = `รีเฟรชใหม่ใน: ${m}:${s < 10 ? '0'+s : s}`;
-      }, 1000);
+        }, 1000);
+      } 
+      else if (data.mode === "store_line") {
+        statusText.innerText = "แสดงคิวอาร์ LINE ร้าน 💬";
+        statusText.style.background = "#e8f5e9";
+        statusText.style.color = "#06C755";
+        remoteSection.style.display = "none";
+      } 
+      else if (data.mode === "payment") {
+        statusText.innerText = "แสดงป้าย QR รับเงิน (ธนาคาร) 💵";
+        statusText.style.background = "#e3f2fd";
+        statusText.style.color = "#0d47a1";
+        remoteSection.style.display = "none";
+      } 
+      else if (data.mode === "true_payment") {
+        statusText.innerText = "แสดงป้าย QR TrueMoney 🔸";
+        statusText.style.background = "#fff3e0";
+        statusText.style.color = "#e65100";
+        remoteSection.style.display = "none";
+      }
     }
 
-    function copyToClipboard(generatedLiffUrl) {
+    function copyToClipboard() {
       if (currentGlobalState.mode !== "points") return;
-      
       const timestamp = currentGlobalState.timestamp;
       const points = currentGlobalState.points;
       const rawString = points + "-" + timestamp + "-" + SECRET_SALT;
@@ -312,12 +228,12 @@
       navigator.clipboard.writeText(text).then(() => {
         const btn = document.getElementById('copy-btn');
         btn.innerText = "✅ คัดลอกสำเร็จ (รหัส KUB-)";
-        setTimeout(() => { btn.innerText = "📋 คัดลอกลิงก์ส่งให้ลูกค้า (สแกนเดี่ยว 2 ชม.)"; }, 2500);
+        setTimeout(() => { btn.innerText = "📋 คัดลอกลิงก์ส่งให้ลูกค้าทางไลน์"; }, 2500);
       }).catch(err => {
-         alert("ไม่สามารถคัดลอกลิงก์อัตโนมัติได้ กรุณาก๊อปปี้จาก URL โดยตรง");
+         alert("คัดลอกไม่สำเร็จ กรุณาก๊อปปี้ลิงก์โดยตรง");
       });
     }
-    
+
     window.addEventListener('load', function() {
       document.getElementById('custom-point').value = "";
     });
