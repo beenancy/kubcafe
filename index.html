@@ -1,116 +1,208 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>KUB Cafe Member</title>
-    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;600&display=swap" rel="stylesheet">
-    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-    <style>
-        body {
-            font-family: 'Prompt', sans-serif;
-            background-color: #f7fafc;
-            margin: 0;
-            padding: 20px;
-            text-align: center;
-            color: #2d3436;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 90vh;
-        }
-        .header-text { margin-bottom: 30px; color: #4a5568; font-weight: 600; font-size: 18px; }
-        .sub-text { font-size: 14px; font-weight: 400; color: #a0aec0; margin-top: 5px; }
-        .point-circle {
-            width: 200px; height: 200px; border-radius: 50%;
-            background: linear-gradient(135deg, #c1f2a1, #e0ccff);
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.05); border: 8px solid white; margin-bottom: 40px;
-        }
-        .point-number { font-size: 90px; font-weight: bold; line-height: 1; color: #2d3436; }
-        .point-label { font-size: 16px; letter-spacing: 2px; color: #4a5568; margin-top: -5px; }
-        .info-box {
-            background: white; padding: 20px; border-radius: 16px; font-size: 14px; color: #636e72;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.02); width: 100%; max-width: 350px; margin-bottom: 20px; line-height: 1.6;
-        }
-        .divider { border-top: 1px dashed #e2e8f0; margin: 15px 0; }
-        .btn-close {
-            display: block; width: 100%; max-width: 350px; padding: 16px; background: #edf2f7; color: #4a5568;
-            border: none; border-radius: 25px; font-size: 16px; font-weight: 600; cursor: pointer; transition: background 0.3s;
-        }
-        .btn-close:active { background: #e2e8f0; }
-    </style>
+  <meta charset="UTF-8">
+  <title>KUB Cafe - Customer Display</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+  
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+  
+  <style>
+    body { 
+      text-align: center; 
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+      margin: 0; 
+      padding: 20px; 
+      background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+      color: #2d3436; 
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .qr-container { 
+      padding: 30px 20px; 
+      background: #ffffff; 
+      border-radius: 24px; 
+      box-shadow: 0 15px 35px rgba(0,0,0,0.08); 
+      width: 100%;
+      max-width: 360px; 
+      min-height: 500px; 
+      display: flex;
+      flex-direction: column;
+      justify-content: center; 
+      align-items: center;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .fade-in {
+      animation: fadeIn 0.4s ease-in-out forwards;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    #standby-screen { display: flex; flex-direction: column; align-items: center; width: 100%; }
+    .cafe-logo-placeholder { width: 100px; height: 100px; background: #8C7A6B; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 36px; font-weight: bold; margin-bottom: 20px; box-shadow: 0 10px 20px rgba(140, 122, 107, 0.3); }
+    .welcome-text { font-size: 24px; font-weight: 900; color: #4A3F35; margin-bottom: 5px; }
+    .sub-welcome-text { font-size: 14px; color: #B0A69D; margin-bottom: 30px; }
+    .standby-qr-title { font-size: 12px; font-weight: bold; color: #6B705C; letter-spacing: 1px; margin-bottom: 10px; text-transform: uppercase; }
+
+    #active-screen { display: none; flex-direction: column; align-items: center; width: 100%; }
+    img.qr-active-img { border: 4px solid #c1f2a1; border-radius: 18px; width: 280px; height: 280px; margin: 0 auto; display: block; object-fit: contain; }
+    .point-display { font-size: 26px; font-weight: 900; color: #2d3436; margin-bottom: 15px; width: 100%; }
+    .footer-note { margin-top: 15px; padding: 12px; background: #f8f9fa; border-radius: 12px; font-size: 13px; font-weight: bold; line-height: 1.4; width: 100%; box-sizing: border-box; }
+    .timer-text { color: #8e44ad; font-weight: bold; font-size: 14px; margin-top: 15px; background: #f3e5f5; padding: 5px 15px; border-radius: 20px; display: inline-block; }
+  </style>
 </head>
 <body>
 
-    <div class="header-text">
-        แต้มสะสมของคุณปัจจุบัน
-        <div class="sub-text">Your Current Points</div>
+  <div class="qr-container">
+    
+    <div id="standby-screen" class="fade-in">
+      <div class="cafe-logo-placeholder">☕</div>
+      <div class="welcome-text">KUB CAFÉ</div>
+      <div class="sub-welcome-text">ยินดีต้อนรับ กรุณาสั่งเครื่องดื่มที่บาร์ค่ะ</div>
+      
+      <div class="standby-qr-title">SCAN TO ADD FRIEND</div>
+      <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=https://line.me/R/ti/p/@848dmzja" style="width: 150px; height: 150px; border-radius: 12px; border: 2px solid #E8E2D9;">
     </div>
 
-    <div class="point-circle">
-        <div class="point-number" id="pointDisplay">...</div>
-        <div class="point-label">POINTS</div>
+    <div id="active-screen">
+      <div id="dynamic-qr-header"></div>
+      <img id="qr-img" class="qr-active-img" src="">
+      <div id="dynamic-qr-footer"></div>
     </div>
 
-    <div class="info-box">
-        <span style="color: #3498db;">ℹ️</span> ครบ 10 แต้ม รับส่วนลด 1 แก้ว 50%<br>
-        (กดปุ่ม <b>"Get Rewards"</b> ในแชทได้เลยค่ะ)
-        <div class="divider"></div>
-        Collect 10 pts to get 50% off 1 drink<br>
-        (Press <b>"Get Rewards"</b> button in chat)
-    </div>
+  </div>
 
-    <button class="btn-close" onclick="liff.closeWindow()">✕ ปิดหน้าต่างนี้ / Close</button>
+  <script>
+    const SCAN_LIFF_ID = "2010206186-u1XRJldq"; 
+    const SECRET_SALT = 'KUB_SECRET_TOKEN_2026'; 
+    const STORE_LINE_OA_LINK = "https://line.me/R/ti/p/@848dmzja"; 
+    const PAYMENT_IMAGE_URL = "https://raw.githubusercontent.com/beenancy/kubcafe/eccfab9beafd7e3dbab13523292cd3cb15dbff74/qr%20kshop.jpg";
+    const TRUE_IMAGE_URL = "https://raw.githubusercontent.com/beenancy/kubcafe/914d5947e4c635a2bf03f3f123dd837c2b0b29a2/truescan.jpg";
 
-    <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbxpWU8NlPwIk4EChzbG93IJ0RxFf3qSbs4TDT5MSVOgVWLO3cQAYseD_xAWzOeewJvHrg/exec"; 
+    const firebaseConfig = {
+      apiKey: "AIzaSyAi-8gxkAs3N4b5r3EULZHckqq3tHa6tlE",
+      authDomain: "kub-cafe-pos.firebaseapp.com",
+      databaseURL: "https://kub-cafe-pos-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "kub-cafe-pos",
+      storageBucket: "kub-cafe-pos.firebasestorage.app",
+      messagingSenderId: "980123459582",
+      appId: "1:980123459582:web:8d1b54a7e1317975e06aaf",
+      measurementId: "G-FTTX7BDSYD"
+    };
 
-        async function initializeLiff() {
-            try {
-                await liff.init({ liffId: "2010206186-8JwWgQug" }); 
-                if (liff.isLoggedIn()) {
-                    const profile = await liff.getProfile();
-                    fetchUserPoints(profile.userId, profile.displayName || '');
-                } else {
-                    liff.login();
-                }
-            } catch (err) {
-                document.getElementById('pointDisplay').innerText = "Err";
-                console.error("LIFF Init Error:", err);
-            }
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    let timerInterval;
+
+    const standbyScreen = document.getElementById('standby-screen');
+    const activeScreen = document.getElementById('active-screen');
+    const imgElement = document.getElementById('qr-img');
+    const headerElement = document.getElementById('dynamic-qr-header');
+    const footerElement = document.getElementById('dynamic-qr-footer');
+
+    db.ref('pos_display').on('value', (snapshot) => {
+      const data = snapshot.val();
+      if (!data || data.mode === "idle") {
+        showStandbyScreen();
+        return;
+      }
+      renderCustomerDisplay(data);
+    });
+
+    function showStandbyScreen() {
+      clearInterval(timerInterval);
+      activeScreen.style.display = "none";
+      standbyScreen.style.display = "flex";
+      standbyScreen.classList.remove("fade-in");
+      void standbyScreen.offsetWidth; 
+      standbyScreen.classList.add("fade-in");
+    }
+
+    function renderCustomerDisplay(data) {
+      clearInterval(timerInterval); 
+      
+      standbyScreen.style.display = "none";
+      activeScreen.style.display = "flex";
+      activeScreen.classList.remove("fade-in");
+      void activeScreen.offsetWidth;
+      activeScreen.classList.add("fade-in");
+      
+      if (data.mode === "points") {
+        const points = data.points;
+        const timestamp = data.timestamp;
+        const rawString = points + "-" + timestamp + "-" + SECRET_SALT;
+        const hash = CryptoJS.MD5(rawString).toString();
+        const secretCode = "KUBBAR-" + points + "-" + timestamp + "-" + hash; 
+        const liffUrl = "https://liff.line.me/" + SCAN_LIFF_ID + "?code=" + secretCode;
+        
+        headerElement.innerHTML = `<div class="point-display">สแกนรับ <span style="color: #27ae60;">${points}</span> แต้ม ☕</div>`;
+        imgElement.style.border = "4px solid #c1f2a1";
+        imgElement.src = "https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=" + encodeURIComponent(liffUrl);
+        
+        footerElement.innerHTML = `
+          <div id="timer-display" class="timer-text">รีเฟรชใหม่ใน: 05:00</div>
+          <div style="font-size: 11px; color:#636e72; margin-top:10px;">⚠️ คิวอาร์โค้ดสแกนรับแต้มมีอายุ 5 นาที</div>
+        `;
+        startSynchronizedTimer(timestamp);
+      } 
+      else if (data.mode === "store_line") {
+        headerElement.innerHTML = `<div class="point-display"><span style="color: #06C755;">LINE Official Account</span> 💬</div>`;
+        imgElement.style.border = "4px solid #06C755";
+        imgElement.src = "https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=" + encodeURIComponent(STORE_LINE_OA_LINK);
+        footerElement.innerHTML = "";
+      } 
+      else if (data.mode === "payment") {
+        headerElement.innerHTML = "";
+        imgElement.style.border = "none";
+        imgElement.src = PAYMENT_IMAGE_URL; 
+        footerElement.innerHTML = `
+          <div class="footer-note" style="background: #fff3cd; color: #856404; border: 1px solid #ffe69c;">
+            ⚠️ กรุณาใช้ <span style="color:#d35400;">"แอปธนาคาร"</span> สแกนจ่ายเท่านั้น<br>
+            <span style="font-size: 10px; color:#666; font-weight: normal;">(สแกนด้วย LINE จะดึงไปที่ LINE BK)</span>
+          </div>
+        `;
+      } 
+      else if (data.mode === "true_payment") {
+        headerElement.innerHTML = "";
+        imgElement.style.border = "none";
+        imgElement.src = TRUE_IMAGE_URL; 
+        footerElement.innerHTML = `
+          <div class="footer-note" style="background: #e3f2fd; color: #0d47a1; border: 1px solid #90caf9;">
+            🔸 รองรับการสแกนผ่าน <span style="color:#ff6600;">TrueMoney Wallet</span> และแอปธนาคาร
+          </div>
+        `;
+      }
+    }
+
+    function startSynchronizedTimer(startTimeMs) {
+      const display = document.getElementById('timer-display');
+      if (!display) return;
+      const limitSeconds = 5 * 60; 
+      timerInterval = setInterval(() => {
+        const nowMs = new Date().getTime();
+        const elapsedSeconds = Math.floor((nowMs - startTimeMs) / 1000);
+        const remainingSeconds = limitSeconds - elapsedSeconds;
+        
+        if (remainingSeconds < 0) { 
+          clearInterval(timerInterval); 
+          showStandbyScreen(); // เด้งกลับหน้าต้อนรับเมื่อหมดเวลา
+          return; 
         }
-
-        function fetchUserPoints(userId, displayName) {
-            // ทำการทำความสะอาดข้อความเพื่อลดการเกิด URI Malformed จากตัวอักษรพิเศษ (Sanitization)
-            const cleanedName = encodeURIComponent(displayName.replace(/[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF]/g, ''));
-            const url = `${API_URL}?action=getProfile&userId=${userId}&displayName=${cleanedName}`;
-            
-            fetch(url)
-                .then(response => {
-                    if (!response.ok) throw new Error('Network response error');
-                    return response.json();
-                })
-                .then(data => {
-                    if (data && data.status === "success") {
-                        document.getElementById('pointDisplay').innerText = data.points;
-                    } else {
-                        document.getElementById('pointDisplay').innerText = "0";
-                    }
-                })
-                .catch(error => {
-                    document.getElementById('pointDisplay').innerText = "-";
-                    console.error("Fetch Error:", error);
-                });
-        }
-
-        // มั่นใจได้ว่า DOM และ SDK โหลดเสร็จทั้งหมดอย่างแน่นอนตามหลัก Clean Architecture
-        if (document.readyState === "complete" || document.readyState === "interactive") {
-            initializeLiff();
-        } else {
-            document.addEventListener("DOMContentLoaded", initializeLiff);
-        }
-    </script>
+        
+        let m = Math.floor(remainingSeconds / 60);
+        let s = remainingSeconds % 60;
+        display.innerText = `รีเฟรชใหม่ใน: ${m}:${s < 10 ? '0'+s : s}`;
+      }, 1000);
+    }
+  </script>
 </body>
 </html>
