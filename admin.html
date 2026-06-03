@@ -2,95 +2,96 @@
 <html lang="th">
 <head>
   <meta charset="UTF-8">
-  <title>KUB Cafe - Customer Display</title>
+  <title>KUB Cafe - Admin Control Panel</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
   
-  <!-- 🛢️ ติดตั้ง Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
   
   <style>
-    /* 🎨 พื้นหลังปรับให้ดูพรีเมียม โทนคาเฟ่อบอุ่น (สามารถเปลี่ยนเป็น background-image ได้) */
-    body { 
-      text-align: center; 
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-      margin: 0; 
-      padding: 20px; 
-      background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%); /* พื้นหลังไล่สีเรียบหรู */
-      color: #2d3436; 
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
+    body { text-align: center; font-family: sans-serif; padding: 20px; background: #fdfdfd; color: #2d3436; }
+    h2 { font-weight: 800; margin-bottom: 5px; }
+    p.desc { color: #636e72; font-size: 14px; margin-bottom: 20px; }
+    .btn-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; max-width: 500px; margin: 0 auto 15px auto; }
+    .point-btn { padding: 15px 0; font-size: 20px; background: #c1f2a1; color: #2d3436; border: none; border-radius: 12px; cursor: pointer; font-weight: 900; box-shadow: 0 4px 6px rgba(0,0,0,0.05); transition: 0.2s; }
+    .point-btn:active { transform: scale(0.95); background: #a8e6cf; }
+    .line-btn { background: #06C755 !important; color: white !important; font-size: 14px !important; font-weight: bold !important; line-height: 1.2; display: flex; align-items: center; justify-content: center; }
+    .line-btn:active { background: #05b04b !important; transform: scale(0.95); }
+    .true-btn { background: #ff6600 !important; color: white !important; font-size: 16px !important; font-weight: bold !important; line-height: 1.2; display: flex; align-items: center; justify-content: center; }
+    .true-btn:active { background: #e05500 !important; transform: scale(0.95); }
+    .pay-btn { background: #004b87 !important; color: white !important; font-size: 13px !important; font-weight: bold !important; line-height: 1.2; display: flex; align-items: center; justify-content: center; }
+    .pay-btn:active { background: #003366 !important; transform: scale(0.95); }
     
-    /* 🖥️ กล่องหลัก ใส่ลูกเล่น Shadow และขอบมนให้ดูเหมือน Card */
-    .qr-container { 
-      padding: 30px 20px; 
-      background: #ffffff; 
-      border-radius: 24px; 
-      box-shadow: 0 15px 35px rgba(0,0,0,0.08); 
-      width: 100%;
-      max-width: 360px; 
-      min-height: 500px; 
-      display: flex;
-      flex-direction: column;
-      justify-content: center; 
-      align-items: center;
-      position: relative;
-      overflow: hidden;
-    }
+    .custom-input-container { background: #f1f2f6; padding: 15px; border-radius: 15px; max-width: 500px; margin: 0 auto 20px auto; display: flex; align-items: center; justify-content: center; gap: 10px; }
+    .custom-input { width: 80px; font-size: 22px; padding: 8px; text-align: center; border: 2px solid #c1f2a1; border-radius: 10px; font-weight: bold; outline: none; color: #2d3436; }
     
-    /* 🎬 Animation เฟดอินแบบนุ่มนวลเวลาเปลี่ยนหน้าจอ */
-    .fade-in {
-      animation: fadeIn 0.4s ease-in-out forwards;
-    }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
+    .control-status-card { margin-top: 10px; padding: 20px; background: #fff; border-radius: 20px; box-shadow: 0 10px 20px rgba(0,0,0,0.05); display: none; max-width: 320px; margin-left: auto; margin-right: auto; }
+    .copy-btn { margin-top: 5px; padding: 12px 20px; font-size: 15px; background: #e0ccff; color: #2d3436; border: none; border-radius: 12px; cursor: pointer; font-weight: bold; width: 100%; box-shadow: 0 4px 6px rgba(0,0,0,0.03); transition: 0.2s; }
+    .copy-btn:active { transform: scale(0.97); background: #d1b3ff; }
+    #login-section { margin-top: 50px; }
+    .pin-input { font-size: 24px; padding: 10px; width: 120px; text-align: center; letter-spacing: 5px; border-radius: 10px; border: 2px solid #ddd; margin-bottom: 15px; outline: none; }
+    .login-btn { background: #2d3436; color: white; border: none; padding: 12px 25px; font-size: 16px; border-radius: 10px; font-weight: bold; cursor: pointer; }
+    .status-badge { display: inline-block; padding: 6px 15px; background: #e8f5e9; color: #2e7d32; font-weight: bold; border-radius: 20px; font-size: 14px; margin-top: 5px; margin-bottom: 5px; }
 
-    /* 🛑 สถานะ Standby (ตอนที่ยังไม่ส่ง QR) */
-    #standby-screen { display: flex; flex-direction: column; align-items: center; width: 100%; }
-    .cafe-logo-placeholder { width: 100px; height: 100px; background: #8C7A6B; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 36px; font-weight: bold; margin-bottom: 20px; box-shadow: 0 10px 20px rgba(140, 122, 107, 0.3); }
-    .welcome-text { font-size: 24px; font-weight: 900; color: #4A3F35; margin-bottom: 5px; }
-    .sub-welcome-text { font-size: 14px; color: #B0A69D; margin-bottom: 30px; }
-    .standby-qr-title { font-size: 12px; font-weight: bold; color: #6B705C; letter-spacing: 1px; margin-bottom: 10px; text-transform: uppercase; }
-
-    /* 🟢 สถานะ Active (ตอนที่ส่ง QR มาแล้ว) */
-    #active-screen { display: none; flex-direction: column; align-items: center; width: 100%; }
-    img.qr-active-img { border: 4px solid #c1f2a1; border-radius: 18px; width: 280px; height: 280px; margin: 0 auto; display: block; object-fit: contain; }
-    .point-display { font-size: 26px; font-weight: 900; color: #2d3436; margin-bottom: 15px; width: 100%; }
-    .footer-note { margin-top: 15px; padding: 12px; background: #f8f9fa; border-radius: 12px; font-size: 13px; font-weight: bold; line-height: 1.4; width: 100%; box-sizing: border-box; }
-    .timer-text { color: #8e44ad; font-weight: bold; font-size: 14px; margin-top: 15px; background: #f3e5f5; padding: 5px 15px; border-radius: 20px; display: inline-block; }
+    /* 🖥️ คิวอาร์โค้ดขนาดใหญ่สำหรับสแกนแทนจอหลักได้ */
+    img { border: 4px solid #c1f2a1; border-radius: 15px; width: 100%; height: auto; cursor: pointer; transition: 0.3s; margin: 15px auto 5px auto; display: block; }
+    img:active { transform: scale(0.95); opacity: 0.7; }
+    .alert-text { color: #e74c3c; font-weight: bold; margin-top: 10px; font-size: 13px; cursor: pointer; }
+    .point-display { font-size: 22px; font-weight: 900; color: #2d3436; margin-bottom: 5px; width: 100%; }
   </style>
 </head>
 <body>
+  <div id="login-section">
+    <h2>กรุณากรอกรหัส PIN</h2>
+    <p class="desc">เฉพาะพนักงาน KUB Cafe เท่านั้น</p>
+    <input type="password" inputmode="numeric" pattern="[0-9]*" id="pin-code" class="pin-input" maxlength="4" placeholder="****">
+    <br>
+    <button class="login-btn" id="login-submit-btn" onclick="checkPIN()">เข้าสู่ระบบ</button>
+  </div>
 
-  <div class="qr-container">
+  <div id="admin-section" style="display: none;">
+    <h2>แผงควบคุม KUB Cafe (บาริสต้า)</h2>
+    <p class="desc">กดคำสั่งเพื่อส่งภาพไปจอหลัก หรือให้ลูกค้าสแกนจากจอนี้ได้โดยตรง</p>
     
-    <!-- 💤 โหมด Standby (แสดงระหว่างรอลูกค้าสั่งน้ำ) -->
-    <div id="standby-screen" class="fade-in">
-      <div class="cafe-logo-placeholder">☕</div>
-      <div class="welcome-text">KUB CAFÉ</div>
-      <div class="sub-welcome-text">ยินดีต้อนรับ กรุณาสั่งเครื่องดื่มที่บาร์ค่ะ</div>
+    <div class="btn-grid">
+      <button class="point-btn" onclick="selectPoints(1, true)">1</button>
+      <button class="point-btn" onclick="selectPoints(2, true)">2</button>
+      <button class="point-btn" onclick="selectPoints(3, true)">3</button>
+      <button class="point-btn" onclick="selectPoints(4, true)">4</button>
+      <button class="point-btn" onclick="selectPoints(5, true)">5</button>
+      <button class="point-btn line-btn" onclick="selectStoreLine()">LINE<br>ร้าน</button>
+      <button class="point-btn" onclick="selectPoints(6, true)">6</button>
+      <button class="point-btn" onclick="selectPoints(7, true)">7</button>
+      <button class="point-btn" onclick="selectPoints(8, true)">8</button>
+      <button class="point-btn" onclick="selectPoints(9, true)">9</button>
+      <button class="point-btn true-btn" onclick="selectTruePayment()">True</button>
+      <button class="point-btn pay-btn" onclick="selectPayment()">QR<br>รับเงิน</button>
+    </div>
+
+    <div class="custom-input-container">
+      <label style="font-weight:bold; color:#2d3436;">ระบุแต้มเอง:</label>
+      <input type="number" inputmode="numeric" pattern="[0-9]*" id="custom-point" class="custom-input" min="1" max="20" placeholder="0" oninput="handleCustomInput(this.value)">
+    </div>
+
+    <div class="control-status-card" id="control-status-card">
+      <div style="font-weight: bold; color: #555; font-size: 13px;">สถานะระบบ:</div>
+      <div id="live-status-text" class="status-badge">กำลังรอคำสั่ง...</div>
       
-      <!-- โชว์ QR LINE ร้านไว้รับแขก (แทนที่จะปล่อยจอโล่ง) -->
-      <div class="standby-qr-title">SCAN TO ADD FRIEND</div>
-      <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=https://line.me/R/ti/p/@848dmzja" style="width: 150px; height: 150px; border-radius: 12px; border: 2px solid #E8E2D9;">
-    </div>
+      <div id="remote-link-section" style="display: none; margin-top: 5px; border-bottom: 1px dashed #eee; padding-bottom: 15px;">
+        <button class="copy-btn" id="copy-btn" onclick="copyToClipboard()">📋 คัดลอกลิงก์ส่งให้ลูกค้าทางไลน์</button>
+      </div>
 
-    <!-- 🟢 โหมด Active (แสดงตอนบาริสต้ากดปุ่ม) -->
-    <div id="active-screen">
-      <div id="dynamic-qr-header"></div>
-      <img id="qr-img" class="qr-active-img" src="">
-      <div id="dynamic-qr-footer"></div>
+      <div style="margin-top: 15px;">
+        <div id="dynamic-qr-header"></div>
+        <img id="qr-img" src="" onclick="refreshQR()">
+        <div id="dynamic-qr-footer"></div>
+      </div>
     </div>
-
   </div>
 
   <script>
+    const API_URL = "https://script.google.com/macros/s/AKfycbxpWU8NlPwIk4EChzbG93IJ0RxFf3qSbs4TDT5MSVOgVWLO3cQAYseD_xAWzOeewJvHrg/exec";
     const SCAN_LIFF_ID = "2010206186-u1XRJldq"; 
     const SECRET_SALT = 'KUB_SECRET_TOKEN_2026'; 
     const STORE_LINE_OA_LINK = "https://line.me/R/ti/p/@848dmzja"; 
@@ -110,114 +111,174 @@
 
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
-    let timerInterval;
+    let currentGlobalState = {};
+    let localTimer;
 
-    // HTML Elements
-    const standbyScreen = document.getElementById('standby-screen');
-    const activeScreen = document.getElementById('active-screen');
-    const imgElement = document.getElementById('qr-img');
-    const headerElement = document.getElementById('dynamic-qr-header');
-    const footerElement = document.getElementById('dynamic-qr-footer');
-
-    db.ref('pos_display').on('value', (snapshot) => {
-      const data = snapshot.val();
-      
-      // ถ้าไม่มีข้อมูล หรือโหมดเป็น idle ให้โชว์หน้า Welcome
-      if (!data || data.mode === "idle") {
-        showStandbyScreen();
-        return;
-      }
-      
-      renderCustomerDisplay(data);
-    });
-
-    function showStandbyScreen() {
-      clearInterval(timerInterval);
-      activeScreen.style.display = "none";
-      standbyScreen.style.display = "flex";
-      standbyScreen.classList.remove("fade-in");
-      void standbyScreen.offsetWidth; // Trigger reflow for animation
-      standbyScreen.classList.add("fade-in");
+    async function checkPIN() {
+      const pinInput = document.getElementById('pin-code').value;
+      const loginBtn = document.getElementById('login-submit-btn');
+      if(pinInput.length !== 4 || isNaN(pinInput)) { alert("กรุณากรอกรหัสเป็นตัวเลขให้ครบ 4 หลักค่ะ"); return; }
+      loginBtn.innerText = "กำลังตรวจสอบ..."; loginBtn.disabled = true;
+      try {
+        const response = await fetch(`${API_URL}?action=checkAdminPIN&pin=${encodeURIComponent(pinInput)}`);
+        const data = await response.json();
+        if(data.status === "success") {
+          document.getElementById('login-section').style.display = "none";
+          document.getElementById('admin-section').style.display = "block";
+          initRealtimeListener(); 
+        } else {
+          alert(data.message || "รหัส PIN ไม่ถูกต้อง"); document.getElementById('pin-code').value = "";
+          loginBtn.innerText = "เข้าสู่ระบบ"; loginBtn.disabled = false;
+        }
+      } catch (err) { alert("การเชื่อมต่อระบบหลังบ้านขัดข้อง"); loginBtn.innerText = "เข้าสู่ระบบ"; loginBtn.disabled = false; }
     }
 
-    function renderCustomerDisplay(data) {
-      clearInterval(timerInterval); 
+    function selectPoints(points, clearInput = false) {
+      if (clearInput) { document.getElementById('custom-point').value = ""; }
+      db.ref('pos_display').set({
+        mode: "points",
+        points: points,
+        timestamp: new Date().getTime() 
+      });
+    }
+
+    function selectStoreLine() { document.getElementById('custom-point').value = ""; db.ref('pos_display').set({ mode: "store_line" }); }
+    function selectPayment() { document.getElementById('custom-point').value = ""; db.ref('pos_display').set({ mode: "payment" }); }
+    function selectTruePayment() { document.getElementById('custom-point').value = ""; db.ref('pos_display').set({ mode: "true_payment" }); }
+
+    function handleCustomInput(val) {
+      let pts = parseInt(val, 10);
+      if (isNaN(pts) || pts <= 0) { return; }
+      if (pts > 20) { 
+        alert("จำกัดการออกแต้มอิสระสูงสุดครั้งละ 20 แต้มค่ะ");
+        document.getElementById('custom-point').value = 20;
+        pts = 20;
+      }
+      selectPoints(pts, false);
+    }
+
+    function refreshQR() {
+      if (currentGlobalState.mode === "points" && currentGlobalState.points > 0) {
+        selectPoints(currentGlobalState.points, false);
+      }
+    }
+
+    function initRealtimeListener() {
+      db.ref('pos_display').on('value', (snapshot) => {
+        const data = snapshot.val();
+        if (!data) return;
+        currentGlobalState = data;
+        updateAdminControlUI(data);
+      });
+    }
+
+    function updateAdminControlUI(data) {
+      clearInterval(localTimer);
+      const statusText = document.getElementById('live-status-text');
+      const remoteSection = document.getElementById('remote-link-section');
       
-      // สลับหน้าจอ
-      standbyScreen.style.display = "none";
-      activeScreen.style.display = "flex";
-      activeScreen.classList.remove("fade-in");
-      void activeScreen.offsetWidth;
-      activeScreen.classList.add("fade-in");
+      const imgHeader = document.getElementById('dynamic-qr-header');
+      const imgElement = document.getElementById('qr-img');
+      const imgFooter = document.getElementById('dynamic-qr-footer');
+      
+      document.getElementById('control-status-card').style.display = "block";
       
       if (data.mode === "points") {
-        const points = data.points;
-        const timestamp = data.timestamp;
-        const rawString = points + "-" + timestamp + "-" + SECRET_SALT;
+        statusText.innerText = `โหมดแต้มสะสม: จ่ายออก`;
+        statusText.style.background = "#e8f5e9";
+        statusText.style.color = "#2e7d32";
+        remoteSection.style.display = "block";
+        
+        const rawString = data.points + "-" + data.timestamp + "-" + SECRET_SALT;
         const hash = CryptoJS.MD5(rawString).toString();
-        const secretCode = "KUBBAR-" + points + "-" + timestamp + "-" + hash; 
+        const secretCode = "KUBBAR-" + data.points + "-" + data.timestamp + "-" + hash; 
         const liffUrl = "https://liff.line.me/" + SCAN_LIFF_ID + "?code=" + secretCode;
         
-        headerElement.innerHTML = `<div class="point-display">สแกนรับ <span style="color: #27ae60;">${points}</span> แต้ม ☕</div>`;
+        imgHeader.innerHTML = `<div class="point-display">สแกนรับ <span style="color:#27ae60;">${data.points}</span> แต้ม ☕</div>`;
         imgElement.style.border = "4px solid #c1f2a1";
+        imgElement.style.padding = "0";
         imgElement.src = "https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=" + encodeURIComponent(liffUrl);
         
-        footerElement.innerHTML = `
-          <div id="timer-display" class="timer-text">รีเฟรชใหม่ใน: 05:00</div>
-          <div style="font-size: 11px; color:#636e72; margin-top:10px;">⚠️ คิวอาร์โค้ดสแกนรับแต้มมีอายุ 5 นาที</div>
+        imgFooter.innerHTML = `
+          <p class="alert-text" onclick="refreshQR()">
+            🔄 กดที่รูปคิวอาร์โค้ดเพื่อสุ่มรหัสใหม่
+          </p>
+          <div id="timer-display" style="color:#8e44ad; font-weight:bold; font-size:13px; margin-top:5px;"></div>
         `;
-        startSynchronizedTimer(timestamp);
+
+        let limit = 5 * 60;
+        localTimer = setInterval(() => {
+          let elapsed = Math.floor((new Date().getTime() - data.timestamp) / 1000);
+          let remain = limit - elapsed;
+          if (remain < 0) { clearInterval(localTimer); selectPoints(1, true); return; }
+          let m = Math.floor(remain / 60); let s = remain % 60;
+          document.getElementById('timer-display').innerText = `รีเฟรชอัตโนมัติใน: ${m}:${s < 10 ? '0'+s : s}`;
+        }, 1000);
       } 
       else if (data.mode === "store_line") {
-        headerElement.innerHTML = `<div class="point-display"><span style="color: #06C755;">LINE Official Account</span> 💬</div>`;
+        statusText.innerText = "โหมด LINE ร้าน OA";
+        statusText.style.background = "#e8f5e9";
+        statusText.style.color = "#06C755";
+        remoteSection.style.display = "none";
+        
+        imgHeader.innerHTML = `<div class="point-display"><span style="color:#06C755;">LINE Official Account</span> 💬</div>`;
         imgElement.style.border = "4px solid #06C755";
+        imgElement.style.padding = "0";
         imgElement.src = "https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=" + encodeURIComponent(STORE_LINE_OA_LINK);
-        footerElement.innerHTML = "";
+        imgFooter.innerHTML = "";
       } 
       else if (data.mode === "payment") {
-        headerElement.innerHTML = "";
+        statusText.innerText = "โหมดป้ายเงินสด (ธนาคาร)";
+        statusText.style.background = "#e3f2fd";
+        statusText.style.color = "#0d47a1";
+        remoteSection.style.display = "none";
+        
+        imgHeader.innerHTML = "";
         imgElement.style.border = "none";
-        imgElement.src = PAYMENT_IMAGE_URL; 
-        footerElement.innerHTML = `
-          <div class="footer-note" style="background: #fff3cd; color: #856404; border: 1px solid #ffe69c;">
-            ⚠️ กรุณาใช้ <span style="color:#d35400;">"แอปธนาคาร"</span> สแกนจ่ายเท่านั้น<br>
-            <span style="font-size: 10px; color:#666; font-weight: normal;">(สแกนด้วย LINE จะดึงไปที่ LINE BK)</span>
+        imgElement.style.padding = "0";
+        imgElement.src = PAYMENT_IMAGE_URL;
+        imgFooter.innerHTML = `
+          <div style="margin-top: 15px; padding: 10px; background: #fff3cd; border: 1px solid #ffe69c; color: #856404; border-radius: 10px; font-size: 12px; font-weight: bold; line-height: 1.4; width: 100%; box-sizing: border-box;">
+            ⚠️ กรุณาใช้ <span style="color:#d35400;">"แอปธนาคาร"</span> สแกนจ่ายเท่านั้น
           </div>
         `;
       } 
       else if (data.mode === "true_payment") {
-        headerElement.innerHTML = "";
+        statusText.innerText = "โหมดป้าย TrueMoney";
+        statusText.style.background = "#fff3e0";
+        statusText.style.color = "#e65100";
+        remoteSection.style.display = "none";
+        
+        imgHeader.innerHTML = "";
         imgElement.style.border = "none";
-        imgElement.src = TRUE_IMAGE_URL; 
-        footerElement.innerHTML = `
-          <div class="footer-note" style="background: #e3f2fd; color: #0d47a1; border: 1px solid #90caf9;">
+        imgElement.style.padding = "0";
+        imgElement.src = TRUE_IMAGE_URL;
+        imgFooter.innerHTML = `
+          <div style="margin-top: 15px; padding: 10px; background: #e3f2fd; border: 1px solid #90caf9; color: #0d47a1; border-radius: 10px; font-size: 12px; font-weight: bold; line-height: 1.4; width: 100%; box-sizing: border-box;">
             🔸 รองรับการสแกนผ่าน <span style="color:#ff6600;">TrueMoney Wallet</span> และแอปธนาคาร
           </div>
         `;
       }
     }
 
-    function startSynchronizedTimer(startTimeMs) {
-      const display = document.getElementById('timer-display');
-      if (!display) return;
-      const limitSeconds = 5 * 60; 
-      timerInterval = setInterval(() => {
-        const nowMs = new Date().getTime();
-        const elapsedSeconds = Math.floor((nowMs - startTimeMs) / 1000);
-        const remainingSeconds = limitSeconds - elapsedSeconds;
-        
-        if (remainingSeconds < 0) { 
-          clearInterval(timerInterval); 
-          // เมื่อหมดเวลา ให้กลับไปหน้า Standby อัตโนมัติ!
-          showStandbyScreen();
-          return; 
-        }
-        
-        let m = Math.floor(remainingSeconds / 60);
-        let s = remainingSeconds % 60;
-        display.innerText = `รีเฟรชใหม่ใน: ${m}:${s < 10 ? '0'+s : s}`;
-      }, 1000);
+    function copyToClipboard() {
+      if (currentGlobalState.mode !== "points") return;
+      const timestamp = currentGlobalState.timestamp;
+      const points = currentGlobalState.points;
+      const rawString = points + "-" + timestamp + "-" + SECRET_SALT;
+      const hash = CryptoJS.MD5(rawString).toString();
+      const secretCode = "KUB-" + points + "-" + timestamp + "-" + hash; 
+      const remoteLink = "https://liff.line.me/" + SCAN_LIFF_ID + "?code=" + secretCode;
+
+      const text = "☕ รับแต้มสะสม KUB Cafe: " + remoteLink;
+      navigator.clipboard.writeText(text).then(() => {
+        const btn = document.getElementById('copy-btn');
+        btn.innerText = "✅ คัดลอกสำเร็จ (รหัส KUB-)";
+        setTimeout(() => { btn.innerText = "📋 คัดลอกลิงก์ส่งให้ลูกค้าทางไลน์"; }, 2500);
+      }).catch(err => { alert("ไม่สามารถคัดลอกได้"); });
     }
+
+    window.addEventListener('load', function() { document.getElementById('custom-point').value = ""; });
   </script>
 </body>
 </html>
