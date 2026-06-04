@@ -22,23 +22,35 @@
   <div style="font-size: 12px; color: #b2bec3; margin-top: 10px;">กรุณารอสักครู่ ห้ามปิดหน้าจอ</div>
 
   <script>
+    // ⚠️ อย่าลืมเช็ก LIFF_ID และ API_URL ให้เป็นของจริงก่อนอัปโหลดนะครับ
     const LIFF_ID = "2010206186-u1XRJldq"; 
     const API_URL = "https://script.google.com/macros/s/AKfycbxpWU8NlPwIk4EChzbG93IJ0RxFf3qSbs4TDT5MSVOgVWLO3cQAYseD_xAWzOeewJvHrg/exec"; 
     const lineOA_ID = "@848dmzja"; 
-    let isProcessing = false; // ป้องกันการทำสแกนเบิ้ล (Double Submissions Flag)
+    let isProcessing = false;
 
-    async function showAlert(title, text, icon, btnColor) {
+    // 🛠️ อัปเดตฟังก์ชัน showAlert รับค่า autoClose
+    async function showAlert(title, text, icon, btnColor, autoClose = false) {
       try {
         if (typeof Swal !== 'undefined') {
-          await Swal.fire({
-            title: title, html: text, icon: icon, confirmButtonText: 'ตกลง', confirmButtonColor: btnColor,
+          let swalConfig = {
+            title: title, html: text, icon: icon,
             customClass: { title: 'custom-swal-title', htmlContainer: 'custom-swal-html', confirmButton: 'custom-swal-btn' },
             allowOutsideClick: false
-          });
+          };
+
+          if (autoClose) {
+            swalConfig.showConfirmButton = false; // ซ่อนปุ่มตกลง
+            swalConfig.timer = 2000; // ตั้งเวลาให้ปิดเองใน 2 วินาที (2000 ms)
+          } else {
+            swalConfig.confirmButtonText = 'ตกลง';
+            swalConfig.confirmButtonColor = btnColor;
+          }
+
+          await Swal.fire(swalConfig);
         } else {
-          alert(title + "\n" + text.replace(/<[^>]*>?/gm, ''));
+          if (!autoClose) alert(title + "\n" + text.replace(/<[^>]*>?/gm, ''));
         }
-      } catch (e) { alert(title + "\n" + text.replace(/<[^>]*>?/gm, '')); }
+      } catch (e) { console.error(e); }
     }
 
     function redirectToLINE() {
@@ -55,7 +67,7 @@
 
       try {
         if (!navigator.onLine) {
-          await showAlert('ไม่มีสัญญาณเน็ต', 'กรุณาตรวจสอบอินเทอร์เน็ตของมือถือค่ะ', 'error', '#ffb3b3');
+          await showAlert('ไม่มีสัญญาณเน็ต', 'กรุณาตรวจสอบอินเทอร์เน็ตของมือถือค่ะ', 'error', '#ffb3b3', false);
           redirectToLINE(); return;
         }
 
@@ -69,12 +81,9 @@
         const shopCode = urlParams.get('code');
 
         if (!shopCode) {
-          await showAlert('ไม่พบข้อมูลแต้ม', '❌ ข้อมูลแต้มไม่ถูกต้อง หรือสแกนผิดวิธีค่ะ', 'error', '#ffb3b3');
+          await showAlert('ไม่พบข้อมูลแต้ม', '❌ ข้อมูลแต้มไม่ถูกต้อง หรือสแกนผิดวิธีค่ะ', 'error', '#ffb3b3', false);
           redirectToLINE(); return;
         }
-
-        // ข้อแนะนำเชิงสถาปัตยกรรม: นำโค้ดพาร์ทเช็กอายุ (hoursDiff) ไปรันในไฟล์ .gs ทั้งหมด 
-        // เพราะฝั่ง Server มีเวลาที่เป็น Standard แน่นอนกว่าเครื่องปลายทางของลูกค้าแต่ละท่านครับ
 
         document.getElementById('status-text').innerText = "กำลังบันทึกข้อมูลเข้าสู่ระบบ...";
         const profile = await liff.getProfile();
@@ -83,22 +92,23 @@
         const response = await fetch(`${API_URL}?action=scanAddPoint&userId=${profile.userId}&name=${cleanedName}&shopCode=${encodeURIComponent(shopCode)}`);
         const data = await response.json();
         
-        if(data && data.status === "success") {
-          await showAlert('สะสมแต้มสำเร็จ!', `☕ ${data.message}`, 'success', '#c1f2a1');
+        if (data && data.status === "success") {
+          // ✅ ทำงานสำเร็จ: โชว์ 2 วินาทีแล้วปิดเอง (autoClose = true)
+          await showAlert('สะสมแต้มสำเร็จ!', `☕ ${data.message}`, 'success', '#c1f2a1', true);
         } else {
-          await showAlert('สะสมแต้มไม่สำเร็จ', `⚠️ ${data.message || 'รหัสผ่านหรือสิทธิ์ไม่ถูกต้อง'}`, 'warning', '#ffeaa7');
+          // ❌ ทำงานไม่สำเร็จ (โค้ดหมดอายุ, ซ้ำ): บังคับให้กดปุ่มเพื่อให้อ่านทัน (autoClose = false)
+          await showAlert('สะสมแต้มไม่สำเร็จ', `⚠️ ${data.message || 'รหัสผ่านหรือสิทธิ์ไม่ถูกต้อง'}`, 'warning', '#ffeaa7', false);
         }
         
         redirectToLINE();
 
       } catch (err) {
         console.error(err);
-        alert("ระบบขัดข้องชั่วคราวค่ะ กรุณาสแกนใหม่อีกครั้งนะคะ");
+        await showAlert('ระบบขัดข้องชั่วคราว', 'กรุณาสแกนใหม่อีกครั้งนะคะ', 'error', '#ffb3b3', false);
         redirectToLINE();
       }
     }
     
-    // ป้องกันการยิงสคริปต์ซ้ำซ้อนและแก้ปัญหาวินโดว์โหลดเสร็จก่อน SDK
     if (document.readyState === "complete" || document.readyState === "interactive") {
         processPoints();
     } else {
