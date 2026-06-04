@@ -4,43 +4,86 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ระบบประมวลผลแต้ม KUB Cafe</title>
+  
+  <!-- LIFF SDK & SweetAlert2 -->
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  
   <style>
-    body { background-color: #fdfdfd; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; font-family: sans-serif; margin: 0; }
-    .loader { border: 5px solid #f3f3f3; border-top: 5px solid #c1f2a1; border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; margin-bottom: 20px; }
+    body { 
+      background-color: #fdfdfd; 
+      display: flex; 
+      flex-direction: column; 
+      justify-content: center; 
+      align-items: center; 
+      height: 100vh; 
+      font-family: sans-serif; 
+      margin: 0; 
+    }
+    .loader { 
+      border: 5px solid #f3f3f3; 
+      border-top: 5px solid #c1f2a1; 
+      border-radius: 50%; 
+      width: 50px; 
+      height: 50px; 
+      animation: spin 1s linear infinite; 
+      margin-bottom: 20px; 
+    }
     h2 { color: #2d3436; font-size: 18px; }
-    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    @keyframes spin { 
+      0% { transform: rotate(0deg); } 
+      100% { transform: rotate(360deg); } 
+    }
+    /* Custom SweetAlert Styles for Premium UX */
     .custom-swal-title { font-size: 24px !important; font-weight: bold !important; color: #2d3436 !important; }
     .custom-swal-html { font-size: 18px !important; color: #636e72 !important; line-height: 1.5; }
     .custom-swal-btn { font-size: 16px !important; padding: 10px 30px !important; border-radius: 12px !important; font-weight: bold !important; }
   </style>
 </head>
 <body>
+  
+  <!-- Loading UI -->
   <div class="loader"></div>
   <h2 id="status-text">กำลังประมวลผลแต้ม...</h2>
   <div style="font-size: 12px; color: #b2bec3; margin-top: 10px;">กรุณารอสักครู่ ห้ามปิดหน้าจอ</div>
 
   <script>
-    // ⚠️ อย่าลืมเช็ก LIFF_ID และ API_URL ให้เป็นของจริงก่อนอัปโหลดนะครับ
-    const LIFF_ID = "2010206186-u1XRJldq"; 
-    const API_URL = "https://script.google.com/macros/s/AKfycbxpWU8NlPwIk4EChzbG93IJ0RxFf3qSbs4TDT5MSVOgVWLO3cQAYseD_xAWzOeewJvHrg/exec"; 
+    // ==========================================
+    // ⚙️ ARCHITECT CONFIGURATION
+    // ==========================================
+    const LIFF_ID = "2010206186-u1XRJldq"; // ⚠️ ตรวจสอบให้ตรงกับ LIFF ID ของร้าน
+    const API_URL = "https://script.google.com/macros/s/AKfycbxpWU8NlPwIk4EChzbG93IJ0RxFf3qSbs4TDT5MSVOgVWLO3cQAYseD_xAWzOeewJvHrg/exec"; // ⚠️ อัปเดตเมื่อ Deploy GAS ใหม่
     const lineOA_ID = "@848dmzja"; 
-    let isProcessing = false;
+    
+    let isProcessing = false; // Flag สำหรับป้องกันการยิง API ซ้ำ (Debounce)
 
-    // 🛠️ อัปเดตฟังก์ชัน showAlert รับค่า autoClose
+    // ==========================================
+    // 🛡️ CORE LOGIC & UX HANDLING
+    // ==========================================
+
+    /**
+     * ระบบจัดการ Notification (SweetAlert)
+     * หากสำเร็จ: โชว์ 0.8 วินาที แล้วปิดตัวเอง
+     * หากผิดพลาด: บังคับให้ผู้ใช้กดปุ่มตกลง เพื่ออ่านสาเหตุ
+     */
     async function showAlert(title, text, icon, btnColor, autoClose = false) {
       try {
         if (typeof Swal !== 'undefined') {
           let swalConfig = {
-            title: title, html: text, icon: icon,
-            customClass: { title: 'custom-swal-title', htmlContainer: 'custom-swal-html', confirmButton: 'custom-swal-btn' },
+            title: title, 
+            html: text, 
+            icon: icon,
+            customClass: { 
+              title: 'custom-swal-title', 
+              htmlContainer: 'custom-swal-html', 
+              confirmButton: 'custom-swal-btn' 
+            },
             allowOutsideClick: false
           };
 
           if (autoClose) {
-            swalConfig.showConfirmButton = false; // ซ่อนปุ่มตกลง
-            swalConfig.timer = 2000; // ตั้งเวลาให้ปิดเองใน 2 วินาที (2000 ms)
+            swalConfig.showConfirmButton = false; 
+            swalConfig.timer = 800; // ⚡ ความเร็วระดับเสี้ยววินาที (800ms) ปิดอัตโนมัติ
           } else {
             swalConfig.confirmButtonText = 'ตกลง';
             swalConfig.confirmButtonColor = btnColor;
@@ -48,67 +91,93 @@
 
           await Swal.fire(swalConfig);
         } else {
+          // Fallback ในกรณีที่ CDN ของ SweetAlert ร่ม
           if (!autoClose) alert(title + "\n" + text.replace(/<[^>]*>?/gm, ''));
         }
-      } catch (e) { console.error(e); }
+      } catch (e) { 
+        console.error("Alert Error:", e); 
+      }
     }
 
+    /**
+     * ฟังก์ชันพากลับไปหน้าแชต LINE OA ทันที
+     */
     function redirectToLINE() {
       const lineLink = "https://line.me/R/ti/p/" + lineOA_ID;
       window.location.href = lineLink;
+      
+      // ให้เวลาเบราว์เซอร์สลับแอป แล้วพยายามปิดตัวเอง
       setTimeout(() => {
-        if (liff.isInClient()) { liff.closeWindow(); }
+        if (liff.isInClient()) { 
+          liff.closeWindow(); 
+        }
       }, 1000);
     }
 
+    /**
+     * ฟังก์ชันหลักประมวลผลแต้ม (Zero-Trust API Call)
+     */
     async function processPoints() {
       if (isProcessing) return;
       isProcessing = true;
 
       try {
+        // 1. ตรวจสอบสถานะเครือข่ายเบื้องต้น
         if (!navigator.onLine) {
           await showAlert('ไม่มีสัญญาณเน็ต', 'กรุณาตรวจสอบอินเทอร์เน็ตของมือถือค่ะ', 'error', '#ffb3b3', false);
-          redirectToLINE(); return;
+          redirectToLINE(); 
+          return;
         }
 
+        // 2. เริ่มต้น LIFF SDK
         await liff.init({ liffId: LIFF_ID });
         if (!liff.isLoggedIn()) { 
           liff.login({ redirectUri: window.location.href }); 
           return; 
         }
 
+        // 3. แกะพารามิเตอร์รหัส QR จาก URL
         const urlParams = new URLSearchParams(window.location.search);
         const shopCode = urlParams.get('code');
 
+        // Validation: หากไม่มีรหัสแนบมา
         if (!shopCode) {
           await showAlert('ไม่พบข้อมูลแต้ม', '❌ ข้อมูลแต้มไม่ถูกต้อง หรือสแกนผิดวิธีค่ะ', 'error', '#ffb3b3', false);
-          redirectToLINE(); return;
+          redirectToLINE(); 
+          return;
         }
 
+        // 4. เตรียมข้อมูลผู้ใช้และทำ Sanitization ดักอักขระแปลกปลอม (Emojis/Special chars)
         document.getElementById('status-text').innerText = "กำลังบันทึกข้อมูลเข้าสู่ระบบ...";
         const profile = await liff.getProfile();
         const cleanedName = encodeURIComponent((profile.displayName || '').replace(/[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF]/g, ''));
         
+        // 5. ส่งข้อมูลไปยัง API (Google Apps Script)
         const response = await fetch(`${API_URL}?action=scanAddPoint&userId=${profile.userId}&name=${cleanedName}&shopCode=${encodeURIComponent(shopCode)}`);
         const data = await response.json();
         
+        // 6. จัดการ Response จาก Server
         if (data && data.status === "success") {
-          // ✅ ทำงานสำเร็จ: โชว์ 2 วินาทีแล้วปิดเอง (autoClose = true)
+          // ✅ ทำงานสำเร็จ: โชว์ 0.8 วินาทีแล้วเด้งกลับ LINE ทันที
           await showAlert('สะสมแต้มสำเร็จ!', `☕ ${data.message}`, 'success', '#c1f2a1', true);
         } else {
-          // ❌ ทำงานไม่สำเร็จ (โค้ดหมดอายุ, ซ้ำ): บังคับให้กดปุ่มเพื่อให้อ่านทัน (autoClose = false)
+          // ❌ ทำงานไม่สำเร็จ: บังคับให้อ่านข้อความ (เช่น ติด Rate Limit หรือ สแกนซ้ำ)
           await showAlert('สะสมแต้มไม่สำเร็จ', `⚠️ ${data.message || 'รหัสผ่านหรือสิทธิ์ไม่ถูกต้อง'}`, 'warning', '#ffeaa7', false);
         }
         
         redirectToLINE();
 
       } catch (err) {
-        console.error(err);
+        // Master Error Handling: ครอบคลุมเคส Network Timeout หรือ API ร่ม
+        console.error("System Error:", err);
         await showAlert('ระบบขัดข้องชั่วคราว', 'กรุณาสแกนใหม่อีกครั้งนะคะ', 'error', '#ffb3b3', false);
         redirectToLINE();
       }
     }
     
+    // ==========================================
+    // 🚀 INITIALIZATION TRIGGER
+    // ==========================================
     if (document.readyState === "complete" || document.readyState === "interactive") {
         processPoints();
     } else {
