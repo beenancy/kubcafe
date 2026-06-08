@@ -2,27 +2,82 @@
 <html lang="th">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>ระบบประมวลผลแต้ม KUB Cafe</title>
   
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   
   <style>
-    body { background-color: #fdfdfd; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; font-family: sans-serif; margin: 0; }
-    .loader { border: 5px solid #f3f3f3; border-top: 5px solid #c1f2a1; border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; margin-bottom: 20px; }
-    h2 { color: #2d3436; font-size: 18px; }
+    /* ⚡ Architect Update: Fluid UI & Responsive Design */
+    body { 
+      background-color: #fdfdfd; 
+      display: flex; 
+      flex-direction: column; 
+      justify-content: center; 
+      align-items: center; 
+      height: 100vh; 
+      font-family: sans-serif; 
+      margin: 0; 
+      padding: 0 20px; /* เพิ่มขอบซ้ายขวาไม่ให้ข้อความชิดขอบจอเกินไป */
+      text-align: center;
+    }
+    
+    .loader { 
+      border: 5px solid #f3f3f3; 
+      border-top: 5px solid #c1f2a1; 
+      border-radius: 50%; 
+      width: clamp(40px, 10vw, 50px); /* ย่อขยายขนาด Loader ตามจอ */
+      height: clamp(40px, 10vw, 50px); 
+      animation: spin 1s linear infinite; 
+      margin-bottom: 20px; 
+    }
+    
+    h2 { 
+      color: #2d3436; 
+      font-size: clamp(16px, 5vw, 20px); /* ยืดหยุ่นตั้งแต่ 16px ถึง 20px */
+      margin: 0 0 10px 0;
+    }
+    
+    .sub-text {
+      font-size: clamp(11px, 3.5vw, 14px);
+      color: #b2bec3;
+    }
+
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-    .custom-swal-title { font-size: 24px !important; font-weight: bold !important; color: #2d3436 !important; }
-    .custom-swal-html { font-size: 18px !important; color: #636e72 !important; line-height: 1.5; }
-    .custom-swal-btn { font-size: 16px !important; padding: 10px 30px !important; border-radius: 12px !important; font-weight: bold !important; }
+    
+    /* 🎨 SweetAlert2 Custom Responsive Classes */
+    .custom-swal-popup { 
+      width: 85% !important; /* บังคับให้ป๊อปอัปมีความกว้างแค่ 85% ของจอ */
+      max-width: 400px !important; /* แต่ห้ามกว้างเกิน 400px ในจอใหญ่ */
+      padding: 1.5em 1em !important; 
+      border-radius: 20px !important; 
+    }
+    .custom-swal-title { 
+      font-size: clamp(18px, 5.5vw, 22px) !important; 
+      font-weight: bold !important; 
+      color: #2d3436 !important; 
+    }
+    .custom-swal-html { 
+      font-size: clamp(14px, 4vw, 16px) !important; 
+      color: #636e72 !important; 
+      line-height: 1.5 !important; 
+    }
+    .custom-swal-btn { 
+      font-size: clamp(14px, 4vw, 16px) !important; 
+      padding: 10px 24px !important; 
+      border-radius: 12px !important; 
+      font-weight: bold !important; 
+      width: 100% !important; /* ให้ปุ่มกดกว้างเต็มสัดส่วนในมือถือ */
+      max-width: 200px !important;
+    }
   </style>
 </head>
 <body>
   
   <div class="loader"></div>
   <h2 id="status-text">กำลังประมวลผลแต้ม...</h2>
-  <div style="font-size: 12px; color: #b2bec3; margin-top: 10px;">กรุณารอสักครู่ ห้ามปิดหน้าจอ</div>
+  <div class="sub-text">กรุณารอสักครู่ ห้ามปิดหน้าจอ</div>
 
   <script>
     const LIFF_ID = "2010206186-u1XRJldq"; 
@@ -39,7 +94,12 @@
             title: title, 
             html: text, 
             icon: icon,
-            customClass: { title: 'custom-swal-title', htmlContainer: 'custom-swal-html', confirmButton: 'custom-swal-btn' },
+            customClass: { 
+              popup: 'custom-swal-popup', // ⚡ เสียบ Class ควบคุมขนาดป๊อปอัป
+              title: 'custom-swal-title', 
+              htmlContainer: 'custom-swal-html', 
+              confirmButton: 'custom-swal-btn' 
+            },
             allowOutsideClick: false
           };
 
@@ -92,26 +152,28 @@
         const response = await fetch(`${API_URL}?action=scanAddPoint&userId=${profile.userId}&name=${cleanedName}&shopCode=${encodeURIComponent(shopCode)}`);
         const data = await response.json();
         
-        // 6. จัดการ Response จาก Server (V.26.31 Dynamic UI & Countdown)
         if (data && data.status === "success") {
-          // ✅ สำเร็จ
           await showAlert('สะสมแต้มสำเร็จ! 🎉', `${data.message}`, 'success', '#c1f2a1', true);
           redirectToLINE();
           
         } else if (data && data.status === "rate_limit") {
-          // ⏳ ติด Rate Limit: โชว์ Countdown Timer
           let timeLeft = data.remaining;
           let timerInterval;
           
           await Swal.fire({
             title: 'สะสมแต้มไม่สำเร็จ\n(Please wait)',
-            html: `⏳ กรุณารอสักครู่... รหัสใหม่จะพร้อมใช้งานในอีก <b>${timeLeft}</b> วินาที<br><br><span style="font-size:14px; color:#999;">Please wait <b>${timeLeft}</b> seconds before scanning again.</span>`,
+            html: `⏳ กรุณารอสักครู่... รหัสใหม่จะพร้อมใช้งานในอีก <b>${timeLeft}</b> วินาที<br><br><span style="font-size:13px; color:#999;">Please wait <b>${timeLeft}</b> seconds before scanning again.</span>`,
             icon: 'warning',
             allowOutsideClick: false,
             showConfirmButton: true,
             confirmButtonText: 'รับทราบ (Got it)',
             confirmButtonColor: '#ffeaa7',
-            customClass: { title: 'custom-swal-title', htmlContainer: 'custom-swal-html', confirmButton: 'custom-swal-btn' },
+            customClass: { 
+              popup: 'custom-swal-popup', 
+              title: 'custom-swal-title', 
+              htmlContainer: 'custom-swal-html', 
+              confirmButton: 'custom-swal-btn' 
+            },
             didOpen: () => {
               const content = Swal.getHtmlContainer();
               const bTags = content.querySelectorAll('b'); 
@@ -130,7 +192,6 @@
           redirectToLINE();
 
         } else {
-          // ❌ ไม่สำเร็จ (สแกนซ้ำ, หมดอายุ)
           await showAlert('สะสมแต้มไม่สำเร็จ\n(Scan Failed)', `${data.message || 'รหัสผ่านหรือสิทธิ์ไม่ถูกต้อง'}`, 'error', '#ffb3b3', false);
           redirectToLINE();
         }
