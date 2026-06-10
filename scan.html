@@ -9,7 +9,6 @@
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   
   <style>
-    /* ⚡ Architect Update: Fluid UI & Responsive Design */
     body { 
       background-color: #fdfdfd; 
       display: flex; 
@@ -19,7 +18,7 @@
       height: 100vh; 
       font-family: sans-serif; 
       margin: 0; 
-      padding: 0 20px; /* เพิ่มขอบซ้ายขวาไม่ให้ข้อความชิดขอบจอเกินไป */
+      padding: 0 20px;
       text-align: center;
     }
     
@@ -27,7 +26,7 @@
       border: 5px solid #f3f3f3; 
       border-top: 5px solid #c1f2a1; 
       border-radius: 50%; 
-      width: clamp(40px, 10vw, 50px); /* ย่อขยายขนาด Loader ตามจอ */
+      width: clamp(40px, 10vw, 50px);
       height: clamp(40px, 10vw, 50px); 
       animation: spin 1s linear infinite; 
       margin-bottom: 20px; 
@@ -35,7 +34,7 @@
     
     h2 { 
       color: #2d3436; 
-      font-size: clamp(16px, 5vw, 20px); /* ยืดหยุ่นตั้งแต่ 16px ถึง 20px */
+      font-size: clamp(16px, 5vw, 20px);
       margin: 0 0 10px 0;
     }
     
@@ -46,10 +45,9 @@
 
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     
-    /* 🎨 SweetAlert2 Custom Responsive Classes */
     .custom-swal-popup { 
-      width: 85% !important; /* บังคับให้ป๊อปอัปมีความกว้างแค่ 85% ของจอ */
-      max-width: 400px !important; /* แต่ห้ามกว้างเกิน 400px ในจอใหญ่ */
+      width: 85% !important;
+      max-width: 400px !important;
       padding: 1.5em 1em !important; 
       border-radius: 20px !important; 
     }
@@ -68,7 +66,7 @@
       padding: 10px 24px !important; 
       border-radius: 12px !important; 
       font-weight: bold !important; 
-      width: 100% !important; /* ให้ปุ่มกดกว้างเต็มสัดส่วนในมือถือ */
+      width: 100% !important;
       max-width: 200px !important;
     }
   </style>
@@ -95,7 +93,7 @@
             html: text, 
             icon: icon,
             customClass: { 
-              popup: 'custom-swal-popup', // ⚡ เสียบ Class ควบคุมขนาดป๊อปอัป
+              popup: 'custom-swal-popup',
               title: 'custom-swal-title', 
               htmlContainer: 'custom-swal-html', 
               confirmButton: 'custom-swal-btn' 
@@ -156,42 +154,8 @@
           await showAlert('สะสมแต้มสำเร็จ! 🎉', `${data.message}`, 'success', '#c1f2a1', true);
           redirectToLINE();
           
-        } else if (data && data.status === "rate_limit") {
-          let timeLeft = data.remaining;
-          let timerInterval;
-          
-          await Swal.fire({
-            title: 'สะสมแต้มไม่สำเร็จ\n(Please wait)',
-            html: `⏳ กรุณารอสักครู่... รหัสใหม่จะพร้อมใช้งานในอีก <b>${timeLeft}</b> วินาที<br><br><span style="font-size:13px; color:#999;">Please wait <b>${timeLeft}</b> seconds before scanning again.</span>`,
-            icon: 'warning',
-            allowOutsideClick: false,
-            showConfirmButton: true,
-            confirmButtonText: 'รับทราบ (Got it)',
-            confirmButtonColor: '#ffeaa7',
-            customClass: { 
-              popup: 'custom-swal-popup', 
-              title: 'custom-swal-title', 
-              htmlContainer: 'custom-swal-html', 
-              confirmButton: 'custom-swal-btn' 
-            },
-            didOpen: () => {
-              const content = Swal.getHtmlContainer();
-              const bTags = content.querySelectorAll('b'); 
-              timerInterval = setInterval(() => {
-                timeLeft--;
-                if(timeLeft >= 0 && bTags.length >= 2) {
-                  bTags[0].textContent = timeLeft;
-                  bTags[1].textContent = timeLeft;
-                }
-              }, 1000);
-            },
-            willClose: () => {
-              clearInterval(timerInterval);
-            }
-          });
-          redirectToLINE();
-
         } else {
+          // ❌ ไม่สำเร็จ (สแกนซ้ำ, โค้ดหมดอายุ) - ตัด logic rate_limit ทิ้งไปแล้ว
           await showAlert('สะสมแต้มไม่สำเร็จ\n(Scan Failed)', `${data.message || 'รหัสผ่านหรือสิทธิ์ไม่ถูกต้อง'}`, 'error', '#ffb3b3', false);
           redirectToLINE();
         }
