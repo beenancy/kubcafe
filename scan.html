@@ -9,45 +9,55 @@
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   
   <style>
-    body { background-color: #fdfdfd; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 0; padding: 0 20px; text-align: center; }
-    
-    .loader { border: 5px solid #f3f3f3; border-top: 5px solid #2ecc71; border-radius: 50%; width: 45px; height: 45px; animation: spin 1s linear infinite; margin-bottom: 20px; }
-    h2 { color: #2d3436; font-size: 18px; margin: 0 0 10px 0; font-weight: 600; }
+    body { background-color: #fdfdfd; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; font-family: sans-serif; margin: 0; padding: 0 20px; text-align: center; }
+    .loader { border: 5px solid #f3f3f3; border-top: 5px solid #A3B18A; border-radius: 50%; width: 45px; height: 45px; animation: spin 1s linear infinite; margin-bottom: 20px; }
+    h2 { color: #4A3F35; font-size: 18px; margin: 0 0 10px 0; }
     .sub-text { font-size: 13px; color: #b2bec3; }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     
-    /* 🎨 Standard / Professional Popup Style */
+    /* 🎨 Cozy Minimal Popup Style (สไตล์เดิมของคุณบี) */
     .custom-swal-popup { 
       width: 85% !important; 
-      max-width: 320px !important; 
-      padding: 30px 20px !important; 
-      border-radius: 12px !important; 
+      max-width: 310px !important; 
+      padding: 2em 1.5em !important; 
+      border-radius: 24px !important; 
+      background-color: #FDFCF0 !important; 
+      box-shadow: 0 10px 30px rgba(140, 122, 107, 0.15) !important;
+    }
+    
+    /* 📉 ย่อขนาดไอคอนให้พอดี */
+    .swal2-icon { 
+      transform: scale(0.65) !important; 
+      margin: -15px auto 5px auto !important; 
     }
     
     .custom-swal-title { 
       font-size: 20px !important; 
       font-weight: 700 !important; 
-      color: #2d3436 !important; 
-      margin-bottom: 15px !important;
+      color: #4A3F35 !important; 
+      margin-bottom: 10px !important;
     }
     .custom-swal-html { 
       font-size: 15px !important; 
-      color: #444 !important; 
-      margin: 15px 0 !important; 
+      color: #6B705C !important; 
       line-height: 1.5 !important; 
     }
     .custom-swal-btn { 
       font-size: 16px !important; 
       padding: 12px 0 !important; 
-      border-radius: 6px !important; 
+      border-radius: 14px !important; 
       font-weight: 600 !important; 
       width: 100% !important; 
-      border: none !important;
+      background-color: #5cd969 !important; /* สีเขียวสดใสเดิม */
       color: #ffffff !important;
+      border: none !important;
+      box-shadow: 0 4px 15px rgba(163, 177, 138, 0.3) !important;
     }
-    /* แยกสีปุ่มชัดเจน */
-    .btn-success { background-color: #2ecc71 !important; }
-    .btn-error { background-color: #e74c3c !important; }
+    /* เพิ่มปุ่มสีแดงเวลามี Error ให้เข้ากับทรงโค้งมินิมอล */
+    .custom-swal-btn-error {
+      background-color: #e74c3c !important;
+      box-shadow: 0 4px 15px rgba(231, 76, 60, 0.2) !important;
+    }
   </style>
 </head>
 <body>
@@ -71,8 +81,7 @@
       }
     }
 
-    // เพิ่ม Parameter isSuccess เพื่อกำหนดสีปุ่ม
-    async function showAlert(title, text, icon, btnText, isSuccess) {
+    async function showAlert(title, text, icon, btnText, isSuccess = true) {
       if (typeof Swal !== 'undefined') {
         await Swal.fire({
           title: title, 
@@ -82,12 +91,12 @@
             popup: 'custom-swal-popup', 
             title: 'custom-swal-title', 
             htmlContainer: 'custom-swal-html', 
-            // เลือก Class สีปุ่มตามเงื่อนไข
-            confirmButton: isSuccess ? 'custom-swal-btn btn-success' : 'custom-swal-btn btn-error' 
+            // เลือกว่าจะใช้ปุ่มเขียวหรือแดง
+            confirmButton: isSuccess ? 'custom-swal-btn' : 'custom-swal-btn custom-swal-btn-error' 
           },
           allowOutsideClick: false, 
           confirmButtonText: btnText,
-          buttonsStyling: false
+          buttonsStyling: false 
         });
       } else {
         alert(title + "\n" + text.replace(/<[^>]*>?/gm, ''));
@@ -121,31 +130,31 @@
         const response = await fetch(`${API_URL}?action=scanAddPoint&userId=${profile.userId}&name=${cleanedName}&shopCode=${encodeURIComponent(shopCode)}`);
         const data = await response.json();
         
-        // 🌐 ดึงภาษามาจากสมองกล (ถ้าไม่มีให้มองเป็น TH ไว้ก่อน)
+        // 🌐 ดึงภาษามาจากสมองกล
         const isEN = (data && data.lang === "EN");
         const btnText = isEN ? 'OK' : 'ตกลง (OK)';
         
         if (data && data.status === "success") {
           const titleText = isEN ? 'Points Added! 🎉' : 'สะสมแต้มสำเร็จ! 🎉';
           
-          const ptsText = `<div style="font-size:24px; font-weight:800; margin-bottom:10px;">+${data.ptsAdded} ${isEN ? 'PTS' : 'แต้ม'}</div>`;
+          const ptsText = `<div style="font-size:32px; font-weight:800; color:#D4A373; margin:10px 0; line-height: 1;">+${data.ptsAdded} ${isEN ? 'PTS' : 'แต้ม'} ☕</div>`;
           const totalLabel = isEN ? 'Total Balance:' : 'แต้มสะสมทั้งหมด:';
-          const totalText = `<div style="font-size:16px;">${totalLabel} <b>${data.totalPts}</b></div>`;
+          const totalText = `<div style="font-size:15px; color:#4A3F35; margin-bottom:20px; font-weight:600;">${totalLabel} <span style="color:#A3B18A; font-size:18px;">${data.totalPts}</span> ${isEN ? 'PTS' : 'แต้ม'}</div>`;
           
           const remarkLabel = isEN 
             ? '(Check history and redeem rewards via the menu below)' 
             : '(เช็กแต้มย้อนหลังและแลกรางวัล ได้ที่เมนูด้านล่างในแชท)';
-          const remark = `<div style="font-size:12px; color:#888; border-top: 1px solid #eee; padding-top: 10px; margin-top: 15px;">${remarkLabel}</div>`;
+          const remark = `<div style="font-size:12px; color:#B0A69D; border-top: 1px dashed #E8E2D9; padding-top: 15px;">${remarkLabel}</div>`;
           
-          // ส่ง true เพื่อให้ปุ่มเป็นสีเขียว
           await showAlert(titleText, ptsText + totalText + remark, 'success', btnText, true);
           redirectToLINE(); 
           
         } else {
-          // แจ้ง Error แบบแปลภาษาแล้ว
+          // แจ้ง Error โดยแปลภาษา
           const titleError = isEN ? 'Scan Failed' : 'สะสมแต้มไม่สำเร็จ';
-          // ส่ง false เพื่อให้ปุ่มเป็นสีแดง
-          await showAlert(titleError, `${data.message || 'รหัสผ่านหรือสิทธิ์ไม่ถูกต้อง'}`, 'error', btnText, false);
+          const msgError = data.message || (isEN ? 'Invalid Code or Permission' : 'รหัสผ่านหรือสิทธิ์ไม่ถูกต้อง');
+          
+          await showAlert(titleError, msgError, 'error', btnText, false);
           redirectToLINE();
         }
 
