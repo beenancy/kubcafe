@@ -45,81 +45,50 @@
 
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     
-    .custom-swal-popup { 
-      width: 85% !important;
-      max-width: 400px !important;
-      padding: 1.5em 1em !important; 
-      border-radius: 20px !important; 
-    }
-    .custom-swal-title { 
-      font-size: clamp(18px, 5.5vw, 22px) !important; 
-      font-weight: bold !important; 
-      color: #2d3436 !important; 
-    }
-    .custom-swal-html { 
-      font-size: clamp(14px, 4vw, 16px) !important; 
-      color: #636e72 !important; 
-      line-height: 1.5 !important; 
-    }
-    .custom-swal-btn { 
-      font-size: clamp(14px, 4vw, 16px) !important; 
-      padding: 10px 24px !important; 
-      border-radius: 12px !important; 
-      font-weight: bold !important; 
-      width: 100% !important;
-      max-width: 200px !important;
-    }
+    .custom-swal-popup { width: 85% !important; max-width: 400px !important; padding: 1.5em 1em !important; border-radius: 20px !important; }
+    .custom-swal-title { font-size: clamp(18px, 5.5vw, 22px) !important; font-weight: bold !important; color: #2d3436 !important; }
+    .custom-swal-html { font-size: clamp(14px, 4vw, 16px) !important; color: #636e72 !important; line-height: 1.5 !important; }
+    .custom-swal-btn { font-size: clamp(14px, 4vw, 16px) !important; padding: 10px 24px !important; border-radius: 12px !important; font-weight: bold !important; width: 100% !important; max-width: 200px !important; }
   </style>
 </head>
 <body>
   
-  <div class="loader"></div>
+  <div class="loader" id="loading-spinner"></div>
   <h2 id="status-text">กำลังประมวลผลแต้ม...</h2>
-  <div class="sub-text">กรุณารอสักครู่ ห้ามปิดหน้าจอ</div>
+  <div class="sub-text" id="sub-status">กรุณารอสักครู่ ห้ามปิดหน้าจอ</div>
 
   <script>
     const LIFF_ID = "2010206186-u1XRJldq"; 
-    // ⚠️ นำลิงก์ Cloudflare API หรือ GAS ของคุณบีมาใส่แทนที่ตรงนี้
     const API_URL = "https://kub-backend.nan23082526.workers.dev/"; 
     const lineOA_ID = "@848dmzja"; 
     
     let isProcessing = false; 
 
-    async function showAlert(title, text, icon, btnColor, autoClose = false) {
+    async function showAlert(title, text, icon, btnColor) {
       try {
         if (typeof Swal !== 'undefined') {
-          let swalConfig = {
+          await Swal.fire({
             title: title, 
             html: text, 
             icon: icon,
-            customClass: { 
-              popup: 'custom-swal-popup',
-              title: 'custom-swal-title', 
-              htmlContainer: 'custom-swal-html', 
-              confirmButton: 'custom-swal-btn' 
-            },
-            allowOutsideClick: false
-          };
-
-          if (autoClose) {
-            swalConfig.showConfirmButton = false; 
-            swalConfig.timer = 800; 
-          } else {
-            swalConfig.confirmButtonText = 'ตกลง (OK)';
-            swalConfig.confirmButtonColor = btnColor;
-          }
-
-          await Swal.fire(swalConfig);
+            customClass: { popup: 'custom-swal-popup', title: 'custom-swal-title', htmlContainer: 'custom-swal-html', confirmButton: 'custom-swal-btn' },
+            allowOutsideClick: false,
+            confirmButtonText: 'ตกลง (OK)',
+            confirmButtonColor: btnColor
+          });
         } else {
-          if (!autoClose) alert(title + "\n" + text.replace(/<[^>]*>?/gm, ''));
+          alert(title + "\n" + text.replace(/<[^>]*>?/gm, ''));
         }
       } catch (e) { console.error("Alert Error:", e); }
     }
 
-    function redirectToLINE() {
-      const lineLink = "https://line.me/R/ti/p/" + lineOA_ID;
-      window.location.href = lineLink;
-      setTimeout(() => { if (liff.isInClient()) { liff.closeWindow(); } }, 1000);
+    // 🚀 อัปเกรด: ฟังก์ชันปิดหน้าต่างแบบสายฟ้าแลบ
+    function redirectToLINEFast() {
+      if (liff.isInClient()) {
+        liff.closeWindow(); // ถ้าเปิดใน LINE ให้สั่งปิดพับหน้าต่างทันที (ไวที่สุด)
+      } else {
+        window.location.replace("https://line.me/R/ti/p/" + lineOA_ID); // ถ้าเปิดในเบราว์เซอร์ ให้เด้งไปลิงก์ร้าน
+      }
     }
 
     async function processPoints() {
@@ -128,8 +97,8 @@
 
       try {
         if (!navigator.onLine) {
-          await showAlert('ไม่มีสัญญาณเน็ต\n(No Internet)', 'กรุณาตรวจสอบอินเทอร์เน็ตของมือถือค่ะ', 'error', '#ffb3b3', false);
-          redirectToLINE(); return;
+          await showAlert('ไม่มีสัญญาณเน็ต\n(No Internet)', 'กรุณาตรวจสอบอินเทอร์เน็ตของมือถือค่ะ', 'error', '#ffb3b3');
+          redirectToLINEFast(); return;
         }
 
         await liff.init({ liffId: LIFF_ID });
@@ -139,8 +108,8 @@
         const shopCode = urlParams.get('code');
 
         if (!shopCode) {
-          await showAlert('ไม่พบข้อมูลแต้ม\n(Invalid QR)', '❌ ข้อมูลแต้มไม่ถูกต้อง หรือสแกนผิดวิธีค่ะ', 'error', '#ffb3b3', false);
-          redirectToLINE(); return;
+          await showAlert('ไม่พบข้อมูลแต้ม\n(Invalid QR)', '❌ ข้อมูลแต้มไม่ถูกต้อง หรือสแกนผิดวิธีค่ะ', 'error', '#ffb3b3');
+          redirectToLINEFast(); return;
         }
 
         document.getElementById('status-text').innerText = "กำลังบันทึกข้อมูลเข้าสู่ระบบ...";
@@ -151,19 +120,25 @@
         const data = await response.json();
         
         if (data && data.status === "success") {
-          await showAlert('สะสมแต้มสำเร็จ! 🎉', `${data.message}`, 'success', '#c1f2a1', true);
-          redirectToLINE();
+          // ⚡ อัปเกรด: สำเร็จปุ๊บ ไม่ต้องเด้ง Pop-up เปลี่ยนแค่ตัวหนังสือแล้วปิดหน้าต่างทันทีเลย!
+          document.getElementById('loading-spinner').style.display = "none";
+          document.getElementById('status-text').innerHTML = "สำเร็จ! 🎉<br><span style='color:#27ae60; font-size:16px;'>แต้มเข้าสู่ระบบเรียบร้อย</span>";
+          document.getElementById('sub-status').innerText = "กำลังกลับสู่หน้าแชท...";
+          
+          setTimeout(() => {
+            redirectToLINEFast();
+          }, 300); // หน่วงไว้แค่ 0.3 วินาที ให้ลูกค้าพอมองเห็นคำว่าสำเร็จ แล้วเด้งกลับเลย
           
         } else {
-          // ❌ ไม่สำเร็จ (สแกนซ้ำ, โค้ดหมดอายุ) - ตัด logic rate_limit ทิ้งไปแล้ว
-          await showAlert('สะสมแต้มไม่สำเร็จ\n(Scan Failed)', `${data.message || 'รหัสผ่านหรือสิทธิ์ไม่ถูกต้อง'}`, 'error', '#ffb3b3', false);
-          redirectToLINE();
+          // ถ้าไม่สำเร็จ (สแกนซ้ำ/หมดอายุ) ยังคงเด้งแจ้งเตือนให้ลูกค้ารู้ตัว
+          await showAlert('สะสมแต้มไม่สำเร็จ\n(Scan Failed)', `${data.message || 'รหัสผ่านหรือสิทธิ์ไม่ถูกต้อง'}`, 'error', '#ffb3b3');
+          redirectToLINEFast();
         }
 
       } catch (err) {
         console.error("System Error:", err);
-        await showAlert('ระบบขัดข้องชั่วคราว\n(System Error)', 'กรุณาสแกนใหม่อีกครั้งนะคะ', 'error', '#ffb3b3', false);
-        redirectToLINE();
+        await showAlert('ระบบขัดข้องชั่วคราว\n(System Error)', 'กรุณาสแกนใหม่อีกครั้งนะคะ', 'error', '#ffb3b3');
+        redirectToLINEFast();
       }
     }
     
