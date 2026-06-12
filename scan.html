@@ -3,33 +3,29 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>KUB Cafe - Loading</title>
+  <title>ระบบประมวลผลแต้ม KUB Cafe</title>
   
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   
   <style>
-    body { background-color: #ffffff; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; font-family: sans-serif; margin: 0; padding: 0 20px; text-align: center; }
-    
-    .loader { border: 4px solid #f3f3f3; border-top: 4px solid #27ae60; border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; margin-bottom: 20px; }
-    h2 { color: #2d3436; font-size: 18px; margin: 0 0 10px 0; font-weight: bold; }
-    .sub-text { font-size: 13px; color: #636e72; }
+    body { background-color: #fdfdfd; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; font-family: sans-serif; margin: 0; padding: 0 20px; text-align: center; }
+    .loader { border: 5px solid #f3f3f3; border-top: 5px solid #c1f2a1; border-radius: 50%; width: clamp(40px, 10vw, 50px); height: clamp(40px, 10vw, 50px); animation: spin 1s linear infinite; margin-bottom: 20px; }
+    h2 { color: #2d3436; font-size: clamp(16px, 5vw, 20px); margin: 0 0 10px 0; }
+    .sub-text { font-size: clamp(11px, 3.5vw, 14px); color: #b2bec3; }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     
-    /* สไตล์ Popup แบบ Standard ชัดเจน ปุ่มกดง่าย */
-    .swal-popup { padding-bottom: 25px !important; border-radius: 16px !important; }
-    .swal-title { font-size: 20px !important; font-weight: 800 !important; color: #2d3436 !important; }
-    .swal-content { font-size: 16px !important; color: #444 !important; }
-    .swal-btn { padding: 14px 40px !important; font-size: 16px !important; font-weight: 700 !important; border-radius: 8px !important; width: 100%; }
-    .btn-green { background-color: #27ae60 !important; }
-    .btn-red { background-color: #e74c3c !important; }
+    .custom-swal-popup { width: 85% !important; max-width: 350px !important; padding: 1.5em 1em !important; border-radius: 24px !important; }
+    .custom-swal-title { font-size: clamp(18px, 5.5vw, 22px) !important; font-weight: 800 !important; color: #2d3436 !important; }
+    .custom-swal-html { font-size: clamp(14px, 4vw, 16px) !important; color: #636e72 !important; line-height: 1.5 !important; }
+    .custom-swal-btn { font-size: clamp(15px, 4vw, 18px) !important; padding: 12px 24px !important; border-radius: 12px !important; font-weight: bold !important; width: 100% !important; }
   </style>
 </head>
 <body>
   
   <div class="loader"></div>
-  <h2 id="status-text">Processing...</h2>
-  <div class="sub-text">กรุณารอสักครู่ / Please wait</div>
+  <h2 id="status-text">กำลังประมวลผลแต้ม...</h2>
+  <div class="sub-text">กรุณารอสักครู่ ห้ามปิดหน้าจอ</div>
 
   <script>
     const LIFF_ID = "2010206186-u1XRJldq"; 
@@ -46,16 +42,20 @@
       }
     }
 
-    async function showAlert(title, text, icon, btnColor, isSuccess) {
-      await Swal.fire({
-        title: title, 
-        html: text, 
-        icon: icon,
-        confirmButtonText: 'ตกลง',
-        confirmButtonColor: btnColor,
-        customClass: { popup: 'swal-popup', title: 'swal-title', htmlContainer: 'swal-content', confirmButton: 'swal-btn' },
-        allowOutsideClick: false
-      });
+    async function showAlert(title, text, icon, btnColor) {
+      if (typeof Swal !== 'undefined') {
+        await Swal.fire({
+          title: title, 
+          html: text, 
+          icon: icon,
+          customClass: { popup: 'custom-swal-popup', title: 'custom-swal-title', htmlContainer: 'custom-swal-html', confirmButton: 'custom-swal-btn' },
+          allowOutsideClick: false, 
+          confirmButtonText: 'ตกลง (OK)',
+          confirmButtonColor: btnColor
+        });
+      } else {
+        alert(title + "\n" + text.replace(/<[^>]*>?/gm, ''));
+      }
     }
 
     async function processPoints() {
@@ -63,6 +63,11 @@
       isProcessing = true;
 
       try {
+        if (!navigator.onLine) {
+          await showAlert('ไม่มีสัญญาณเน็ต', 'กรุณาตรวจสอบอินเทอร์เน็ตค่ะ', 'error', '#ffb3b3');
+          redirectToLINE(); return;
+        }
+
         await liff.init({ liffId: LIFF_ID });
         if (!liff.isLoggedIn()) { liff.login({ redirectUri: window.location.href }); return; }
 
@@ -70,7 +75,7 @@
         const shopCode = urlParams.get('code');
 
         if (!shopCode) {
-          await showAlert('Error', 'QR Code ไม่ถูกต้อง', 'error', '#e74c3c', false);
+          await showAlert('ไม่พบข้อมูลแต้ม', '❌ ข้อมูลแต้มไม่ถูกต้อง หรือสแกนผิดวิธีค่ะ', 'error', '#ffb3b3');
           redirectToLINE(); return;
         }
 
@@ -80,27 +85,22 @@
         const response = await fetch(`${API_URL}?action=scanAddPoint&userId=${profile.userId}&name=${cleanedName}&shopCode=${encodeURIComponent(shopCode)}`);
         const data = await response.json();
         
-        // กำหนดภาษาตามที่ Server ส่งกลับมา
-        const isEN = (data.lang === "EN");
-        
         if (data && data.status === "success") {
-          const title = isEN ? 'Success!' : 'สะสมแต้มสำเร็จ!';
-          const body = `<div style="font-size:22px; font-weight:bold; margin-bottom:10px;">+${data.ptsAdded} ${isEN ? 'PTS' : 'แต้ม'}</div>
-                        <div style="font-size:16px;">${isEN ? 'Total Balance:' : 'ยอดสะสมทั้งหมด:'} <b>${data.totalPts}</b></div>
-                        <div style="font-size:12px; color:#999; margin-top:20px;">${isEN ? '(Check history via menu)' : '(เช็กแต้มและแลกรางวัลที่เมนูในแชท)'}</div>`;
+          const ptsText = `<div style="font-size:28px; font-weight:900; color:#d35400; margin:10px 0;">+${data.ptsAdded} แต้ม ☕</div>`;
+          const totalText = `<div style="font-size:16px; color:#2d3436; margin-bottom:15px; font-weight:bold;">แต้มสะสมทั้งหมด: <span style="color:#27ae60;">${data.totalPts}</span> แต้ม</div>`;
+          // 📝 แก้ไขข้อความตรงนี้ตามที่คุณบีต้องการครับ
+          const remark = `<div style="font-size:12px; color:#b2bec3; border-top: 1px dashed #eee; padding-top: 10px;">(เช็กแต้มย้อนหลังและแลกรางวัล ได้ที่เมนูด้านล่างในแชท)</div>`;
           
-          await showAlert(title, body, 'success', '#27ae60', true);
-          redirectToLINE();
+          await showAlert('สะสมแต้มสำเร็จ! 🎉', ptsText + totalText + remark, 'success', '#c1f2a1');
+          redirectToLINE(); 
           
         } else {
-          // แจ้ง Error ตามภาษาของ User ที่ได้จาก data.lang
-          const titleError = isEN ? 'Scan Failed' : 'สแกนไม่สำเร็จ';
-          await showAlert(titleError, data.message || 'รหัสไม่ถูกต้อง', 'error', '#e74c3c', false);
+          await showAlert('สะสมแต้มไม่สำเร็จ', `${data.message || 'รหัสผ่านหรือสิทธิ์ไม่ถูกต้อง'}`, 'error', '#ffb3b3');
           redirectToLINE();
         }
 
       } catch (err) {
-        await showAlert('System Error', 'ระบบขัดข้อง กรุณาลองใหม่อีกครั้ง', 'error', '#e74c3c', false);
+        await showAlert('ระบบขัดข้องชั่วคราว', 'กรุณาสแกนใหม่อีกครั้งนะคะ', 'error', '#ffb3b3');
         redirectToLINE();
       }
     }
