@@ -16,7 +16,7 @@
       --primary-green: #A3B18A;
       --border-color: #EAE5D9;
       --btn-edit: #E8A87C;
-      --btn-refresh: #FFFFFF;
+      --btn-danger: #E76F51;
     }
 
     body {
@@ -27,272 +27,220 @@
       color: var(--text-main);
     }
 
+    .container { max-width: 1000px; margin: 0 auto; }
+
     .header-container {
-      max-width: 1000px;
-      margin: 0 auto 20px auto;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+      display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;
     }
 
-    h1 {
-      font-size: 24px;
-      color: #8C7A6B;
-      margin: 0;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
+    h1 { font-size: 24px; color: #8C7A6B; margin: 0; }
 
+    /* 📊 Summary Cards */
+    .summary-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;
+    }
+    .stat-card {
+      background: var(--card-bg); padding: 20px; border-radius: 12px;
+      border: 1px solid var(--border-color); box-shadow: 0 4px 15px rgba(140, 122, 107, 0.05);
+      text-align: center;
+    }
+    .stat-card h3 { margin: 0; font-size: 14px; color: var(--text-muted); font-weight: normal; }
+    .stat-card .num { font-size: 32px; font-weight: bold; color: var(--primary-green); margin-top: 5px; }
+
+    /* 📋 Main Card */
     .card {
-      background-color: var(--card-bg);
-      max-width: 1000px;
-      margin: 0 auto;
-      border-radius: 16px;
-      box-shadow: 0 4px 20px rgba(140, 122, 107, 0.08);
-      padding: 25px;
-      border: 1px solid var(--border-color);
+      background-color: var(--card-bg); border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(140, 122, 107, 0.08); padding: 25px; border: 1px solid var(--border-color);
     }
 
-    .card-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 20px;
-      padding-bottom: 15px;
-      border-bottom: 2px solid var(--border-color);
+    .toolbar {
+      display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;
+      margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px solid var(--border-color);
     }
 
-    .card-header h2 {
-      margin: 0;
-      font-size: 18px;
+    /* 🔍 Search Box */
+    .search-box {
+      flex: 1; min-width: 250px; position: relative;
     }
+    .search-box input {
+      width: 100%; padding: 10px 15px 10px 35px; border-radius: 8px;
+      border: 1px solid var(--border-color); font-size: 15px; box-sizing: border-box;
+      outline: none; transition: border 0.3s;
+    }
+    .search-box input:focus { border-color: var(--primary-green); }
+    .search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); opacity: 0.5; }
+
+    .btn-group { display: flex; gap: 10px; }
 
     .btn {
-      padding: 8px 16px;
-      border-radius: 8px;
-      border: 1px solid var(--border-color);
-      cursor: pointer;
-      font-weight: 600;
-      font-size: 14px;
-      transition: all 0.2s;
+      padding: 10px 16px; border-radius: 8px; cursor: pointer; font-weight: 600;
+      font-size: 14px; border: none; transition: all 0.2s; color: #fff;
     }
+    .btn-refresh { background-color: #8C7A6B; }
+    .btn-refresh:hover { background-color: #6d5e52; }
+    .btn-clean { background-color: var(--btn-danger); }
+    .btn-clean:hover { background-color: #cf5e42; }
+    .btn-edit { background-color: var(--btn-edit); padding: 6px 12px; font-size: 13px; }
+    .btn-edit:hover { background-color: #D69365; }
 
-    .btn-refresh {
-      background-color: var(--btn-refresh);
-      color: var(--text-main);
-    }
+    table { width: 100%; border-collapse: collapse; text-align: left; }
+    th { color: var(--text-muted); font-size: 14px; padding: 12px 10px; border-bottom: 2px solid var(--border-color); }
+    td { padding: 15px 10px; border-bottom: 1px solid var(--border-color); vertical-align: middle; font-size: 15px; }
 
-    .btn-refresh:hover {
-      background-color: #f1f1f1;
-    }
+    .profile-pic { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid var(--border-color); }
+    .no-pic { width: 40px; height: 40px; border-radius: 50%; background-color: #EAE5D9; display: flex; justify-content: center; align-items: center; font-size: 18px; }
 
-    .btn-edit {
-      background-color: var(--btn-edit);
-      color: #fff;
-      border: none;
-      padding: 6px 12px;
-      font-size: 13px;
-    }
-
-    .btn-edit:hover {
-      background-color: #D69365;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      text-align: left;
-    }
-
-    th {
-      color: var(--text-muted);
-      font-weight: 600;
-      font-size: 14px;
-      padding: 12px 10px;
-      border-bottom: 2px solid var(--border-color);
-    }
-
-    td {
-      padding: 15px 10px;
-      border-bottom: 1px solid var(--border-color);
-      vertical-align: middle;
-      font-size: 15px;
-    }
-
-    .profile-pic {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      object-fit: cover;
-      border: 2px solid var(--border-color);
-    }
-
-    .no-pic {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      background-color: #EAE5D9;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      font-size: 18px;
-    }
-
-    .pill-green {
-      background-color: var(--primary-green);
-      color: #fff;
-      padding: 4px 12px;
-      border-radius: 12px;
-      font-weight: bold;
-      display: inline-block;
-    }
-
-    .pill-gray {
-      background-color: #EAE5D9;
-      color: var(--text-main);
-      padding: 4px 12px;
-      border-radius: 12px;
-      font-size: 12px;
-      font-weight: bold;
-    }
-
-    .user-name {
-      display: flex;
-      align-items: center;
-      gap: 15px;
-      font-weight: bold;
-    }
-    
-    .loading-text {
-      text-align: center;
-      padding: 40px;
-      color: var(--text-muted);
-    }
+    .pill-green { background-color: var(--primary-green); color: #fff; padding: 4px 12px; border-radius: 12px; font-weight: bold; }
+    .pill-gray { background-color: #EAE5D9; color: var(--text-main); padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: bold; }
+    .user-name { display: flex; align-items: center; gap: 15px; font-weight: bold; }
+    .loading-text { text-align: center; padding: 40px; color: var(--text-muted); }
   </style>
 </head>
 <body>
 
-  <div class="header-container">
-    <h1>☕ KUB CAFE MANAGER</h1>
-  </div>
-
-  <div class="card">
-    <div class="card-header">
-      <h2>รายชื่อสมาชิกล่าสุด</h2>
-      <button class="btn btn-refresh" onclick="fetchUsers()">🔄 อัปเดตข้อมูล</button>
+  <div class="container">
+    <div class="header-container">
+      <h1>☕ KUB CAFE MANAGER</h1>
     </div>
 
-    <div style="overflow-x: auto;">
-      <table>
-        <thead>
-          <tr>
-            <th>ลำดับ</th>
-            <th>ชื่อลูกค้า</th>
-            <th>แต้มสะสม</th>
-            <th>แต้มเก่า</th>
-            <th>ภาษา</th>
-            <th>อัปเดตล่าสุด</th>
-            <th>จัดการ</th>
-          </tr>
-        </thead>
-        <tbody id="user-table-body">
-          <tr>
-            <td colspan="7" class="loading-text">กำลังโหลดข้อมูล...</td>
-          </tr>
-        </tbody>
-      </table>
+    <div class="summary-grid">
+      <div class="stat-card">
+        <h3>สมาชิกทั้งหมด (คน)</h3>
+        <div class="num" id="stat-users">0</div>
+      </div>
+      <div class="stat-card">
+        <h3>แต้มรวมในระบบ (แต้ม)</h3>
+        <div class="num" id="stat-points">0</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="toolbar">
+        <div class="search-box">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="searchInput" placeholder="ค้นหาชื่อลูกค้า..." onkeyup="filterTable()">
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-refresh" onclick="fetchUsers()">🔄 โหลดใหม่</button>
+          <button class="btn btn-clean" onclick="clearQRGarbage()">🧹 ล้างขยะ QR</button>
+        </div>
+      </div>
+
+      <div style="overflow-x: auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>ลำดับ</th>
+              <th>ชื่อลูกค้า</th>
+              <th>แต้มสะสม</th>
+              <th>แต้มเก่า</th>
+              <th>ภาษา</th>
+              <th>อัปเดตล่าสุด</th>
+              <th>จัดการ</th>
+            </tr>
+          </thead>
+          <tbody id="user-table-body">
+            <tr><td colspan="7" class="loading-text">กำลังโหลดข้อมูล...</td></tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
 
   <script>
     const FIREBASE_PROJECT_ID = "kub-cafe-pos";
     const FIREBASE_API_KEY = "AIzaSyAi-8gxkAs3N4b5r3EULZHckqq3tHa6tLE";
-    const FIRESTORE_BASE = `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT_ID}/databases/(default)/documents/users`;
+    const FIRESTORE_BASE = `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT_ID}/databases/(default)/documents`;
 
-    // แปลงวันที่ ISO เป็นรูปแบบภาษาไทย
+    let allUsersData = []; // เก็บข้อมูลลูกค้าทั้งหมดไว้สำหรับการค้นหา
+
     function formatThaiDate(isoString) {
       if (!isoString) return "-";
       const date = new Date(isoString);
       const months = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
-      const d = date.getDate();
-      const m = months[date.getMonth()];
-      const y = date.getFullYear() + 543;
-      const hours = String(date.getHours()).padStart(2, '0');
-      const minutes = String(date.getMinutes()).padStart(2, '0');
-      return `${d} ${m} ${y} ${hours}:${minutes} น.`;
+      return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear() + 543} ${String(date.getHours()).padStart(2,'0')}:${String(date.getMinutes()).padStart(2,'0')} น.`;
     }
 
-    // โหลดข้อมูลลูกค้าจาก Firebase
+    // 🔄 โหลดข้อมูลลูกค้า
     async function fetchUsers() {
       const tbody = document.getElementById('user-table-body');
       tbody.innerHTML = '<tr><td colspan="7" class="loading-text">กำลังโหลดข้อมูล...</td></tr>';
 
       try {
-        const response = await fetch(`${FIRESTORE_BASE}?key=${FIREBASE_API_KEY}&pageSize=100`);
+        const response = await fetch(`${FIRESTORE_BASE}/users?key=${FIREBASE_API_KEY}&pageSize=500`);
         const data = await response.json();
         
-        tbody.innerHTML = '';
-
-        if (!data.documents || data.documents.length === 0) {
+        if (!data.documents) {
           tbody.innerHTML = '<tr><td colspan="7" class="loading-text">ยังไม่มีข้อมูลสมาชิก</td></tr>';
+          document.getElementById('stat-users').innerText = "0";
+          document.getElementById('stat-points').innerText = "0";
           return;
         }
 
-        // เรียงลำดับตามวันที่อัปเดตล่าสุด (ใหม่สุดขึ้นก่อน)
-        const users = data.documents.map(doc => {
+        let totalSystemPoints = 0;
+
+        allUsersData = data.documents.map(doc => {
           const fields = doc.fields || {};
           const paths = doc.name.split('/');
+          const pts = parseInt(fields.totalPoints?.integerValue) || 0;
+          totalSystemPoints += pts; // คำนวณแต้มรวม
+
           return {
             id: paths[paths.length - 1],
             displayName: fields.displayName?.stringValue || 'ไม่ระบุชื่อ',
             pictureUrl: fields.pictureUrl?.stringValue || '',
-            totalPoints: parseInt(fields.totalPoints?.integerValue) || 0,
-            legacyPoints: parseInt(fields.legacyPoints?.integerValue) || 0,
+            totalPoints: pts,
+            legacyPoints: Math.max(0, parseInt(fields.legacyPoints?.integerValue) || 0),
             lang: fields.lang?.stringValue || 'TH',
             lastUpdated: fields.lastUpdated?.timestampValue || ''
           };
         }).sort((a, b) => new Date(b.lastUpdated) - new Date(a.lastUpdated));
 
-        // สร้างตาราง
-        users.forEach((user, index) => {
-          // 1. ดึงรูปโปรไฟล์
-          const picHtml = user.pictureUrl 
-            ? `<img src="${user.pictureUrl}" class="profile-pic">` 
-            : `<div class="no-pic">👤</div>`;
-          
-          // 2. ซ่อนแต้มเก่าที่ติดลบให้แสดงเป็น 0
-          const safeLegacy = Math.max(0, user.legacyPoints);
+        // อัปเดตตัวเลขสรุป
+        document.getElementById('stat-users').innerText = allUsersData.length;
+        document.getElementById('stat-points').innerText = totalSystemPoints;
 
-          const tr = document.createElement('tr');
-          tr.innerHTML = `
-            <td style="color: #9A958F;">${index + 1}</td>
-            <td>
-              <div class="user-name">
-                ${picHtml}
-                ${user.displayName}
-              </div>
-            </td>
-            <td><span class="pill-green">${user.totalPoints}</span></td>
-            <td style="color: #8C7A6B; font-weight: bold;">${safeLegacy}</td>
-            <td><span class="pill-gray">${user.lang}</span></td>
-            <td style="font-size: 13px; color: #6C6863;">${formatThaiDate(user.lastUpdated)}</td>
-            <td>
-              <button class="btn btn-edit" onclick="editUserPoints('${user.id}', '${user.displayName}', ${user.totalPoints})">
-                ✏️ แก้ไข
-              </button>
-            </td>
-          `;
-          tbody.appendChild(tr);
-        });
+        renderTable(allUsersData);
 
       } catch (error) {
-        console.error("Error fetching users:", error);
-        tbody.innerHTML = '<tr><td colspan="7" class="loading-text" style="color:red;">โหลดข้อมูลไม่สำเร็จ กรุณาลองใหม่</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" class="loading-text" style="color:red;">โหลดข้อมูลไม่สำเร็จ</td></tr>';
       }
     }
 
-    // ฟังก์ชันเปิดหน้าต่างแก้ไขแต้ม
+    // 🎨 วาดตาราง
+    function renderTable(users) {
+      const tbody = document.getElementById('user-table-body');
+      tbody.innerHTML = '';
+
+      if(users.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="loading-text">ไม่พบรายชื่อที่ค้นหา</td></tr>';
+        return;
+      }
+
+      users.forEach((user, index) => {
+        const picHtml = user.pictureUrl ? `<img src="${user.pictureUrl}" class="profile-pic">` : `<div class="no-pic">👤</div>`;
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td style="color: #9A958F;">${index + 1}</td>
+          <td><div class="user-name">${picHtml} ${user.displayName}</div></td>
+          <td><span class="pill-green">${user.totalPoints}</span></td>
+          <td style="color: #8C7A6B; font-weight: bold;">${user.legacyPoints}</td>
+          <td><span class="pill-gray">${user.lang}</span></td>
+          <td style="font-size: 13px; color: #6C6863;">${formatThaiDate(user.lastUpdated)}</td>
+          <td><button class="btn btn-edit" onclick="editUserPoints('${user.id}', '${user.displayName}', ${user.totalPoints})">✏️ แก้ไข</button></td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // 🔍 ฟังก์ชันกรองข้อมูล (ค้นหา)
+    function filterTable() {
+      const query = document.getElementById('searchInput').value.toLowerCase();
+      const filtered = allUsersData.filter(u => u.displayName.toLowerCase().includes(query));
+      renderTable(filtered);
+    }
+
+    // ✏️ ฟังก์ชันแก้ไขแต้ม
     async function editUserPoints(userId, userName, currentPoints) {
       const { value: newPoints } = await Swal.fire({
         title: `แก้ไขแต้ม`,
@@ -304,60 +252,71 @@
         confirmButtonText: 'บันทึก',
         cancelButtonText: 'ยกเลิก',
         confirmButtonColor: '#A3B18A',
-        cancelButtonColor: '#E8A87C',
-        customClass: {
-          popup: 'custom-swal-popup'
-        }
+        cancelButtonColor: '#E8A87C'
       });
 
       if (newPoints !== undefined && newPoints !== null && newPoints !== "") {
         const pts = parseInt(newPoints);
-        if (isNaN(pts) || pts < 0) {
-          Swal.fire('ข้อผิดพลาด', 'กรุณาระบุตัวเลขแต้มที่ถูกต้อง (0 ขึ้นไป)', 'error');
-          return;
-        }
+        if (isNaN(pts) || pts < 0) return Swal.fire('ข้อผิดพลาด', 'กรุณาระบุตัวเลขแต้มที่ถูกต้อง', 'error');
 
-        Swal.fire({
-          title: 'กำลังบันทึกข้อมูล...',
-          allowOutsideClick: false,
-          didOpen: () => { Swal.showLoading(); }
-        });
+        Swal.fire({ title: 'กำลังบันทึกข้อมูล...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
 
         try {
-          // อัปเดตข้อมูลแต้มและเวลาล่าสุดกลับไปยัง Firestore
-          const nowIso = new Date().toISOString();
-          const updateUrl = `${FIRESTORE_BASE}/${userId}?updateMask.fieldPaths=totalPoints&updateMask.fieldPaths=lastUpdated&key=${FIREBASE_API_KEY}`;
-          
-          const response = await fetch(updateUrl, {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              fields: { 
-                totalPoints: { integerValue: pts },
-                lastUpdated: { timestampValue: nowIso }
-              }
-            })
+          const response = await fetch(`${FIRESTORE_BASE}/users/${userId}?updateMask.fieldPaths=totalPoints&updateMask.fieldPaths=lastUpdated&key=${FIREBASE_API_KEY}`, {
+            method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ fields: { totalPoints: { integerValue: pts }, lastUpdated: { timestampValue: new Date().toISOString() } } })
           });
 
           if (response.ok) {
-            Swal.fire({
-              title: 'สำเร็จ!', 
-              text: `อัปเดตแต้มของ ${userName} เป็น ${pts} แต้มแล้ว`, 
-              icon: 'success',
-              confirmButtonColor: '#A3B18A'
-            }).then(() => {
-              fetchUsers(); // โหลดตารางใหม่
-            });
-          } else {
-            throw new Error('Network error');
-          }
+            Swal.fire('สำเร็จ!', `อัปเดตแต้มเรียบร้อยแล้ว`, 'success').then(fetchUsers);
+          } else throw new Error('Network error');
         } catch (error) {
           Swal.fire('บันทึกไม่สำเร็จ', 'เกิดข้อผิดพลาดในการเชื่อมต่อ', 'error');
         }
       }
     }
 
-    // โหลดข้อมูลอัตโนมัติตอนเปิดหน้าเว็บ
+    // 🧹 ฟังก์ชันล้างขยะ QR (ลบเอกสารใน Collection used_qrs)
+    async function clearQRGarbage() {
+      const confirm = await Swal.fire({
+        title: 'ยืนยันการล้างขยะ QR?',
+        text: "ระบบจะทำการล้างประวัติ QR Code ที่ลูกค้าสแกนไปแล้ว เพื่อคืนพื้นที่ว่างให้ระบบ",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#E76F51',
+        cancelButtonColor: '#9A958F',
+        confirmButtonText: 'ใช่, ล้างขยะเลย!',
+        cancelButtonText: 'ยกเลิก'
+      });
+
+      if (confirm.isConfirmed) {
+        Swal.fire({ title: 'กำลังกวาดขยะ...', html: 'กรุณารอสักครู่ (ห้ามปิดหน้าจอ)', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
+
+        try {
+          // 1. ดึงข้อมูล QR ที่เคยสแกนมาทั้งหมด
+          const getRes = await fetch(`${FIRESTORE_BASE}/used_qrs?key=${FIREBASE_API_KEY}&pageSize=300`);
+          const getData = await getRes.json();
+
+          if (!getData.documents) {
+            return Swal.fire('สะอาดเอี่ยม!', 'ไม่มีขยะ QR ตกค้างในระบบเลยครับ', 'success');
+          }
+
+          // 2. สั่งลบทีละรายการ
+          let deletedCount = 0;
+          const deletePromises = getData.documents.map(doc => {
+            return fetch(`https://firestore.googleapis.com/v1/${doc.name}?key=${FIREBASE_API_KEY}`, { method: 'DELETE' })
+              .then(() => deletedCount++);
+          });
+
+          await Promise.all(deletePromises);
+          Swal.fire('ล้างขยะสำเร็จ!', `ทำความสะอาด QR ไปทั้งหมด ${deletedCount} รายการ`, 'success');
+
+        } catch (err) {
+          Swal.fire('เกิดข้อผิดพลาด', 'ไม่สามารถล้างข้อมูลได้ ลองใหม่อีกครั้งครับ', 'error');
+        }
+      }
+    }
+
     document.addEventListener("DOMContentLoaded", fetchUsers);
   </script>
 </body>
