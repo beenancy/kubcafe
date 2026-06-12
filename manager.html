@@ -2,106 +2,110 @@
 <html lang="th">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>KUB CAFE MANAGER v4.5</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>KUB CAFE MANAGER v4.6</title>
   
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   
   <style>
     :root {
-      --bg-color: #FDFCF0; /* Cream Washi Paper */
+      --bg-color: #FDFCF0; 
       --card-bg: #FFFFFF;
-      --text-main: #4A3F35; /* Wood Brown */
+      --text-main: #4A3F35; 
       --text-muted: #B0A69D;
-      --primary-matcha: #A3B18A; /* Matcha Green */
-      --accent-brick: #C57B57; /* Tea Orange */
+      --primary-matcha: #A3B18A; 
+      --accent-brick: #C57B57; 
       --border-color: #E8E2D9;
     }
 
     body {
-      background-color: var(--bg-color);
-      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-      margin: 0;
-      padding: 20px;
-      color: var(--text-main);
+      background-color: var(--bg-color); font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      margin: 0; padding: 15px; color: var(--text-main);
     }
 
     .container { max-width: 1100px; margin: 0 auto; }
 
-    /* 📊 Header & Dashboard */
-    .header-container { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
-    h1 { font-size: 26px; color: #6B705C; margin: 0; letter-spacing: 1px; }
+    /* 📊 Header */
+    .header-container { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    h1 { font-size: clamp(20px, 5vw, 26px); color: #6B705C; margin: 0; letter-spacing: 1px; }
 
-    .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 25px; }
+    /* 📱 Summary Grid for Mobile */
+    .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 20px; }
     .stat-card {
-      background: var(--card-bg); padding: 25px; border-radius: 16px;
-      border: 1px solid var(--border-color); box-shadow: 0 8px 25px rgba(140, 122, 107, 0.08);
-      text-align: center; transition: transform 0.2s;
+      background: var(--card-bg); padding: 20px; border-radius: 16px;
+      border: 1px solid var(--border-color); box-shadow: 0 5px 15px rgba(140, 122, 107, 0.05); text-align: center; 
     }
-    .stat-card:hover { transform: translateY(-5px); }
-    .stat-card h3 { margin: 0; font-size: 13px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
-    .stat-card .num { font-size: 36px; font-weight: 800; color: var(--primary-matcha); margin-top: 8px; }
+    .stat-card h3 { margin: 0; font-size: 12px; color: var(--text-muted); text-transform: uppercase; }
+    .stat-card .num { font-size: clamp(24px, 6vw, 36px); font-weight: 800; color: var(--primary-matcha); margin-top: 5px; }
 
     /* 📋 Main Management Card */
     .card {
-      background-color: var(--card-bg); border-radius: 20px;
-      box-shadow: 0 10px 30px rgba(140, 122, 107, 0.1); padding: 30px; border: 1px solid var(--border-color);
+      background-color: var(--card-bg); border-radius: 16px; box-shadow: 0 5px 20px rgba(140, 122, 107, 0.08); 
+      padding: clamp(15px, 4vw, 30px); border: 1px solid var(--border-color); overflow: hidden;
     }
 
     .toolbar {
-      display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px;
-      margin-bottom: 25px; padding-bottom: 20px; border-bottom: 1px dashed var(--border-color);
+      display: flex; flex-direction: column; gap: 15px; margin-bottom: 20px; padding-bottom: 15px; 
+      border-bottom: 1px dashed var(--border-color);
+    }
+    @media (min-width: 600px) {
+      .toolbar { flex-direction: row; justify-content: space-between; align-items: center; }
     }
 
     /* 🔍 Search Box */
-    .search-box { flex: 1; min-width: 280px; position: relative; }
+    .search-box { width: 100%; position: relative; }
+    @media (min-width: 600px) { .search-box { flex: 1; max-width: 350px; } }
     .search-box input {
-      width: 100%; padding: 12px 15px 12px 40px; border-radius: 12px;
-      border: 1px solid var(--border-color); font-size: 15px; outline: none; background: #FCFBF7;
+      width: 100%; padding: 12px 15px 12px 40px; border-radius: 12px; border: 1px solid var(--border-color); 
+      font-size: 14px; outline: none; background: #FCFBF7; box-sizing: border-box;
     }
     .search-box input:focus { border-color: var(--primary-matcha); background: #fff; }
     .search-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); opacity: 0.4; }
 
-    .btn-group { display: flex; gap: 12px; }
+    .btn-group { display: flex; gap: 10px; width: 100%; justify-content: space-between; }
+    @media (min-width: 600px) { .btn-group { width: auto; justify-content: flex-end; } }
 
     .btn {
-      padding: 10px 18px; border-radius: 10px; cursor: pointer; font-weight: 600;
-      font-size: 14px; border: none; transition: all 0.2s; color: #fff; display: flex; align-items: center; gap: 6px;
+      padding: 10px 15px; border-radius: 10px; cursor: pointer; font-weight: 600; font-size: 13px; 
+      border: none; color: #fff; display: flex; align-items: center; justify-content: center; gap: 5px; flex: 1;
     }
+    @media (min-width: 600px) { .btn { flex: none; } }
+    
     .btn-refresh { background-color: #8C7A6B; }
-    .btn-refresh:hover { background-color: #726357; }
     .btn-clean { background-color: var(--accent-brick); }
-    .btn-edit { background-color: var(--primary-matcha); padding: 6px 12px; font-size: 12px; }
-    .btn-history { background-color: #D4A373; padding: 6px 12px; font-size: 12px; }
+    .btn-edit { background-color: var(--primary-matcha); padding: 8px 12px; font-size: 12px; }
+    .btn-history { background-color: #D4A373; padding: 8px 12px; font-size: 12px; }
 
-    /* 📅 Table Styles */
-    table { width: 100%; border-collapse: collapse; }
-    th { color: var(--text-muted); font-size: 12px; text-transform: uppercase; padding: 15px 10px; border-bottom: 2px solid var(--border-color); text-align: left; }
-    td { padding: 18px 10px; border-bottom: 1px solid #F4F1EC; vertical-align: middle; font-size: 14px; }
+    /* 📅 Responsive Table */
+    .table-responsive { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    table { width: 100%; border-collapse: collapse; min-width: 700px; /* บังคับให้ตารางไม่หดจนเละ */ }
+    th { color: var(--text-muted); font-size: 12px; padding: 12px 10px; border-bottom: 2px solid var(--border-color); text-align: left; white-space: nowrap; }
+    td { padding: 15px 10px; border-bottom: 1px solid #F4F1EC; vertical-align: middle; font-size: 14px; }
 
-    .profile-pic { width: 42px; height: 42px; border-radius: 50%; object-fit: cover; border: 2px solid #FDFCF0; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-    .no-pic { width: 42px; height: 42px; border-radius: 50%; background-color: #EAE5D9; display: flex; justify-content: center; align-items: center; font-size: 20px; }
+    .profile-pic { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+    .no-pic { width: 40px; height: 40px; border-radius: 50%; background-color: #EAE5D9; display: flex; justify-content: center; align-items: center; font-size: 18px; flex-shrink: 0; }
+
+    .user-info { display: flex; align-items: center; gap: 10px; }
+    .user-name-text { font-weight: 600; color: var(--text-main); display: block; }
+    
+    /* 🚨 ป้ายเตือนสแกนซ้ำ */
+    .alert-badge { display: inline-block; background: #ffeaa7; color: #d35400; font-size: 10px; padding: 2px 6px; border-radius: 6px; margin-top: 4px; font-weight: bold; border: 1px solid #fdcb6e; }
 
     .pill-pts { background-color: #FDFCF0; color: #D35400; padding: 5px 12px; border-radius: 10px; font-weight: 800; border: 1px solid #FAE5D3; }
-    .user-name { display: flex; align-items: center; gap: 12px; font-weight: 600; color: var(--text-main); }
     .action-group { display: flex; gap: 6px; }
 
     /* 📜 History Modal Styles */
-    .history-item { 
-      text-align: left; padding: 12px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center;
-    }
+    .history-item { text-align: left; padding: 12px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
     .history-date { font-size: 11px; color: #999; }
-    .history-points { font-weight: bold; }
-    .pts-plus { color: #27ae60; }
-    .pts-minus { color: #e74c3c; }
+    .pts-plus { color: #27ae60; font-weight: bold; }
+    .pts-minus { color: #e74c3c; font-weight: bold; }
   </style>
 </head>
 <body>
 
   <div class="container">
     <div class="header-container">
-      <h1>☕ KUB CAFE <span style="font-weight:200; color:var(--text-muted);">| MANAGER</span></h1>
-      <div style="font-size: 12px; color: var(--text-muted);">Version 4.5 PRO</div>
+      <h1>☕ KUB CAFE <span style="font-weight:200; color:var(--text-muted);">| PRO</span></h1>
     </div>
 
     <div class="summary-grid">
@@ -110,7 +114,7 @@
         <div class="num" id="stat-users">0</div>
       </div>
       <div class="stat-card">
-        <h3>Total Points in System</h3>
+        <h3>Total Points</h3>
         <div class="num" id="stat-points">0</div>
       </div>
     </div>
@@ -122,12 +126,12 @@
           <input type="text" id="searchInput" placeholder="ค้นหาชื่อลูกค้า..." onkeyup="filterTable()">
         </div>
         <div class="btn-group">
-          <button class="btn btn-refresh" onclick="fetchUsers()">🔄 Refresh</button>
-          <button class="btn btn-clean" onclick="clearQRGarbage()">🧹 Clean QR</button>
+          <button class="btn btn-refresh" onclick="fetchData()">🔄 โหลดใหม่</button>
+          <button class="btn btn-clean" onclick="clearQRGarbage()">🧹 ล้างขยะ</button>
         </div>
       </div>
 
-      <div style="overflow-x: auto;">
+      <div class="table-responsive">
         <table>
           <thead>
             <tr>
@@ -140,7 +144,7 @@
             </tr>
           </thead>
           <tbody id="user-table-body">
-            <tr><td colspan="6" style="text-align:center; padding:50px; color:#ccc;">กำลังดึงข้อมูลจากญี่ปุ่น...</td></tr>
+            <tr><td colspan="6" style="text-align:center; padding:40px; color:#ccc;">กำลังรอตรวจสอบรหัสผ่าน...</td></tr>
           </tbody>
         </table>
       </div>
@@ -148,11 +152,15 @@
   </div>
 
   <script>
+    // 🔑 รหัสผ่านเข้าใช้งาน (เปลี่ยนตรงนี้ได้เลย)
+    const ADMIN_PASSWORD = "kub2026"; 
+
     const FIREBASE_PROJECT_ID = "kub-cafe-pos";
     const FIREBASE_API_KEY = "AIzaSyAi-8gxkAs3N4b5r3EULZHckqq3tHa6tLE";
     const BASE_URL = `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT_ID}/databases/(default)/documents`;
 
     let allUsersData = [];
+    let todayEarnCounts = {}; // เก็บสถิติการสแกนของวันนี้ { userId: count }
 
     function formatThaiDate(isoString) {
       if (!isoString) return "-";
@@ -161,17 +169,65 @@
       return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear() + 543} ${String(date.getHours()).padStart(2,'0')}:${String(date.getMinutes()).padStart(2,'0')}`;
     }
 
-    // 🔄 1. โหลดข้อมูลลูกค้าทั้งหมด
-    async function fetchUsers() {
-      const tbody = document.getElementById('user-table-body');
-      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:50px;">กำลังโหลด...</td></tr>';
+    // 🔐 ระบบเช็กรหัสผ่านก่อนทำงาน
+    async function checkLogin() {
+      const isLogged = sessionStorage.getItem("kubAdminLogin");
+      if (isLogged === "true") {
+        fetchData();
+        return;
+      }
 
+      const { value: password } = await Swal.fire({
+        title: '🔐 กรุณาใส่รหัสผ่าน',
+        input: 'password',
+        inputPlaceholder: 'รหัสผ่านแอดมิน',
+        allowOutsideClick: false,
+        confirmButtonColor: '#A3B18A',
+        confirmButtonText: 'เข้าสู่ระบบ'
+      });
+
+      if (password === ADMIN_PASSWORD) {
+        sessionStorage.setItem("kubAdminLogin", "true");
+        fetchData();
+      } else {
+        Swal.fire({ title: 'ผิดพลาด', text: 'รหัสผ่านไม่ถูกต้อง', icon: 'error', confirmButtonColor: '#C57B57' })
+            .then(checkLogin);
+      }
+    }
+
+    // 🔄 ดึงข้อมูลลูกค้า + ดึงประวัติของวันนี้เพื่อเช็กสแกนซ้ำ
+    async function fetchData() {
+      const tbody = document.getElementById('user-table-body');
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:40px;">กำลังโหลดข้อมูล...</td></tr>';
+      
       try {
+        // 1. ดึงประวัติธุรกรรม (Transactions) ล่าสุด เพื่อเช็กยอดของ "วันนี้"
+        todayEarnCounts = {};
+        const todayStart = new Date();
+        todayStart.setHours(0,0,0,0); // เริ่มต้นของวันนี้
+
+        const txRes = await fetch(`${BASE_URL}/transactions?key=${FIREBASE_API_KEY}&pageSize=300`);
+        const txData = await txRes.json();
+        
+        if (txData.documents) {
+          txData.documents.forEach(doc => {
+            const f = doc.fields;
+            if (f.type?.stringValue === 'earn') {
+              const txDate = new Date(f.timestamp?.timestampValue);
+              if (txDate >= todayStart) {
+                const uid = f.userId?.stringValue;
+                if(uid) todayEarnCounts[uid] = (todayEarnCounts[uid] || 0) + 1;
+              }
+            }
+          });
+        }
+
+        // 2. ดึงรายชื่อลูกค้าทั้งหมด
         const response = await fetch(`${BASE_URL}/users?key=${FIREBASE_API_KEY}&pageSize=500`);
         const data = await response.json();
         
         if (!data.documents) {
-          tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:50px;">ยังไม่มีสมาชิก</td></tr>';
+          tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:40px;">ยังไม่มีสมาชิก</td></tr>';
           return;
         }
 
@@ -197,21 +253,36 @@
 
         renderTable(allUsersData);
       } catch (error) {
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:red; padding:50px;">เกิดข้อผิดพลาดในการโหลดข้อมูล</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:red; padding:40px;">โหลดข้อมูลไม่สำเร็จ</td></tr>';
       }
     }
 
-    // 🎨 2. วาดตารางข้อมูล
+    // 🎨 วาดตารางข้อมูล
     function renderTable(users) {
       const tbody = document.getElementById('user-table-body');
       tbody.innerHTML = '';
 
       users.forEach((user, index) => {
         const pic = user.pictureUrl ? `<img src="${user.pictureUrl}" class="profile-pic">` : `<div class="no-pic">👤</div>`;
+        
+        // 🚨 เช็กว่าวันนี้ได้แต้มเกิน 1 ครั้งไหม
+        const todayCount = todayEarnCounts[user.id] || 0;
+        const alertHtml = todayCount > 1 
+          ? `<div class="alert-badge">🚨 สแกนวันนี้ ${todayCount} ครั้ง</div>` 
+          : '';
+
         const tr = document.createElement('tr');
         tr.innerHTML = `
           <td style="color:#B0A69D; font-size:12px;">${index + 1}</td>
-          <td><div class="user-name">${pic} ${user.displayName}</div></td>
+          <td>
+            <div class="user-info">
+              ${pic}
+              <div>
+                <span class="user-name-text">${user.displayName}</span>
+                ${alertHtml}
+              </div>
+            </div>
+          </td>
           <td><span class="pill-pts">${user.totalPoints}</span></td>
           <td style="color:#B0A69D;">${user.legacyPoints}</td>
           <td style="font-size:12px; color:#9A958F;">${formatThaiDate(user.lastUpdated)}</td>
@@ -226,20 +297,16 @@
       });
     }
 
-    // 🔍 3. ระบบค้นหา
     function filterTable() {
       const q = document.getElementById('searchInput').value.toLowerCase();
       const filtered = allUsersData.filter(u => u.displayName.toLowerCase().includes(q));
       renderTable(filtered);
     }
 
-    // ✏️ 4. แก้ไขแต้ม
     async function editPoints(userId, name, current) {
       const { value: val } = await Swal.fire({
-        title: 'แก้ไขแต้ม',
-        html: `ระบุแต้มใหม่สำหรับ <b>${name}</b>`,
-        input: 'number', inputValue: current,
-        showCancelButton: true, confirmButtonColor: '#A3B18A'
+        title: 'แก้ไขแต้ม', html: `ระบุแต้มใหม่สำหรับ <b>${name}</b>`,
+        input: 'number', inputValue: current, showCancelButton: true, confirmButtonColor: '#A3B18A'
       });
 
       if (val) {
@@ -249,35 +316,23 @@
             method: 'PATCH', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ fields: { totalPoints: { integerValue: val }, lastUpdated: { timestampValue: new Date().toISOString() } } })
           });
-          Swal.fire('สำเร็จ!', 'อัปเดตแต้มเรียบร้อย', 'success').then(fetchUsers);
+          Swal.fire('สำเร็จ!', 'อัปเดตแต้มเรียบร้อย', 'success').then(fetchData);
         } catch (e) { Swal.fire('Error', 'บันทึกไม่สำเร็จ', 'error'); }
       }
     }
 
-    // 📜 5. ดูประวัติการใช้งาน (New!)
     async function viewHistory(userId, name) {
       Swal.fire({ title: 'กำลังดึงประวัติ...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-
       try {
-        // ดึง 50 รายการล่าสุดจาก Transaction
         const res = await fetch(`${BASE_URL}/transactions?key=${FIREBASE_API_KEY}&pageSize=100`);
         const data = await res.json();
         
-        if (!data.documents) {
-          Swal.fire('ไม่พบประวัติ', 'ลูกค้าท่านนี้ยังไม่มีรายการเคลื่อนไหวครับ', 'info');
-          return;
-        }
+        if (!data.documents) return Swal.fire('ไม่พบประวัติ', 'ลูกค้าท่านนี้ยังไม่มีรายการเคลื่อนไหวครับ', 'info');
 
-        // กรองเฉพาะของ User คนนี้
-        const logs = data.documents
-          .map(doc => doc.fields)
-          .filter(f => f.userId?.stringValue === userId)
+        const logs = data.documents.map(doc => doc.fields).filter(f => f.userId?.stringValue === userId)
           .sort((a,b) => new Date(b.timestamp.timestampValue) - new Date(a.timestamp.timestampValue));
 
-        if (logs.length === 0) {
-          Swal.fire('ไม่พบประวัติ', 'ยังไม่มีข้อมูลการสะสมหรือแลกแต้มครับ', 'info');
-          return;
-        }
+        if (logs.length === 0) return Swal.fire('ไม่พบประวัติ', 'ยังไม่มีข้อมูลการสะสมหรือแลกแต้มครับ', 'info');
 
         let html = `<div style="max-height: 350px; overflow-y: auto;">`;
         logs.forEach(l => {
@@ -289,23 +344,15 @@
                 <div style="font-weight:bold;">${isEarn ? '☕ สะสมแต้ม' : '🎁 แลกรางวัล'}</div>
                 <div class="history-date">${formatThaiDate(l.timestamp.timestampValue)}</div>
               </div>
-              <div class="history-points ${isEarn ? 'pts-plus' : 'pts-minus'}">
-                ${isEarn ? '+' : '-'}${pts}
-              </div>
+              <div class="history-points ${isEarn ? 'pts-plus' : 'pts-minus'}">${isEarn ? '+' : '-'}${pts}</div>
             </div>`;
         });
         html += `</div>`;
 
-        Swal.fire({
-          title: `ประวัติคุณ ${name}`,
-          html: html,
-          confirmButtonColor: '#8C7A6B'
-        });
-
+        Swal.fire({ title: `ประวัติคุณ ${name}`, html: html, confirmButtonColor: '#8C7A6B' });
       } catch (e) { Swal.fire('Error', 'ไม่สามารถโหลดประวัติได้', 'error'); }
     }
 
-    // 🧹 6. ล้างขยะ QR
     async function clearQRGarbage() {
       const ask = await Swal.fire({
         title: 'ล้างขยะ QR?', text: 'ลบประวัติการสแกนเพื่อประหยัดพื้นที่', icon: 'warning',
@@ -317,9 +364,7 @@
         const res = await fetch(`${BASE_URL}/used_qrs?key=${FIREBASE_API_KEY}&pageSize=100`);
         const data = await res.json();
         if (data.documents) {
-          for (const doc of data.documents) {
-            await fetch(`https://firestore.googleapis.com/v1/${doc.name}?key=${FIREBASE_API_KEY}`, { method: 'DELETE' });
-          }
+          for (const doc of data.documents) { await fetch(`https://firestore.googleapis.com/v1/${doc.name}?key=${FIREBASE_API_KEY}`, { method: 'DELETE' }); }
           Swal.fire('สำเร็จ!', 'ล้างขยะ QR เรียบร้อยแล้วครับ', 'success');
         } else {
           Swal.fire('สะอาดแล้ว', 'ไม่มีขยะ QR ให้ล้างครับ', 'success');
@@ -327,7 +372,8 @@
       }
     }
 
-    document.addEventListener("DOMContentLoaded", fetchUsers);
+    // 🚀 เริ่มทำงานด้วยการเช็กรหัสผ่าน
+    document.addEventListener("DOMContentLoaded", checkLogin);
   </script>
 </body>
 </html>
