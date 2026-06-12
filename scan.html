@@ -49,7 +49,7 @@
           html: text, 
           icon: icon,
           customClass: { popup: 'custom-swal-popup', title: 'custom-swal-title', htmlContainer: 'custom-swal-html', confirmButton: 'custom-swal-btn' },
-          allowOutsideClick: false, // ห้ามกดคลิกข้างนอกเพื่อปิด
+          allowOutsideClick: false, 
           confirmButtonText: 'ตกลง (OK)',
           confirmButtonColor: btnColor
         });
@@ -86,13 +86,13 @@
         const data = await response.json();
         
         if (data && data.status === "success") {
-          // 🌟 สร้างข้อความแสดงแต้มแบบสวยๆ และบังคับให้ลูกค้ากด OK
           const ptsText = `<div style="font-size:28px; font-weight:900; color:#d35400; margin:10px 0;">+${data.ptsAdded} แต้ม ☕</div>`;
           const totalText = `<div style="font-size:16px; color:#2d3436; margin-bottom:15px; font-weight:bold;">แต้มสะสมทั้งหมด: <span style="color:#27ae60;">${data.totalPts}</span> แต้ม</div>`;
-          const remark = `<div style="font-size:12px; color:#b2bec3; border-top: 1px dashed #eee; padding-top: 10px;">(เช็กแต้มย้อนหลังได้ที่เมนูด้านล่างในแชท)</div>`;
+          // 📝 แก้ไขข้อความตรงนี้ตามที่คุณบีต้องการครับ
+          const remark = `<div style="font-size:12px; color:#b2bec3; border-top: 1px dashed #eee; padding-top: 10px;">(เช็กแต้มย้อนหลังและแลกรางวัล ได้ที่เมนูด้านล่างในแชท)</div>`;
           
           await showAlert('สะสมแต้มสำเร็จ! 🎉', ptsText + totalText + remark, 'success', '#c1f2a1');
-          redirectToLINE(); // คำสั่งนี้จะทำงานก็ต่อเมื่อลูกค้ากดปุ่ม "ตกลง" เท่านั้น!
+          redirectToLINE(); 
           
         } else {
           await showAlert('สะสมแต้มไม่สำเร็จ', `${data.message || 'รหัสผ่านหรือสิทธิ์ไม่ถูกต้อง'}`, 'error', '#ffb3b3');
