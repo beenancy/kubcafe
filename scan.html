@@ -25,7 +25,6 @@
       box-shadow: 0 10px 30px rgba(140, 122, 107, 0.15) !important;
     }
     
-    /* 📉 ย่อขนาดไอคอน (เครื่องหมายถูก/กากบาท) ให้เล็กลง */
     .swal2-icon { 
       transform: scale(0.65) !important; 
       margin: -15px auto 5px auto !important; 
@@ -42,16 +41,19 @@
       color: #6B705C !important; 
       line-height: 1.5 !important; 
     }
+    
+    /* 🔘 แก้ไขปุ่ม: บังคับความกว้างให้สวยงาม ไม่หดตัวตามข้อความ */
     .custom-swal-btn { 
       font-size: 16px !important; 
-      padding: 12px 0 !important; 
+      padding: 12px 30px !important; /* เพิ่มระยะซ้าย-ขวา */
+      min-width: 140px !important; /* บังคับปุ่มให้กว้างกำลังดีเสมอ */
       border-radius: 14px !important; 
       font-weight: 600 !important; 
-      width: 100% !important; 
       background-color: #5cd969 !important; 
       color: #ffffff !important;
       border: none !important;
       box-shadow: 0 4px 15px rgba(163, 177, 138, 0.3) !important;
+      cursor: pointer;
     }
   </style>
 </head>
@@ -85,7 +87,7 @@
           customClass: { popup: 'custom-swal-popup', title: 'custom-swal-title', htmlContainer: 'custom-swal-html', confirmButton: 'custom-swal-btn' },
           allowOutsideClick: false, 
           confirmButtonText: btnText,
-          buttonsStyling: false // ปิดสไตล์ดั้งเดิม เพื่อใช้ CSS ของเรา 100%
+          buttonsStyling: false 
         });
       } else {
         alert(title + "\n" + text.replace(/<[^>]*>?/gm, ''));
@@ -121,17 +123,15 @@
         
         if (data && data.status === "success") {
           
-          // 🌐 ดึงภาษามาจากสมองกล
           const isEN = data.lang === "EN";
-          
-          // แปลภาษา หัวข้อและปุ่ม
           const titleText = isEN ? 'Points Added! 🎉' : 'สะสมแต้มสำเร็จ! 🎉';
           const btnText = isEN ? 'OK' : 'ตกลง (OK)';
           
-          // 🎨 ปรับสีแต้มที่ได้เป็น "สีแดง" และ แต้มรวมเป็น "สีเขียวสว่าง ตัวหนา"
           const ptsText = `<div style="font-size:32px; font-weight:900; color:#ff4d4d; margin:10px 0; line-height: 1;">+${data.ptsAdded} ${isEN ? 'PTS' : 'แต้ม'} ☕</div>`;
           const totalLabel = isEN ? 'Total Balance:' : 'แต้มสะสมทั้งหมด:';
-          const totalText = `<div style="font-size:16px; color:#4A3F35; margin-bottom:20px; font-weight:bold;">${totalLabel} <span style="color:#00C851; font-size:22px; font-weight:900;">${data.totalPts}</span> ${isEN ? 'PTS' : 'แต้ม'}</div>`;
+          
+          // ใช้ white-space: nowrap เพื่อบังคับให้ตัวเลขกับคำว่า PTS อยู่บรรทัดเดียวกันเสมอ
+          const totalText = `<div style="font-size:16px; color:#4A3F35; margin-bottom:20px; font-weight:bold;">${totalLabel} <span style="white-space: nowrap;"><span style="color:#00C851; font-size:22px; font-weight:900;">${data.totalPts}</span> ${isEN ? 'PTS' : 'แต้ม'}</span></div>`;
           
           const remarkLabel = isEN 
             ? '(Check history and redeem rewards via the menu below)' 
