@@ -2,245 +2,363 @@
 <html lang="th">
 <head>
   <meta charset="UTF-8">
-  <title>KUB Cafe Manager</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KUB CAFE MANAGER</title>
+  
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  
   <style>
-    /* ☕ สไตล์ Cozy Minimal */
-    body { 
-      background-color: #FDFCF0; /* พื้นหลังสีครีมอ่อนๆ */
-      color: #4A3F35; /* ตัวอักษรสีน้ำตาลเข้ม */
-      font-family: 'Kanit', sans-serif; 
-      font-size: 1.15rem; /* ขยายขนาดตัวหนังสือพื้นฐาน */
+    :root {
+      --bg-color: #F9F8F6;
+      --card-bg: #FFFFFF;
+      --text-main: #4A3F35;
+      --text-muted: #9A958F;
+      --primary-green: #A3B18A;
+      --border-color: #EAE5D9;
+      --btn-edit: #E8A87C;
+      --btn-refresh: #FFFFFF;
     }
-    .header-logo { 
-      color: #8C7A6B; 
-      font-weight: 600; 
-      letter-spacing: 1px; 
-      font-size: 2rem;
+
+    body {
+      background-color: var(--bg-color);
+      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      color: var(--text-main);
     }
-    .dashboard-card { 
-      background-color: #ffffff; 
-      border: none; 
-      border-radius: 20px; 
-      box-shadow: 0 10px 40px rgba(140, 122, 107, 0.08); 
-      margin-top: 20px; 
-      padding: 10px;
+
+    .header-container {
+      max-width: 1000px;
+      margin: 0 auto 20px auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    h1 {
+      font-size: 24px;
+      color: #8C7A6B;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .card {
+      background-color: var(--card-bg);
+      max-width: 1000px;
+      margin: 0 auto;
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(140, 122, 107, 0.08);
+      padding: 25px;
+      border: 1px solid var(--border-color);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 15px;
+      border-bottom: 2px solid var(--border-color);
+    }
+
+    .card-header h2 {
+      margin: 0;
+      font-size: 18px;
+    }
+
+    .btn {
+      padding: 8px 16px;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+
+    .btn-refresh {
+      background-color: var(--btn-refresh);
+      color: var(--text-main);
+    }
+
+    .btn-refresh:hover {
+      background-color: #f1f1f1;
+    }
+
+    .btn-edit {
+      background-color: var(--btn-edit);
+      color: #fff;
+      border: none;
+      padding: 6px 12px;
+      font-size: 13px;
+    }
+
+    .btn-edit:hover {
+      background-color: #D69365;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+
+    th {
+      color: var(--text-muted);
+      font-weight: 600;
+      font-size: 14px;
+      padding: 12px 10px;
+      border-bottom: 2px solid var(--border-color);
+    }
+
+    td {
+      padding: 15px 10px;
+      border-bottom: 1px solid var(--border-color);
+      vertical-align: middle;
+      font-size: 15px;
+    }
+
+    .profile-pic {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid var(--border-color);
+    }
+
+    .no-pic {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background-color: #EAE5D9;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 18px;
+    }
+
+    .pill-green {
+      background-color: var(--primary-green);
+      color: #fff;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-weight: bold;
+      display: inline-block;
+    }
+
+    .pill-gray {
+      background-color: #EAE5D9;
+      color: var(--text-main);
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    .user-name {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      font-weight: bold;
     }
     
-    /* 🧹 ปุ่มกดต่างๆ */
-    .btn-cleanup { 
-      background-color: #e07a5f; 
-      color: white; 
-      border: none; 
-      border-radius: 12px;
-      font-weight: 500; 
-      padding: 12px 25px; 
-      font-size: 1.1rem;
-      transition: all 0.3s ease; 
-      box-shadow: 0 4px 15px rgba(224, 122, 95, 0.2);
+    .loading-text {
+      text-align: center;
+      padding: 40px;
+      color: var(--text-muted);
     }
-    .btn-cleanup:hover { 
-      background-color: #d0694e; 
-      color: white; 
-      transform: translateY(-2px); 
-    }
-    .btn-refresh { 
-      border: 2px solid #8C7A6B; 
-      color: #8C7A6B; 
-      background: transparent;
-      border-radius: 12px; 
-      font-weight: 500; 
-      padding: 8px 20px; 
-      font-size: 1.05rem;
-      transition: 0.3s;
-    }
-    .btn-refresh:hover { 
-      background-color: #8C7A6B; 
-      color: white; 
-    }
-
-    /* 📌 ตารางแบบล็อกหัว (Sticky Header) */
-    .table-container { 
-      max-height: 65vh; /* ความสูงของตาราง */
-      overflow-y: auto; /* ให้เลื่อนสกอร์บาร์ได้ */
-      border-radius: 12px; 
-      border: 1px solid #E8E2D9; 
-    }
-    .table { 
-      margin-bottom: 0; 
-      color: #4A3F35; 
-      font-size: 1.15rem; /* ตัวหนังสือในตารางใหญ่ขึ้น */
-    }
-    .table thead th { 
-      position: sticky; /* คำสั่งล็อกหัวตาราง */
-      top: 0; 
-      background-color: #F4F1EA; /* สีพื้นหลังหัวตาราง */
-      color: #6B705C; 
-      border-bottom: 2px solid #E8E2D9; 
-      z-index: 1; 
-      padding: 18px 15px; 
-      font-weight: 600; 
-      box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-    }
-    .table tbody td { 
-      padding: 18px 15px; /* เพิ่มช่องว่างให้อ่านง่าย */
-      border-bottom: 1px solid #E8E2D9; 
-      vertical-align: middle; 
-    }
-    .table tbody tr:hover { 
-      background-color: #FAFAF7; 
-    }
-
-    /* 🎨 ตกแต่งป้ายกำกับ (Badges) */
-    .status-badge { 
-      background-color: #E2E8F0; 
-      color: #475569; 
-      border-radius: 20px; 
-      padding: 6px 15px; 
-      font-size: 1rem; 
-      font-weight: 500; 
-    }
-    .badge-pts { 
-      background-color: #A3B18A; /* สีเขียวมัทฉะ */
-      color: white; 
-      border-radius: 12px; 
-      padding: 8px 16px; 
-      font-size: 1.2rem; 
-      font-weight: 600; 
-    }
-    .text-legacy { color: #A8A29E; font-size: 1.05rem; }
-    .text-date { color: #8C7A6B; font-size: 0.95rem; }
-    #loader { display: none; color: #8C7A6B; }
   </style>
 </head>
 <body>
-  <div class="container py-5" id="mainContent" style="display: none;">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-      <h2 class="header-logo"><i class="fa-solid fa-mug-hot me-3"></i>KUB CAFE MANAGER</h2>
-      <button class="btn btn-cleanup" onclick="cleanupQR()"><i class="fa-solid fa-broom me-2"></i>ล้างขยะ QR</button>
+
+  <div class="header-container">
+    <h1>☕ KUB CAFE MANAGER</h1>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <h2>รายชื่อสมาชิกล่าสุด</h2>
+      <button class="btn btn-refresh" onclick="fetchUsers()">🔄 อัปเดตข้อมูล</button>
     </div>
 
-    <div class="card dashboard-card">
-      <div class="card-body p-4">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-          <h4 class="card-title mb-0" style="font-weight: 600; color: #4A3F35;">รายชื่อสมาชิกล่าสุด</h4>
-          <button class="btn btn-refresh" onclick="loadData()"><i class="fa-solid fa-rotate me-2"></i>อัปเดตข้อมูล</button>
-        </div>
-
-        <div id="loader" class="text-center my-5">
-          <div class="spinner-border" role="status"></div>
-          <p class="mt-3" style="font-size: 1.1rem;">กำลังชงข้อมูล... กรุณารอสักครู่ครับ ☕</p>
-        </div>
-
-        <div class="table-container shadow-sm">
-          <table class="table table-hover align-middle">
-            <thead>
-              <tr>
-                <th>ชื่อลูกค้า</th>
-                <th>แต้มสะสม</th>
-                <th>แต้มเก่า</th>
-                <th>ภาษา</th>
-                <th>อัปเดตล่าสุด</th>
-              </tr>
-            </thead>
-            <tbody id="memberList"></tbody>
-          </table>
-        </div>
-        
-      </div>
+    <div style="overflow-x: auto;">
+      <table>
+        <thead>
+          <tr>
+            <th>ลำดับ</th>
+            <th>ชื่อลูกค้า</th>
+            <th>แต้มสะสม</th>
+            <th>แต้มเก่า</th>
+            <th>ภาษา</th>
+            <th>อัปเดตล่าสุด</th>
+            <th>จัดการ</th>
+          </tr>
+        </thead>
+        <tbody id="user-table-body">
+          <tr>
+            <td colspan="7" class="loading-text">กำลังโหลดข้อมูล...</td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   </div>
 
   <script>
-    const PROJECT_ID = "kub-cafe-pos";
-    const API_KEY = "AIzaSyAi-8gxkAs3N4b5r3EULZHckqq3tHa6tLE";
-    const BASE_URL = `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents`;
+    const FIREBASE_PROJECT_ID = "kub-cafe-pos";
+    const FIREBASE_API_KEY = "AIzaSyAi-8gxkAs3N4b5r3EULZHckqq3tHa6tLE";
+    const FIRESTORE_BASE = `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT_ID}/databases/(default)/documents/users`;
 
-    // 🔒 รหัสผ่านเข้าหน้าแอดมิน
-    const ADMIN_PASSCODE = "2423"; 
-
-    window.onload = () => {
-      const pass = prompt("☕ KUB CAFE MANAGER \nกรุณาใส่รหัสผ่านเพื่อเข้าสู่ระบบ:");
-      if (pass === ADMIN_PASSCODE) {
-        document.getElementById('mainContent').style.display = 'block';
-        loadData();
-      } else {
-        alert("❌ รหัสผ่านไม่ถูกต้อง!");
-        document.body.innerHTML = "<div class='d-flex flex-column justify-content-center align-items-center' style='height: 100vh; color: #e07a5f;'><i class='fa-solid fa-lock fa-4x mb-3'></i><h2>Access Denied</h2><p>รหัสผ่านไม่ถูกต้อง กรุณารีเฟรชเพื่อลองใหม่</p></div>";
-      }
-    };
-
-    async function loadData() {
-      document.getElementById('loader').style.display = 'block';
-      document.getElementById('memberList').innerHTML = '';
-      
-      try {
-        const res = await fetch(`${BASE_URL}/users?pageSize=1000&key=${API_KEY}`);
-        const data = await res.json();
-        
-        document.getElementById('loader').style.display = 'none';
-        const tbody = document.getElementById('memberList');
-        
-        if (data.documents) {
-          data.documents.forEach(doc => {
-            const fields = doc.fields || {};
-            const name = fields.displayName ? fields.displayName.stringValue : "คุณลูกค้า";
-            const pts = fields.totalPoints ? fields.totalPoints.integerValue : 0;
-            const legPts = fields.legacyPoints ? fields.legacyPoints.integerValue : 0;
-            const lang = fields.lang ? fields.lang.stringValue : "TH";
-            
-            let updated = "-";
-            if(fields.lastUpdated) {
-              const d = new Date(fields.lastUpdated.timestampValue);
-              updated = d.toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' }) + " " + d.toLocaleTimeString('th-TH', {hour: '2-digit', minute:'2-digit'}) + " น.";
-            }
-            
-            const row = `<tr>
-              <td style="font-weight: 500;"><i class="fa-solid fa-circle-user me-3" style="color: #D4A373;"></i>${name}</td>
-              <td><span class="badge-pts">${pts}</span></td>
-              <td class="text-legacy">${legPts}</td>
-              <td><span class="status-badge">${lang}</span></td>
-              <td class="text-date">${updated}</td>
-            </tr>`;
-            tbody.innerHTML += row;
-          });
-        }
-      } catch (err) {
-        alert("เกิดข้อผิดพลาดในการดึงข้อมูล: " + err.message);
-        document.getElementById('loader').style.display = 'none';
-      }
+    // แปลงวันที่ ISO เป็นรูปแบบภาษาไทย
+    function formatThaiDate(isoString) {
+      if (!isoString) return "-";
+      const date = new Date(isoString);
+      const months = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
+      const d = date.getDate();
+      const m = months[date.getMonth()];
+      const y = date.getFullYear() + 543;
+      const hours = String(date.getHours()).padStart(2, '0');
+      const minutes = String(date.getMinutes()).padStart(2, '0');
+      return `${d} ${m} ${y} ${hours}:${minutes} น.`;
     }
 
-    async function cleanupQR() {
-      if(!confirm('ยืนยันล้างข้อมูล QR เก่าทั้งหมดใช่ไหม?')) return;
-      
+    // โหลดข้อมูลลูกค้าจาก Firebase
+    async function fetchUsers() {
+      const tbody = document.getElementById('user-table-body');
+      tbody.innerHTML = '<tr><td colspan="7" class="loading-text">กำลังโหลดข้อมูล...</td></tr>';
+
       try {
-        document.getElementById('loader').style.display = 'block';
-        const res = await fetch(`${BASE_URL}/used_qrs?pageSize=500&key=${API_KEY}`);
-        const data = await res.json();
+        const response = await fetch(`${FIRESTORE_BASE}?key=${FIREBASE_API_KEY}&pageSize=100`);
+        const data = await response.json();
         
+        tbody.innerHTML = '';
+
         if (!data.documents || data.documents.length === 0) {
-           alert("ไม่มีขยะ QR ให้ล้างในขณะนี้ครับ ✨");
-           document.getElementById('loader').style.display = 'none';
-           return;
+          tbody.innerHTML = '<tr><td colspan="7" class="loading-text">ยังไม่มีข้อมูลสมาชิก</td></tr>';
+          return;
         }
 
-        let count = 0;
-        for (const doc of data.documents) {
-           await fetch(`https://firestore.googleapis.com/v1/${doc.name}?key=${API_KEY}`, { method: 'DELETE' });
-           count++;
-        }
-        
-        alert(`ภารกิจเสร็จสิ้น! กวาดขยะทิ้งไปทั้งหมด ${count} รายการ 🧹`);
-        loadData();
-      } catch (err) {
-        alert("เกิดข้อผิดพลาด: " + err.message);
-        document.getElementById('loader').style.display = 'none';
+        // เรียงลำดับตามวันที่อัปเดตล่าสุด (ใหม่สุดขึ้นก่อน)
+        const users = data.documents.map(doc => {
+          const fields = doc.fields || {};
+          const paths = doc.name.split('/');
+          return {
+            id: paths[paths.length - 1],
+            displayName: fields.displayName?.stringValue || 'ไม่ระบุชื่อ',
+            pictureUrl: fields.pictureUrl?.stringValue || '',
+            totalPoints: parseInt(fields.totalPoints?.integerValue) || 0,
+            legacyPoints: parseInt(fields.legacyPoints?.integerValue) || 0,
+            lang: fields.lang?.stringValue || 'TH',
+            lastUpdated: fields.lastUpdated?.timestampValue || ''
+          };
+        }).sort((a, b) => new Date(b.lastUpdated) - new Date(a.lastUpdated));
+
+        // สร้างตาราง
+        users.forEach((user, index) => {
+          // 1. ดึงรูปโปรไฟล์
+          const picHtml = user.pictureUrl 
+            ? `<img src="${user.pictureUrl}" class="profile-pic">` 
+            : `<div class="no-pic">👤</div>`;
+          
+          // 2. ซ่อนแต้มเก่าที่ติดลบให้แสดงเป็น 0
+          const safeLegacy = Math.max(0, user.legacyPoints);
+
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td style="color: #9A958F;">${index + 1}</td>
+            <td>
+              <div class="user-name">
+                ${picHtml}
+                ${user.displayName}
+              </div>
+            </td>
+            <td><span class="pill-green">${user.totalPoints}</span></td>
+            <td style="color: #8C7A6B; font-weight: bold;">${safeLegacy}</td>
+            <td><span class="pill-gray">${user.lang}</span></td>
+            <td style="font-size: 13px; color: #6C6863;">${formatThaiDate(user.lastUpdated)}</td>
+            <td>
+              <button class="btn btn-edit" onclick="editUserPoints('${user.id}', '${user.displayName}', ${user.totalPoints})">
+                ✏️ แก้ไข
+              </button>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+
+      } catch (error) {
+        console.error("Error fetching users:", error);
+        tbody.innerHTML = '<tr><td colspan="7" class="loading-text" style="color:red;">โหลดข้อมูลไม่สำเร็จ กรุณาลองใหม่</td></tr>';
       }
     }
+
+    // ฟังก์ชันเปิดหน้าต่างแก้ไขแต้ม
+    async function editUserPoints(userId, userName, currentPoints) {
+      const { value: newPoints } = await Swal.fire({
+        title: `แก้ไขแต้ม`,
+        html: `กำหนดแต้มใหม่ให้กับ<br><b>${userName}</b>`,
+        input: 'number',
+        inputValue: currentPoints,
+        inputAttributes: { min: 0, step: 1 },
+        showCancelButton: true,
+        confirmButtonText: 'บันทึก',
+        cancelButtonText: 'ยกเลิก',
+        confirmButtonColor: '#A3B18A',
+        cancelButtonColor: '#E8A87C',
+        customClass: {
+          popup: 'custom-swal-popup'
+        }
+      });
+
+      if (newPoints !== undefined && newPoints !== null && newPoints !== "") {
+        const pts = parseInt(newPoints);
+        if (isNaN(pts) || pts < 0) {
+          Swal.fire('ข้อผิดพลาด', 'กรุณาระบุตัวเลขแต้มที่ถูกต้อง (0 ขึ้นไป)', 'error');
+          return;
+        }
+
+        Swal.fire({
+          title: 'กำลังบันทึกข้อมูล...',
+          allowOutsideClick: false,
+          didOpen: () => { Swal.showLoading(); }
+        });
+
+        try {
+          // อัปเดตข้อมูลแต้มและเวลาล่าสุดกลับไปยัง Firestore
+          const nowIso = new Date().toISOString();
+          const updateUrl = `${FIRESTORE_BASE}/${userId}?updateMask.fieldPaths=totalPoints&updateMask.fieldPaths=lastUpdated&key=${FIREBASE_API_KEY}`;
+          
+          const response = await fetch(updateUrl, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              fields: { 
+                totalPoints: { integerValue: pts },
+                lastUpdated: { timestampValue: nowIso }
+              }
+            })
+          });
+
+          if (response.ok) {
+            Swal.fire({
+              title: 'สำเร็จ!', 
+              text: `อัปเดตแต้มของ ${userName} เป็น ${pts} แต้มแล้ว`, 
+              icon: 'success',
+              confirmButtonColor: '#A3B18A'
+            }).then(() => {
+              fetchUsers(); // โหลดตารางใหม่
+            });
+          } else {
+            throw new Error('Network error');
+          }
+        } catch (error) {
+          Swal.fire('บันทึกไม่สำเร็จ', 'เกิดข้อผิดพลาดในการเชื่อมต่อ', 'error');
+        }
+      }
+    }
+
+    // โหลดข้อมูลอัตโนมัติตอนเปิดหน้าเว็บ
+    document.addEventListener("DOMContentLoaded", fetchUsers);
   </script>
 </body>
 </html>
