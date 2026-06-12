@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <title>KUB Cafe Admin Pro</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body { background-color: #0f172a; color: #f1f5f9; font-family: 'Segoe UI', sans-serif; }
+    .dashboard-card { background-color: #1e293b; border: none; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); margin-top: 30px; }
+    .btn-cleanup { background-color: #f43f5e; border: none; font-weight: bold; padding: 10px 25px; transition: 0.3s; color: white; }
+    .btn-cleanup:hover { background-color: #e11d48; transform: scale(1.05); color: white;}
+    .table-dark { --bs-table-bg: #1e293b; border-radius: 10px; overflow: hidden; }
+    .status-badge { border-radius: 20px; padding: 5px 12px; font-size: 0.8rem; }
+    .header-logo { color: #deff9a; font-weight: bold; letter-spacing: 2px; }
+    #loader { display: none; }
+  </style>
+</head>
+<body>
+  <div class="container py-5" id="mainContent" style="display: none;">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2 class="header-logo"><i class="fa-solid fa-mug-hot me-2"></i>KUB CAFE ADMIN</h2>
+      <button class="btn btn-cleanup" onclick="cleanupQR()"><i class="fa-solid fa-broom me-2"></i>ล้างขยะ QR</button>
+    </div>
+
+    <div class="card dashboard-card">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h5 class="card-title mb-0">รายชื่อสมาชิกล่าสุด</h5>
+          <button class="btn btn-sm btn-outline-light" onclick="loadData()"><i class="fa-solid fa-rotate me-2"></i>รีเฟรชข้อมูล</button>
+        </div>
+
+        <div id="loader" class="text-center my-5">
+          <div class="spinner-border text-info" role="status"></div>
+          <p class="mt-2">กำลังเชื่อมต่อฐานข้อมูล...</p>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table table-dark table-hover align-middle">
+            <thead>
+              <tr>
+                <th>ชื่อลูกค้า</th>
+                <th>แต้มสะสม</th>
+                <th>แต้มเก่า</th>
+                <th>ภาษา</th>
+                <th>อัปเดตล่าสุด</th>
+              </tr>
+            </thead>
+            <tbody id="memberList"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const PROJECT_ID = "kub-cafe-pos";
+    const API_KEY = "AIzaSyAi-8gxkAs3N4b5r3EULZHckqq3tHa6tLE";
+    const BASE_URL = `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents`;
+
+    // 🔒 รหัสผ่านเข้าหน้าแอดมิน (คุณบีสามารถเปลี่ยนเลข 1234 เป็นเลขอื่นได้ครับ)
+    const ADMIN_PASSCODE = "1234"; 
+
+    window.onload = () => {
+      // เด้งขอรหัสผ่านก่อนเข้าเว็บ
+      const pass = prompt("☕ KUB CAFE ADMIN \nกรุณาใส่รหัสผ่านเพื่อเข้าสู่ระบบ:");
+      if (pass === ADMIN_PASSCODE) {
+        document.getElementById('mainContent').style.display = 'block';
+        loadData();
+      } else {
+        alert("❌ รหัสผ่านไม่ถูกต้อง!");
+        document.body.innerHTML = "<h2 class='text-center mt-5 text-danger'><i class='fa-solid fa-lock me-2'></i> Access Denied</h2>";
+      }
+    };
+
+    async function loadData() {
+      document.getElementById('loader').style.display = 'block';
+      document.getElementById('memberList').innerHTML = '';
+      
+      try {
+        const res = await fetch(`${BASE_URL}/users?pageSize=1000&key=${API_KEY}`);
+        const data = await res.json();
+        
+        document.getElementById('loader').style.display = 'none';
+        const tbody = document.getElementById('memberList');
+        
+        if (data.documents) {
+          data.documents.forEach(doc => {
+            const fields = doc.fields || {};
+            const name = fields.displayName ? fields.displayName.stringValue : "ลูกค้า";
+            const pts = fields.totalPoints ? fields.totalPoints.integerValue : 0;
+            const legPts = fields.legacyPoints ? fields.legacyPoints.integerValue : 0;
+            const lang = fields.lang ? fields.lang.stringValue : "TH";
+            
+            // จัดฟอร์แมตเวลาให้สวยงาม
+            let updated = "-";
+            if(fields.lastUpdated) {
+              const d = new Date(fields.lastUpdated.timestampValue);
+              updated = d.toLocaleDateString('th-TH') + " " + d.toLocaleTimeString('th-TH', {hour: '2-digit', minute:'2-digit'});
+            }
+            
+            const row = `<tr>
+              <td><i class="fa-solid fa-circle-user me-2 text-info"></i>${name}</td>
+              <td><span class="badge bg-success" style="font-size: 1rem">${pts}</span></td>
+              <td class="text-secondary">${legPts}</td>
+              <td><span class="status-badge bg-secondary">${lang}</span></td>
+              <td style="font-size: 0.8rem">${updated}</td>
+            </tr>`;
+            tbody.innerHTML += row;
+          });
+        }
+      } catch (err) {
+        alert("เกิดข้อผิดพลาดในการดึงข้อมูล: " + err.message);
+        document.getElementById('loader').style.display = 'none';
+      }
+    }
+
+    async function cleanupQR() {
+      if(!confirm('ยืนยันล้างข้อมูล QR เก่าทั้งหมดใช่ไหม?')) return;
+      
+      try {
+        document.getElementById('loader').style.display = 'block';
+        const res = await fetch(`${BASE_URL}/used_qrs?pageSize=500&key=${API_KEY}`);
+        const data = await res.json();
+        
+        if (!data.documents || data.documents.length === 0) {
+           alert("ไม่มีขยะ QR ให้ล้างในขณะนี้ครับ ✨");
+           document.getElementById('loader').style.display = 'none';
+           return;
+        }
+
+        let count = 0;
+        // วิ่งลบเอกสารทีละใบ
+        for (const doc of data.documents) {
+           await fetch(`https://firestore.googleapis.com/v1/${doc.name}?key=${API_KEY}`, { method: 'DELETE' });
+           count++;
+        }
+        
+        alert(`ภารกิจเสร็จสิ้น! กวาดขยะทิ้งไปทั้งหมด ${count} รายการ 🧹`);
+        loadData();
+      } catch (err) {
+        alert("เกิดข้อผิดพลาด: " + err.message);
+        document.getElementById('loader').style.display = 'none';
+      }
+    }
+  </script>
+</body>
+</html>
