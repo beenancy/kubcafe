@@ -3,63 +3,86 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>ระบบประมวลผลแต้ม KUB Cafe</title>
+  <title>KUB Cafe - Processing</title>
   
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   
   <style>
-    body { background-color: #fdfdfd; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; font-family: sans-serif; margin: 0; padding: 0 20px; text-align: center; }
-    .loader { border: 5px solid #f3f3f3; border-top: 5px solid #A3B18A; border-radius: 50%; width: 45px; height: 45px; animation: spin 1s linear infinite; margin-bottom: 20px; }
-    h2 { color: #4A3F35; font-size: 18px; margin: 0 0 10px 0; }
-    .sub-text { font-size: 13px; color: #b2bec3; }
+    /* 🎌 Japan Minimal Base */
+    body { background-color: #F9F8F6; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; margin: 0; padding: 0 20px; text-align: center; }
+    
+    .loader { border: 4px solid #EAE5D9; border-top: 4px solid #7B8D62; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-bottom: 20px; }
+    h2 { color: #3E3A37; font-size: 18px; margin: 0 0 8px 0; font-weight: 600; }
+    .sub-text { font-size: 13px; color: #9A958F; }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     
-    /* 🎨 Cozy Minimal Popup Style */
+    /* 🎨 Japan Minimal Popup Style */
     .custom-swal-popup { 
       width: 85% !important; 
-      max-width: 310px !important; 
-      padding: 2em 1.5em !important; 
-      border-radius: 24px !important; 
-      background-color: #FDFCF0 !important; 
-      box-shadow: 0 10px 30px rgba(140, 122, 107, 0.15) !important;
+      max-width: 320px !important; 
+      padding: 30px 20px 25px 20px !important; 
+      border-radius: 12px !important; /* ขอบไม่มนเกินไป */
+      background-color: #FFFFFF !important; 
+      border: 1px solid #EAE5D9 !important;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.04) !important;
     }
     
-    /* 📉 ย่อขนาดไอคอน (เครื่องหมายถูก/กากบาท) ให้เล็กลง */
+    /* 📉 ย่อขนาดไอคอนให้มินิมอล ไม่ตะโกน */
     .swal2-icon { 
-      transform: scale(0.65) !important; 
-      margin: -15px auto 5px auto !important; 
+      transform: scale(0.55) !important; 
+      margin: -20px auto 0 auto !important; 
     }
+    /* แต่งสีไอคอนให้ละมุน */
+    .swal2-icon.swal2-success { border-color: #7B8D62 !important; color: #7B8D62 !important; }
+    .swal2-icon.swal2-success [class^=swal2-success-line] { background-color: #7B8D62 !important; }
+    .swal2-icon.swal2-success .swal2-success-ring { border-color: rgba(123, 141, 98, 0.2) !important; }
+    .swal2-icon.swal2-error { border-color: #C57B57 !important; color: #C57B57 !important; }
+    .swal2-icon.swal2-error [class^=swal2-x-mark-line] { background-color: #C57B57 !important; }
     
     .custom-swal-title { 
-      font-size: 20px !important; 
-      font-weight: 700 !important; 
-      color: #4A3F35 !important; 
-      margin-bottom: 10px !important;
+      font-size: 18px !important; 
+      font-weight: 600 !important; 
+      color: #3E3A37 !important; 
+      margin-bottom: 15px !important;
     }
     .custom-swal-html { 
-      font-size: 15px !important; 
-      color: #6B705C !important; 
+      font-size: 14px !important; 
+      color: #6C6863 !important; 
       line-height: 1.5 !important; 
     }
+    
+    /* 🔘 ปุ่มกดสไตล์ Muji (เรียบหรู ดูแพง) */
     .custom-swal-btn { 
-      font-size: 16px !important; 
-      padding: 12px 0 !important; 
-      border-radius: 14px !important; 
-      font-weight: 600 !important; 
+      font-size: 15px !important; 
+      padding: 10px 0 !important; 
+      border-radius: 6px !important; 
+      font-weight: 500 !important; 
+      letter-spacing: 0.5px !important;
       width: 100% !important; 
-      background-color: #A3B18A !important; 
-      color: #ffffff !important;
+      background-color: #7B8D62 !important; /* สีมัทฉะ */
+      color: #FFFFFF !important;
       border: none !important;
-      box-shadow: 0 4px 15px rgba(163, 177, 138, 0.3) !important;
+      transition: all 0.2s ease !important;
+      margin-top: 5px !important;
+    }
+    .custom-swal-btn:active {
+      transform: scale(0.97) !important;
+      background-color: #6A7A53 !important;
+    }
+    .custom-swal-btn-error {
+      background-color: #C57B57 !important; /* สีอิฐ/ชาไทย ตอน Error */
+    }
+    .custom-swal-btn-error:active {
+      background-color: #A86646 !important;
     }
   </style>
 </head>
 <body>
   
   <div class="loader"></div>
-  <h2 id="status-text">กำลังประมวลผลแต้ม...</h2>
-  <div class="sub-text">กรุณารอสักครู่ ห้ามปิดหน้าจอ</div>
+  <h2 id="status-text">Processing...</h2>
+  <div class="sub-text">Please wait / กรุณารอสักครู่</div>
 
   <script>
     const LIFF_ID = "2010206186-u1XRJldq"; 
@@ -76,16 +99,21 @@
       }
     }
 
-    async function showAlert(title, text, icon, btnText) {
+    async function showAlert(title, text, icon, btnText, isError = false) {
       if (typeof Swal !== 'undefined') {
         await Swal.fire({
           title: title, 
           html: text, 
           icon: icon,
-          customClass: { popup: 'custom-swal-popup', title: 'custom-swal-title', htmlContainer: 'custom-swal-html', confirmButton: 'custom-swal-btn' },
+          customClass: { 
+            popup: 'custom-swal-popup', 
+            title: 'custom-swal-title', 
+            htmlContainer: 'custom-swal-html', 
+            confirmButton: isError ? 'custom-swal-btn custom-swal-btn-error' : 'custom-swal-btn' 
+          },
           allowOutsideClick: false, 
           confirmButtonText: btnText,
-          buttonsStyling: false // ปิดสไตล์ดั้งเดิม เพื่อใช้ CSS ของเรา 100%
+          buttonsStyling: false 
         });
       } else {
         alert(title + "\n" + text.replace(/<[^>]*>?/gm, ''));
@@ -98,7 +126,7 @@
 
       try {
         if (!navigator.onLine) {
-          await showAlert('ไม่มีสัญญาณเน็ต', 'กรุณาตรวจสอบอินเทอร์เน็ตค่ะ', 'error', 'ตกลง (OK)');
+          await showAlert('No Internet', 'กรุณาตรวจสอบอินเทอร์เน็ตค่ะ', 'error', 'OK', true);
           redirectToLINE(); return;
         }
 
@@ -109,7 +137,7 @@
         const shopCode = urlParams.get('code');
 
         if (!shopCode) {
-          await showAlert('ไม่พบข้อมูลแต้ม', '❌ ข้อมูลแต้มไม่ถูกต้อง หรือสแกนผิดวิธีค่ะ', 'error', 'ตกลง (OK)');
+          await showAlert('Invalid QR', 'QR Code ไม่ถูกต้องค่ะ', 'error', 'OK', true);
           redirectToLINE(); return;
         }
 
@@ -119,35 +147,33 @@
         const response = await fetch(`${API_URL}?action=scanAddPoint&userId=${profile.userId}&name=${cleanedName}&shopCode=${encodeURIComponent(shopCode)}`);
         const data = await response.json();
         
+        // 🌐 เช็กภาษาที่รับมาจากสมองกล (ถ้าไม่มีให้เดาว่าเป็น TH ไว้ก่อน)
+        const isEN = data.lang === "EN";
+        const btnText = isEN ? 'OK' : 'ตกลง';
+        
         if (data && data.status === "success") {
-          
-          // 🌐 ดึงภาษามาจากสมองกล
-          const isEN = data.lang === "EN";
-          
-          // แปลภาษา หัวข้อและปุ่ม
-          const titleText = isEN ? 'Points Added! 🎉' : 'สะสมแต้มสำเร็จ! 🎉';
-          const btnText = isEN ? 'OK' : 'ตกลง (OK)';
-          
-          // แปลภาษา เนื้อหาใน Pop-up
-          const ptsText = `<div style="font-size:32px; font-weight:800; color:#D4A373; margin:10px 0; line-height: 1;">+${data.ptsAdded} ${isEN ? 'PTS' : 'แต้ม'} ☕</div>`;
-          const totalLabel = isEN ? 'Total Balance:' : 'แต้มสะสมทั้งหมด:';
-          const totalText = `<div style="font-size:15px; color:#4A3F35; margin-bottom:20px; font-weight:600;">${totalLabel} <span style="color:#A3B18A; font-size:18px;">${data.totalPts}</span> ${isEN ? 'PTS' : 'แต้ม'}</div>`;
+          const titleText = isEN ? 'Points Added' : 'สะสมแต้มสำเร็จ';
+          const ptsText = `<div style="font-size:32px; font-weight:600; color:#D4A373; margin:15px 0 20px 0; line-height: 1;">+${data.ptsAdded} ${isEN ? 'PTS' : 'แต้ม'}</div>`;
+          const totalLabel = isEN ? 'Total Balance:' : 'ยอดสะสมทั้งหมด:';
+          const totalText = `<div style="font-size:14px; color:#6C6863; margin-bottom:20px;">${totalLabel} <span style="color:#7B8D62; font-size:16px; font-weight:600;">${data.totalPts}</span></div>`;
           
           const remarkLabel = isEN 
-            ? '(Check history and redeem rewards via the menu below)' 
-            : '(เช็กแต้มย้อนหลังและแลกรางวัล ได้ที่เมนูด้านล่างในแชท)';
-          const remark = `<div style="font-size:12px; color:#B0A69D; border-top: 1px dashed #E8E2D9; padding-top: 15px;">${remarkLabel}</div>`;
+            ? '(Check history & redeem via menu below)' 
+            : '(เช็กแต้มและแลกรางวัล ได้ที่เมนูด้านล่างในแชท)';
+          const remark = `<div style="font-size:11px; color:#B4B0A9; border-top: 1px solid #F0ECE4; padding-top: 15px; margin-top: 5px;">${remarkLabel}</div>`;
           
-          await showAlert(titleText, ptsText + totalText + remark, 'success', btnText);
+          await showAlert(titleText, ptsText + totalText + remark, 'success', btnText, false);
           redirectToLINE(); 
           
         } else {
-          await showAlert('สะสมแต้มไม่สำเร็จ', `${data.message || 'รหัสผ่านหรือสิทธิ์ไม่ถูกต้อง'}`, 'error', 'ตกลง (OK)');
+          // แจ้ง Error แบบแปลภาษาแล้ว
+          const titleError = isEN ? 'Scan Failed' : 'สแกนไม่สำเร็จ';
+          await showAlert(titleError, `${data.message || 'รหัสผ่านหรือสิทธิ์ไม่ถูกต้อง'}`, 'error', btnText, true);
           redirectToLINE();
         }
 
       } catch (err) {
-        await showAlert('ระบบขัดข้องชั่วคราว', 'กรุณาสแกนใหม่อีกครั้งนะคะ', 'error', 'ตกลง (OK)');
+        await showAlert('System Error', 'ระบบขัดข้อง กรุณาลองใหม่อีกครั้งค่ะ', 'error', 'OK', true);
         redirectToLINE();
       }
     }
