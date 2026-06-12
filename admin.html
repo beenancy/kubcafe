@@ -3,18 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>KUB Admin POS</title>
+  <title>KUB Admin POS v5.1</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <style>
-    /* Reset & Center Everything */
     body, html {
-      margin: 0; padding: 0;
-      width: 100%; min-height: 100dvh; /* 100dvh รองรับเบราว์เซอร์มือถือได้ดีกว่า vh */
-      background-color: #FDFCF0;
-      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      overflow: hidden; /* ล็อกหน้าจอไม่ให้เลื่อน */
+      margin: 0; padding: 0; width: 100%; min-height: 100dvh;
+      background-color: #FDFCF0; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden;
     }
 
     .pos-container {
@@ -24,9 +20,7 @@
 
     h1 { margin: 0; color: #4A3F35; font-size: clamp(24px, 6vw, 28px); text-align: center; }
 
-    .numpad {
-      display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; width: 100%;
-    }
+    .numpad { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; width: 100%; }
 
     .btn-point {
       background-color: #A3B18A; color: white; border: none; border-radius: 16px;
@@ -45,7 +39,7 @@
 <body>
 
   <div class="pos-container">
-    <h1>KUB POS</h1>
+    <h1>KUB POS <span style="font-size:12px; font-weight:normal;">v5.1</span></h1>
     
     <div class="numpad">
       <button class="btn-point" onclick="generateQR(1)">+1 แต้ม</button>
@@ -63,11 +57,32 @@
     const SECRET_SALT = "KUB_SECRET_TOKEN_2026";
     const LIFF_URL = "https://liff.line.me/2010206186-u1XRJldq"; 
     
-    // ช่องทางส่งข้อมูลไปให้หน้า Display
-    const posChannel = new BroadcastChannel('kub_pos_channel');
+    const FIREBASE_PROJECT_ID = "kub-cafe-pos";
+    const FIREBASE_API_KEY = "AIzaSyAi-8gxkAs3N4b5r3EULZHckqq3tHa6tLE";
+    
+    // อัปเดตสถานะไปที่ Firebase ตรงเข้าหา Display.html
+    async function syncToCloud(status, code = "", pts = 0) {
+      const url = `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT_ID}/databases/(default)/documents/system/display_state?updateMask.fieldPaths=status&updateMask.fieldPaths=code&updateMask.fieldPaths=points&updateMask.fieldPaths=timestamp&key=${FIREBASE_API_KEY}`;
+      
+      try {
+        await fetch(url, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            fields: {
+              status: { stringValue: status },
+              code: { stringValue: code },
+              points: { integerValue: pts },
+              timestamp: { integerValue: Date.now() }
+            }
+          })
+        });
+      } catch (e) {
+        console.error("Cloud Sync Failed:", e);
+      }
+    }
 
     let currentPoints = 0;
-    let currentCode = "";
 
     function generateQR(pts) {
       currentPoints = pts;
@@ -75,18 +90,19 @@
       const rawText = `${pts}-${timestamp}-${SECRET_SALT}`;
       const hash = CryptoJS.MD5(rawText).toString();
       
-      // ส่งรหัส KUBBAR ไปให้จอแสดงผล
-      currentCode = `KUBBAR-${pts}-${timestamp}-${hash}`;
-      posChannel.postMessage({ type: 'SHOW_QR', code: currentCode, points: pts });
+      const currentCode = `KUBBAR-${pts}-${timestamp}-${hash}`;
       
-      Swal.fire({ title: 'ส่งไปหน้าจอแล้ว', text: `แจก ${pts} แต้ม`, icon: 'success', timer: 1000, showConfirmButton: false });
+      // ส่งคำสั่งขึ้นคลาวด์ให้หน้าจอ Display แสดงผล
+      syncToCloud("active", currentCode, pts);
+      
+      Swal.fire({ title: 'ส่งไปหน้าจอแล้ว', text: `แจก ${pts} แต้ม`, icon: 'success', timer: 1200, showConfirmButton: false });
     }
 
     function clearDisplay() {
       currentPoints = 0;
-      currentCode = "";
-      posChannel.postMessage({ type: 'CLEAR_QR' });
-      Swal.fire({ title: 'ล้างหน้าจอแล้ว', icon: 'info', timer: 1000, showConfirmButton: false });
+      // ส่งคำสั่งขึ้นคลาวด์ให้หน้าจอกลับไปสแตนด์บาย
+      syncToCloud("standby");
+      Swal.fire({ title: 'ล้างหน้าจอแล้ว', icon: 'info', timer: 1200, showConfirmButton: false });
     }
 
     function copyLink() {
@@ -95,7 +111,6 @@
       const timestamp = Date.now();
       const rawText = `${currentPoints}-${timestamp}-${SECRET_SALT}`;
       const hash = CryptoJS.MD5(rawText).toString();
-      // ลิงก์ธรรมดา ใช้ KUB- (จะติดวันหมดอายุ 2 ชั่วโมง)
       const link = `${LIFF_URL}?code=KUB-${currentPoints}-${timestamp}-${hash}`;
       
       navigator.clipboard.writeText(link).then(() => {
