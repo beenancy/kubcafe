@@ -20,120 +20,129 @@
 
     body, html {
       margin: 0; padding: 0; 
-      width: 100%; height: 100dvh; /* บังคับ 100% ของจอ */
+      width: 100%; height: 100dvh; 
       background-color: var(--bg-cream);
       font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
       display: flex; flex-direction: column;
-      overflow: hidden; /* ปิด Scroll ถาวร */
+      overflow: hidden; 
       -webkit-user-select: none;
     }
 
-    /* 📱 ส่วนบน: Preview หน้าจอลูกค้า */
+    /* 📱 ส่วนบน: Preview (บีบอัดอัตโนมัติ) */
     .preview-section {
-      flex: 1; /* กินพื้นที่ที่เหลือ */
+      flex: 1; /* กินพื้นที่ครึ่งบน */
       display: flex; flex-direction: column; align-items: center; justify-content: center;
-      padding: 10px; min-height: 0; /* สำคัญมากเพื่อให้บีบตัวได้ */
+      padding: clamp(10px, 2vh, 15px); 
+      min-height: 0; /* 🌟 สำคัญมาก: อนุญาตให้ย่อตัวเมื่อรูปใหญ่เกินไป */
     }
-
-    .status-badge {
-      background: white; padding: 8px 20px; border-radius: 20px;
-      font-size: 18px; font-weight: bold; color: var(--text-brown);
-      box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 10px;
-    }
-    .status-badge span { color: var(--matcha-dark); font-size: 22px; }
 
     .qr-preview-box {
       background: white; padding: 10px; border-radius: 16px; border: 2px solid var(--border-color);
       display: flex; justify-content: center; align-items: center;
-      height: 35vh; /* ล็อกความสูง QR ไม่ให้ใหญ่เกิน */
-      aspect-ratio: 1/1; 
-      margin-bottom: 10px;
+      width: 100%; max-width: 350px; 
+      flex: 1; min-height: 0; /* 🌟 สำคัญมาก: ให้กล่องย่อตามพื้นที่ที่เหลือ */
+      margin-bottom: 8px;
+      cursor: pointer; transition: transform 0.1s;
     }
-    .qr-preview-box img { width: 100%; height: 100%; object-fit: contain; }
+    .qr-preview-box:active { transform: scale(0.96); } 
+    /* 🌟 object-fit: contain ทำให้รูปแนวยาวไม่ล้นจอ */
+    .qr-preview-box img { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 8px; }
+    
+    .refresh-hint { font-size: clamp(11px, 1.5vh, 12px); color: var(--text-light); font-weight: bold; }
 
-    .timer-text { font-size: 13px; font-weight: bold; color: #C57B57; }
-
-    /* 🎛️ ส่วนล่าง: แผงควบคุม (Control Panel) */
+    /* 🎛️ ส่วนล่าง: Control Panel (ล็อกความสูง) */
     .control-section {
       background: var(--card-white);
-      padding: 15px 20px 25px 20px;
+      padding: clamp(12px, 2vh, 15px) 20px clamp(15px, 3vh, 25px) 20px; 
       border-top-left-radius: 30px; border-top-right-radius: 30px;
       box-shadow: 0 -10px 30px rgba(140, 122, 107, 0.1);
-      display: flex; flex-direction: column; gap: 12px;
+      display: flex; flex-direction: column; 
+      gap: clamp(10px, 1.5vh, 12px);
+      flex-shrink: 0; /* ห้ามบีบส่วนนี้เด็ดขาด */
     }
 
-    /* แถบระบุแต้มเอง */
+    /* แถบสถานะ & ระบุแต้มเอง */
     .custom-point-row {
       display: flex; justify-content: space-between; align-items: center;
-      background: var(--bg-cream); padding: 5px 15px; border-radius: 16px;
+      background: var(--bg-cream); padding: clamp(8px, 1vh, 10px) 15px; border-radius: 16px;
     }
-    .custom-point-row label { font-size: 14px; font-weight: bold; color: var(--text-brown); }
+    .input-group { display: flex; align-items: center; gap: 8px; }
+    
+    /* ป้ายบอกสถานะแบบไดนามิก */
+    #sync-status-label { 
+      font-size: clamp(12px, 2vh, 15px); font-weight: 800; 
+      color: var(--text-brown); background: white; 
+      padding: 5px 10px; border-radius: 10px; border: 1px solid var(--border-color);
+    }
+    
     .custom-input {
-      width: 60px; text-align: center; font-size: 18px; font-weight: bold; color: var(--matcha-dark);
-      border: 1px solid var(--border-color); border-radius: 10px; padding: 5px; background: white;
+      width: 55px; text-align: center; 
+      font-size: clamp(18px, 2.5vh, 22px); font-weight: bold; color: var(--matcha-dark);
+      border: 1px solid var(--border-color); border-radius: 10px; padding: clamp(4px, 0.5vh, 6px); background: white;
     }
-    .btn-custom { background: var(--matcha-green); color: white; border: none; padding: 8px 15px; border-radius: 10px; font-weight: bold; }
+    .custom-input:focus { outline: 2px solid var(--matcha-green); border-color: transparent; }
+    
+    .timer-text { font-size: clamp(12px, 2vh, 14px); font-weight: bold; color: #C57B57; }
 
     /* แผงปุ่ม 4x3 Grid */
-    .keypad-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 10px;
-    }
+    .keypad-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: clamp(8px, 1.2vh, 10px); }
     .btn-key {
       background: #EAF0E4; color: var(--matcha-dark);
       border: none; border-radius: 14px;
-      padding: 15px 0; font-size: 22px; font-weight: 900;
-      box-shadow: 0 4px 0 #D5E0CB;
-      transition: all 0.1s;
+      padding: clamp(12px, 2.2vh, 18px) 0; 
+      font-size: clamp(20px, 3vh, 24px); font-weight: 900;
+      box-shadow: 0 4px 0 #D5E0CB; transition: all 0.1s;
     }
     .btn-key:active { transform: translateY(4px); box-shadow: 0 0 0 transparent; }
 
-    /* ปุ่มลัดพิเศษ */
-    .btn-line { background: var(--line-green); color: white; font-size: 15px; box-shadow: 0 4px 0 #04A044; }
-    .btn-true { background: var(--true-orange); color: white; font-size: 15px; box-shadow: 0 4px 0 #CC5200; }
-    .btn-bank { background: var(--bank-blue); color: white; font-size: 15px; box-shadow: 0 4px 0 #0E4788; }
+    .btn-line { background: var(--line-green); color: white; font-size: clamp(13px, 2vh, 15px); box-shadow: 0 4px 0 #04A044; }
+    .btn-true { background: var(--true-orange); color: white; font-size: clamp(13px, 2vh, 15px); box-shadow: 0 4px 0 #CC5200; }
+    .btn-bank { background: var(--bank-blue); color: white; font-size: clamp(13px, 2vh, 15px); box-shadow: 0 4px 0 #0E4788; }
     
-    .btn-copy { background: #F4EEFF; color: #8A56E2; border: 1px dashed #B89AEB; width: 100%; padding: 12px; border-radius: 14px; font-size: 14px; font-weight: bold; margin-top: 5px; }
-
+    .btn-copy { 
+      background: #F4EEFF; color: #8A56E2; border: 1px dashed #B89AEB; width: 100%; 
+      padding: clamp(10px, 1.5vh, 14px); border-radius: 14px; 
+      font-size: clamp(13px, 2vh, 15px); font-weight: bold; margin-top: 2px; 
+    }
   </style>
 </head>
 <body>
 
   <div class="preview-section">
-    <div class="status-badge" id="status-badge">สถานะ: รอสั่งการ</div>
-    <div class="qr-preview-box">
+    <div class="qr-preview-box" onclick="refreshCurrentPoint()">
       <img id="qr-preview-img" src="https://via.placeholder.com/300x300.png?text=STANDBY" alt="QR Preview">
     </div>
-    <div class="timer-text" id="timer-display">---</div>
+    <div class="refresh-hint">🔄 แตะที่รูปเพื่อรีเฟรชแต้มใหม่ (หรือเคลียร์จอ)</div>
   </div>
 
   <div class="control-section">
     
     <div class="custom-point-row">
-      <label>ระบุแต้มเอง:</label>
-      <input type="number" id="custom-pts" class="custom-input" value="10">
-      <button class="btn-custom" onclick="sendCustomPoint()">ส่งแต้ม</button>
+      <div class="input-group">
+        <span id="sync-status-label">⚪ ว่าง</span>
+        <input type="number" inputmode="numeric" pattern="[0-9]*" id="custom-pts" class="custom-input" placeholder="0" oninput="handleCustomInput(this.value)">
+      </div>
+      <div class="timer-text" id="timer-display">---</div>
     </div>
 
     <div class="keypad-grid">
-      <button class="btn-key" onclick="sendPoint(1)">1</button>
-      <button class="btn-key" onclick="sendPoint(2)">2</button>
-      <button class="btn-key" onclick="sendPoint(3)">3</button>
-      <button class="btn-key btn-line" onclick="sendMode('store_line')">LINE<br>ร้าน</button>
+      <button class="btn-key" onclick="writeToFirebase('points', 1)">1</button>
+      <button class="btn-key" onclick="writeToFirebase('points', 2)">2</button>
+      <button class="btn-key" onclick="writeToFirebase('points', 3)">3</button>
+      <button class="btn-key btn-line" onclick="writeToFirebase('store_line')">LINE</button>
 
-      <button class="btn-key" onclick="sendPoint(4)">4</button>
-      <button class="btn-key" onclick="sendPoint(5)">5</button>
-      <button class="btn-key" onclick="sendPoint(6)">6</button>
-      <button class="btn-key btn-true" onclick="sendMode('true_payment')">True</button>
+      <button class="btn-key" onclick="writeToFirebase('points', 4)">4</button>
+      <button class="btn-key" onclick="writeToFirebase('points', 5)">5</button>
+      <button class="btn-key" onclick="writeToFirebase('points', 6)">6</button>
+      <button class="btn-key btn-true" onclick="writeToFirebase('true_payment')">True</button>
 
-      <button class="btn-key" onclick="sendPoint(7)">7</button>
-      <button class="btn-key" onclick="sendPoint(8)">8</button>
-      <button class="btn-key" onclick="sendPoint(9)">9</button>
-      <button class="btn-key btn-bank" onclick="sendMode('payment')">QR<br>รับเงิน</button>
+      <button class="btn-key" onclick="writeToFirebase('points', 7)">7</button>
+      <button class="btn-key" onclick="writeToFirebase('points', 8)">8</button>
+      <button class="btn-key" onclick="writeToFirebase('points', 9)">9</button>
+      <button class="btn-key btn-bank" onclick="writeToFirebase('payment')">Bank</button>
     </div>
 
-    <button class="btn-copy" onclick="copyCurrentLink()">📋 คัดลอกลิงก์ส่งให้ลูกค้าทางไลน์</button>
+    <button class="btn-copy" onclick="copyCurrentLink()">📋 คัดลอกลิงก์ส่งให้ลูกค้า</button>
   </div>
 
   <script>
@@ -155,67 +164,119 @@
     const db = firebase.database();
 
     let currentLiffUrl = "";
-    let localTimer;
+    let globalTimerInterval;
+    let inputDebounce;
+    let syncedState = { mode: 'idle', points: 0, timestamp: 0 }; // เก็บสถานะล่าสุด
 
-    function sendPoint(pts) {
-      const timestamp = Date.now();
-      const hash = CryptoJS.MD5(`${pts}-${timestamp}-${SECRET_SALT}`).toString();
-      const secretCode = `KUBBAR-${pts}-${timestamp}-${hash}`; 
-      currentLiffUrl = `https://liff.line.me/${SCAN_LIFF_ID}?code=${secretCode}`;
+    // 📡 1. ระบบ Real-time Master Sync (ฟังข้อมูลจากจอ Display)
+    db.ref('pos_display').on('value', (snapshot) => {
+      const data = snapshot.val();
+      if (!data) return;
+      syncedState = data;
+      updateAdminUI(data);
+    });
 
-      db.ref('pos_display').set({ mode: "points", points: pts, timestamp: timestamp });
+    // 🔄 2. ฟังก์ชันอัปเดตหน้าจอแอดมิน (ทำตามจอ Display)
+    function updateAdminUI(data) {
+      clearInterval(globalTimerInterval);
+      const label = document.getElementById('sync-status-label');
+      const previewImg = document.getElementById('qr-preview-img');
+      const timerDisplay = document.getElementById('timer-display');
 
-      document.getElementById('status-badge').innerHTML = `สแกนรับ <span>${pts}</span> แต้ม`;
-      document.getElementById('qr-preview-img').src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(currentLiffUrl)}`;
-      startLocalTimer();
-    }
-
-    function sendCustomPoint() {
-      const pts = parseInt(document.getElementById('custom-pts').value);
-      if(pts > 0) sendPoint(pts);
-    }
-
-    function sendMode(mode) {
-      db.ref('pos_display').set({ mode: mode, timestamp: Date.now() });
-      clearInterval(localTimer);
-      document.getElementById('timer-display').innerText = "---";
-
-      if(mode === 'store_line') {
-        document.getElementById('status-badge').innerHTML = `โหมด: <span>เพิ่มเพื่อน LINE</span>`;
-        document.getElementById('qr-preview-img').src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(STORE_LINE_OA_LINK)}`;
-      } else if(mode === 'payment') {
-        document.getElementById('status-badge').innerHTML = `โหมด: <span>โอนเงินผ่านธนาคาร</span>`;
-        document.getElementById('qr-preview-img').src = PAYMENT_IMAGE_URL;
-      } else if(mode === 'true_payment') {
-        document.getElementById('status-badge').innerHTML = `โหมด: <span>จ่ายผ่าน TrueMoney</span>`;
-        document.getElementById('qr-preview-img').src = TRUE_IMAGE_URL;
+      if (data.mode === "idle") {
+        label.innerHTML = "⚪ ว่าง";
+        label.style.color = "#B0A69D";
+        previewImg.src = "https://via.placeholder.com/300x300.png?text=STANDBY";
+        timerDisplay.innerText = "---";
+        currentLiffUrl = "";
+      } 
+      else if (data.mode === "points") {
+        const hash = CryptoJS.MD5(`${data.points}-${data.timestamp}-${SECRET_SALT}`).toString();
+        const secretCode = `KUBBAR-${data.points}-${data.timestamp}-${hash}`; 
+        currentLiffUrl = `https://liff.line.me/${SCAN_LIFF_ID}?code=${secretCode}`;
+        
+        label.innerHTML = `☕ <b>${data.points}</b> แต้ม`;
+        label.style.color = "#A3B18A";
+        previewImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(currentLiffUrl)}`;
+        
+        startGlobalTimer(data.timestamp);
+      } 
+      else if (data.mode === "store_line") {
+        label.innerHTML = `💬 LINE OA`;
+        label.style.color = "#06C755";
+        previewImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(STORE_LINE_OA_LINK)}`;
+        timerDisplay.innerText = "---";
+      } 
+      else if (data.mode === "payment") {
+        label.innerHTML = `🏦 ธนาคาร`;
+        label.style.color = "#1565C0";
+        previewImg.src = PAYMENT_IMAGE_URL;
+        timerDisplay.innerText = "---";
+      } 
+      else if (data.mode === "true_payment") {
+        label.innerHTML = `🧡 TrueMoney`;
+        label.style.color = "#FF6600";
+        previewImg.src = TRUE_IMAGE_URL;
+        timerDisplay.innerText = "---";
       }
     }
 
-    function startLocalTimer() {
-      clearInterval(localTimer);
-      let remain = 5 * 60;
-      document.getElementById('timer-display').innerText = `รีเฟรชใหม่ใน: 05:00`;
+    // ⏱️ 3. ระบบเวลานับถอยหลัง (อิงจากเวลาที่ส่งจาก Firebase)
+    function startGlobalTimer(startTimeMs) {
+      const limitSeconds = 5 * 60; 
       
-      localTimer = setInterval(() => {
-        remain--;
+      globalTimerInterval = setInterval(() => {
+        const elapsed = Math.floor((Date.now() - startTimeMs) / 1000);
+        const remain = limitSeconds - elapsed;
+        
         if (remain < 0) {
-          clearInterval(localTimer);
-          document.getElementById('timer-display').innerText = "หมดเวลา (กลับสู่หน้าหลัก)";
-          document.getElementById('qr-preview-img').src = "https://via.placeholder.com/300x300.png?text=STANDBY";
-          document.getElementById('status-badge').innerHTML = "สถานะ: รอสั่งการ";
+          clearInterval(globalTimerInterval);
+          document.getElementById('timer-display').innerText = "หมดเวลา";
+          // ให้จอลูกค้าจัดการรีเซ็ตตัวเอง แอดมินแค่รอดู UI เปลี่ยน
           return;
         }
         let m = Math.floor(remain / 60);
         let s = remain % 60;
-        document.getElementById('timer-display').innerText = `รีเฟรชใหม่ใน: ${m}:${s < 10 ? '0'+s : s}`;
+        document.getElementById('timer-display').innerText = `เหลือเวลา: ${m}:${s < 10 ? '0'+s : s}`;
       }, 1000);
     }
 
+    // 🚀 4. ฟังก์ชันส่งคำสั่งไปที่ Firebase
+    function writeToFirebase(mode, points = 0) {
+      document.getElementById('custom-pts').value = ''; // เคลียร์ช่อง input
+      db.ref('pos_display').set({ 
+        mode: mode, 
+        points: points, 
+        timestamp: Date.now() 
+      });
+    }
+
+    // ⌨️ 5. พิมพ์แต้มเอง (Auto-sync)
+    function handleCustomInput(val) {
+      clearTimeout(inputDebounce);
+      inputDebounce = setTimeout(() => {
+        const pts = parseInt(val);
+        if (pts > 0) {
+          writeToFirebase('points', pts);
+        }
+      }, 400); 
+    }
+
+    // 🔄 6. แตะเพื่อรีเฟรชแต้มเดิม (หรือกดเพื่อเคลียร์จอถ้าเป็นโหมดอื่น)
+    function refreshCurrentPoint() {
+      if (syncedState.mode === 'points' && syncedState.points > 0) {
+        writeToFirebase('points', syncedState.points); // รีเฟรชรหัสใหม่
+      } else {
+        writeToFirebase('idle'); // ถ้าอยู่โหมดอื่น แตะรูป = เคลียร์หน้าจอกลับหน้าแรก
+      }
+    }
+
     function copyCurrentLink() {
-      if (!currentLiffUrl) { alert("กรุณากดสร้างแต้มก่อนคัดลอกลิงก์ครับ"); return; }
+      if (!currentLiffUrl || syncedState.mode !== 'points') { 
+        alert("หน้าจอปัจจุบันไม่ใช่โหมดแจกแต้มครับ"); return; 
+      }
       navigator.clipboard.writeText(currentLiffUrl).then(() => {
-        alert("คัดลอกลิงก์รับแต้มสำเร็จ! นำไปวางในแชทลูกค้าได้เลยครับ");
+        alert(`คัดลอกลิงก์สำหรับ ${syncedState.points} แต้ม สำเร็จ!`);
       });
     }
   </script>
