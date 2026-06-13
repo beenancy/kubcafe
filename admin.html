@@ -6,7 +6,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="apple-mobile-web-app-capable" content="yes">
   
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
   
@@ -16,12 +15,10 @@
     #pin-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--matcha-green); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; transition: opacity 0.3s; }
     #pin-overlay h2 { margin-bottom: 20px; font-size: 24px; letter-spacing: 2px; }
     #pin-input { width: 150px; text-align: center; font-size: 28px; padding: 10px; border: 3px solid white; border-radius: 15px; background: rgba(255,255,255,0.2); color: white; font-weight: bold; margin-bottom: 20px; outline: none; }
-    #pin-input::placeholder { color: rgba(255,255,255,0.6); }
     #btn-unlock { background: white; color: var(--matcha-dark); border: none; padding: 12px 40px; border-radius: 20px; font-size: 18px; font-weight: bold; box-shadow: 0 4px 10px rgba(0,0,0,0.1); cursor: pointer; }
     #main-app { display: none; flex-direction: column; height: 100%; }
     .preview-section { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: clamp(10px, 2vh, 15px); min-height: 0; }
     .qr-preview-box { background: white; padding: 10px; border-radius: 16px; border: 2px solid var(--border-color); display: flex; justify-content: center; align-items: center; width: 100%; max-width: 350px; flex: 1; min-height: 0; margin-bottom: 8px; cursor: pointer; transition: transform 0.1s; }
-    .qr-preview-box:active { transform: scale(0.96); } 
     .qr-preview-box img { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 8px; }
     .refresh-hint { font-size: clamp(11px, 1.5vh, 12px); color: var(--text-light); font-weight: bold; }
     .control-section { background: var(--card-white); padding: clamp(12px, 2vh, 15px) 20px clamp(15px, 3vh, 25px) 20px; border-top-left-radius: 30px; border-top-right-radius: 30px; box-shadow: 0 -10px 30px rgba(140, 122, 107, 0.1); display: flex; flex-direction: column; gap: clamp(10px, 1.5vh, 12px); flex-shrink: 0; }
@@ -37,8 +34,6 @@
     .btn-line { background: var(--line-green); color: white; font-size: clamp(13px, 2vh, 15px); box-shadow: 0 4px 0 #04A044; }
     .btn-true { background: var(--true-orange); color: white; font-size: clamp(13px, 2vh, 15px); box-shadow: 0 4px 0 #CC5200; }
     .btn-bank { background: var(--bank-blue); color: white; font-size: clamp(13px, 2vh, 15px); box-shadow: 0 4px 0 #0E4788; }
-    
-    /* ปุ่มใหม่ */
     .btn-action-group { display: flex; gap: 10px; margin-top: 2px; }
     .btn-copy { background: #F4EEFF; color: #8A56E2; border: 1px dashed #B89AEB; width: 100%; padding: clamp(10px, 1.5vh, 14px); border-radius: 14px; font-size: clamp(13px, 2vh, 15px); font-weight: bold; flex: 2; }
     .btn-lock { background: #FFEBEE; color: #D32F2F; border: 1px dashed #EF9A9A; width: 100%; padding: clamp(10px, 1.5vh, 14px); border-radius: 14px; font-size: clamp(13px, 2vh, 15px); font-weight: bold; flex: 1; cursor: pointer; }
@@ -57,7 +52,7 @@
       <div class="qr-preview-box" onclick="refreshCurrentPoint()">
         <img id="qr-preview-img" src="https://via.placeholder.com/300x300.png?text=STANDBY" alt="QR Preview">
       </div>
-      <div class="refresh-hint">🔄 แตะที่รูปเพื่อรีเฟรชแต้มใหม่ (หรือเคลียร์จอ)</div>
+      <div class="refresh-hint">🔄 แต้ที่รูปเพื่อรีเฟรชแต้มใหม่ (หรือเคลียร์จอ)</div>
     </div>
 
     <div class="control-section">
@@ -70,20 +65,20 @@
       </div>
 
       <div class="keypad-grid">
-        <button class="btn-key" onclick="writeToFirebase('points', 1)">1</button>
-        <button class="btn-key" onclick="writeToFirebase('points', 2)">2</button>
-        <button class="btn-key" onclick="writeToFirebase('points', 3)">3</button>
-        <button class="btn-key btn-line" onclick="writeToFirebase('store_line')">LINE</button>
+        <button class="btn-key" onclick="fireAction('points', 1)">1</button>
+        <button class="btn-key" onclick="fireAction('points', 2)">2</button>
+        <button class="btn-key" onclick="fireAction('points', 3)">3</button>
+        <button class="btn-key btn-line" onclick="fireAction('store_line')">LINE</button>
 
-        <button class="btn-key" onclick="writeToFirebase('points', 4)">4</button>
-        <button class="btn-key" onclick="writeToFirebase('points', 5)">5</button>
-        <button class="btn-key" onclick="writeToFirebase('points', 6)">6</button>
-        <button class="btn-key btn-true" onclick="writeToFirebase('true_payment')">True</button>
+        <button class="btn-key" onclick="fireAction('points', 4)">4</button>
+        <button class="btn-key" onclick="fireAction('points', 5)">5</button>
+        <button class="btn-key" onclick="fireAction('points', 6)">6</button>
+        <button class="btn-key btn-true" onclick="fireAction('true_payment')">True</button>
 
-        <button class="btn-key" onclick="writeToFirebase('points', 7)">7</button>
-        <button class="btn-key" onclick="writeToFirebase('points', 8)">8</button>
-        <button class="btn-key" onclick="writeToFirebase('points', 9)">9</button>
-        <button class="btn-key btn-bank" onclick="writeToFirebase('payment')">Bank</button>
+        <button class="btn-key" onclick="fireAction('points', 7)">7</button>
+        <button class="btn-key" onclick="fireAction('points', 8)">8</button>
+        <button class="btn-key" onclick="fireAction('points', 9)">9</button>
+        <button class="btn-key btn-bank" onclick="fireAction('payment')">Bank</button>
       </div>
 
       <div class="btn-action-group">
@@ -94,8 +89,9 @@
   </div>
 
   <script>
-    const ADMIN_PIN = "2026"; 
-    
+    // 🌐 [ สำคัญมาก 🌟 ] ใส่ URL ของ Cloudflare Worker ของร้านลงในช่องนี้ครับ
+    const CLOUDFLARE_WORKER_URL = "https://kub-backend.nan23082526.workers.dev/";
+
     if(localStorage.getItem("kub_admin_unlocked") === "true") {
       document.getElementById('pin-overlay').style.display = 'none';
       document.getElementById('main-app').style.display = 'flex';
@@ -103,61 +99,50 @@
     }
 
     function checkPin() {
-      const input = document.getElementById('pin-input').value;
-      if(input === ADMIN_PIN) {
-        localStorage.setItem("kub_admin_unlocked", "true");
-        document.getElementById('pin-overlay').style.opacity = '0';
-        setTimeout(() => {
-          document.getElementById('pin-overlay').style.display = 'none';
-          document.getElementById('main-app').style.display = 'flex';
-          initApp();
-        }, 300);
-      } else {
-        alert("รหัส PIN ไม่ถูกต้องครับ");
-        document.getElementById('pin-input').value = "";
+      const pin = document.getElementById('pin-input').value;
+      if (pin.length === 4) {
+        // ทดลองยิงเข้าหลังบ้าน ถ้า PIN ผิด Cloudflare จะตีกลับ 401 ทันที
+        fetch(`${CLOUDFLARE_WORKER_URL}/api/pos-update`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Admin-PIN': pin },
+          body: JSON.stringify({ mode: 'idle' })
+        }).then(res => {
+          if (res.status === 200) {
+            localStorage.setItem("kub_admin_pin", pin);
+            localStorage.setItem("kub_admin_unlocked", "true");
+            location.reload();
+          } else { alert("รหัส PIN หลังบ้านไม่ถูกต้องครับ"); }
+        }).catch(() => alert("เชื่อมต่อตัวคุมระบบหลังบ้านล้มเหลว"));
       }
     }
 
-    // ฟังก์ชันใหม่สำหรับล็อกจอ
     function lockSystem() {
       localStorage.removeItem("kub_admin_unlocked");
-      location.reload(); // รีเฟรชหน้าเว็บเพื่อให้กลับไปหน้าใส่รหัส
+      localStorage.removeItem("kub_admin_pin");
+      location.reload();
     }
 
     function initApp() {
-      const SCAN_LIFF_ID = "2010206186-u1XRJldq"; 
-      const SECRET_SALT = 'KUB_SECRET_TOKEN_2026'; 
-      const STORE_LINE_OA_LINK = "https://line.me/R/ti/p/@848dmzja"; 
-      const PAYMENT_IMAGE_URL = "https://raw.githubusercontent.com/beenancy/kubcafe/eccfab9beafd7e3dbab13523292cd3cb15dbff74/qr%20kshop.jpg";
-      const TRUE_IMAGE_URL = "https://raw.githubusercontent.com/beenancy/kubcafe/914d5947e4c635a2bf03f3f123dd837c2b0b29a2/truescan.jpg";
-
+      // ดึงแค่ฟังก์ชันการอ่านข้อมูลแบบ Realtime จาก Firebase มาแสดงผลพรีวิว
       const firebaseConfig = {
-        apiKey: "AIzaSyAi-8gxkAs3N4b5r3EULZHckqq3tHa6tlE",
-        authDomain: "kub-cafe-pos.firebaseapp.com",
-        databaseURL: "https://kub-cafe-pos-default-rtdb.asia-southeast1.firebasedatabase.app",
-        projectId: "kub-cafe-pos",
-        storageBucket: "kub-cafe-pos.firebasestorage.app"
+        databaseURL: "https://kub-cafe-pos-default-rtdb.asia-southeast1.firebasedatabase.app"
       };
-
       if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
       const db = firebase.database();
-
-      window.db = db; 
-      window.SECRET_SALT = SECRET_SALT;
-      window.SCAN_LIFF_ID = SCAN_LIFF_ID;
-      window.STORE_LINE_OA_LINK = STORE_LINE_OA_LINK;
-      window.PAYMENT_IMAGE_URL = PAYMENT_IMAGE_URL;
-      window.TRUE_IMAGE_URL = TRUE_IMAGE_URL;
-      
+      window.syncedState = { mode: 'idle', points: 0, timestamp: 0 };
       window.currentLiffUrl = "";
       window.globalTimerInterval = null;
       window.inputDebounce = null;
-      window.syncedState = { mode: 'idle', points: 0, timestamp: 0 };
 
       db.ref('pos_display').on('value', (snapshot) => {
         const data = snapshot.val();
         if (!data) return;
         window.syncedState = data;
+        
+        // จำลองสร้าง URL ขาถอดรหัสในเครื่องแอดมิน เพื่อใช้ฟังก์ชันปุ่มก็อปปี้ลิงก์ส่งงานได้เหมือนเดิม
+        if(data.mode === 'points') {
+          const hash = data.shopCode ? data.shopCode.split('-')[3] : ''; 
+          window.currentLiffUrl = `https://liff.line.me/2010206186-u1XRJldq?code=KUBBAR-${data.points}-${data.timestamp}-${hash}`;
+        }
         updateAdminUI(data);
       });
     }
@@ -174,51 +159,40 @@
         timerDisplay.innerText = "---"; window.currentLiffUrl = "";
       } 
       else if (data.mode === "points") {
-        const hash = CryptoJS.MD5(`${data.points}-${data.timestamp}-${window.SECRET_SALT}`).toString();
-        const secretCode = `KUBBAR-${data.points}-${data.timestamp}-${hash}`; 
-        window.currentLiffUrl = `https://liff.line.me/${window.SCAN_LIFF_ID}?code=${secretCode}`;
-        
         label.innerHTML = `☕ <b>${data.points}</b> แต้ม`; label.style.color = "#A3B18A";
         previewImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(window.currentLiffUrl)}`;
         startGlobalTimer(data.timestamp);
       } 
       else if (data.mode === "store_line") {
         label.innerHTML = `💬 LINE OA`; label.style.color = "#06C755";
-        previewImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(window.STORE_LINE_OA_LINK)}`;
+        previewImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent("https://line.me/R/ti/p/@848dmzja")}`;
         timerDisplay.innerText = "---";
       } 
       else if (data.mode === "payment") {
         label.innerHTML = `🏦 ธนาคาร`; label.style.color = "#1565C0";
-        previewImg.src = window.PAYMENT_IMAGE_URL; timerDisplay.innerText = "---";
+        previewImg.src = "https://raw.githubusercontent.com/beenancy/kubcafe/eccfab9beafd7e3dbab13523292cd3cb15dbff74/qr%20kshop.jpg"; timerDisplay.innerText = "---";
       } 
       else if (data.mode === "true_payment") {
         label.innerHTML = `🧡 TrueMoney`; label.style.color = "#FF6600";
-        previewImg.src = window.TRUE_IMAGE_URL; timerDisplay.innerText = "---";
+        previewImg.src = "https://raw.githubusercontent.com/beenancy/kubcafe/914d5947e4c635a2bf03f3f123dd837c2b0b29a2/truescan.jpg"; timerDisplay.innerText = "---";
       }
     }
 
     function startGlobalTimer(startTimeMs) {
-      const limitSeconds = 5 * 60; 
       window.globalTimerInterval = setInterval(() => {
-        const elapsed = Math.floor((Date.now() - startTimeMs) / 1000);
-        const remain = limitSeconds - elapsed;
-        
-        if (remain < 0) {
-          clearInterval(window.globalTimerInterval);
-          document.getElementById('timer-display').innerText = "หมดเวลา"; return;
-        }
-        let m = Math.floor(remain / 60); let s = remain % 60;
-        document.getElementById('timer-display').innerText = `เหลือเวลา: ${m}:${s < 10 ? '0'+s : s}`;
+        const remain = (5 * 60) - Math.floor((Date.now() - startTimeMs) / 1000);
+        if (remain < 0) { clearInterval(window.globalTimerInterval); document.getElementById('timer-display').innerText = "หมดเวลา"; return; }
+        document.getElementById('timer-display').innerText = `เหลือเวลา: ${Math.floor(remain / 60)}:${String(remain % 60).padStart(2, '0')}`;
       }, 1000);
     }
 
-    function writeToFirebase(mode, points = 0) {
-      document.getElementById('custom-pts').value = ''; 
-      window.db.ref('pos_display').set({ 
-        mode: mode, 
-        points: points, 
-        timestamp: Date.now(),
-        secret: window.SECRET_SALT 
+    // 🚀 ยิงคำสั่งเข้าถังควบคุมหลังบ้านผ่าน Cloudflare ตัวเดียว
+    function fireAction(mode, points = 0) {
+      document.getElementById('custom-pts').value = '';
+      const activePin = localStorage.getItem("kub_admin_pin");
+      fetch(`${CLOUDFLARE_WORKER_URL}/api/pos-update`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Admin-PIN': activePin },
+        body: JSON.stringify({ mode, points, timestamp: Date.now() })
       });
     }
 
@@ -226,25 +200,18 @@
       clearTimeout(window.inputDebounce);
       window.inputDebounce = setTimeout(() => {
         const pts = parseInt(val);
-        if (pts > 0) writeToFirebase('points', pts);
+        if (pts > 0) fireAction('points', pts);
       }, 400); 
     }
 
     function refreshCurrentPoint() {
-      if (window.syncedState.mode === 'points' && window.syncedState.points > 0) {
-        writeToFirebase('points', window.syncedState.points); 
-      } else {
-        writeToFirebase('idle'); 
-      }
+      if (window.syncedState.mode === 'points' && window.syncedState.points > 0) { fireAction('points', window.syncedState.points); } 
+      else { fireAction('idle'); }
     }
 
     function copyCurrentLink() {
-      if (!window.currentLiffUrl || window.syncedState.mode !== 'points') { 
-        alert("หน้าจอปัจจุบันไม่ใช่โหมดแจกแต้มครับ"); return; 
-      }
-      navigator.clipboard.writeText(window.currentLiffUrl).then(() => {
-        alert(`คัดลอกลิงก์สำหรับ ${window.syncedState.points} แต้ม สำเร็จ!`);
-      });
+      if (!window.currentLiffUrl || window.syncedState.mode !== 'points') { alert("หน้าจอปัจจุบันไม่ใช่โหมดแจกแต้มครับ"); return; }
+      navigator.clipboard.writeText(window.currentLiffUrl).then(() => { alert(`คัดลอกลิงก์สำเร็จ!`); });
     }
   </script>
 </body>
