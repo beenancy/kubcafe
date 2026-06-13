@@ -2,93 +2,138 @@
 <html lang="th">
 <head>
   <meta charset="UTF-8">
-  <title>KUB Cafe - Admin Control Panel</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+  <title>KUB Cafe - Admin POS</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
   
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
   
   <style>
-    body { text-align: center; font-family: sans-serif; padding: 15px; background: #fdfdfd; color: #2d3436; margin: 0; }
-    h2 { font-weight: 800; margin-bottom: 20px; font-size: 24px; }
-    p.desc { color: #636e72; font-size: 14px; margin-bottom: 20px; }
-    
-    .panel-card { margin: 5px auto 15px auto; padding: 20px; background: #fff; border-radius: 20px; box-shadow: 0 10px 20px rgba(0,0,0,0.05); display: none; max-width: 320px; }
-    
-    .btn-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; max-width: 500px; margin: 0 auto 15px auto; }
-    .point-btn { padding: 15px 0; font-size: 20px; background: #c1f2a1; color: #2d3436; border: none; border-radius: 12px; cursor: pointer; font-weight: 900; box-shadow: 0 4px 6px rgba(0,0,0,0.05); transition: 0.2s; }
-    .point-btn:active { transform: scale(0.95); background: #a8e6cf; }
-    .line-btn { background: #06C755 !important; color: white !important; font-size: 14px !important; font-weight: bold !important; line-height: 1.2; display: flex; align-items: center; justify-content: center; }
-    .line-btn:active { background: #05b04b !important; transform: scale(0.95); }
-    .true-btn { background: #ff6600 !important; color: white !important; font-size: 16px !important; font-weight: bold !important; line-height: 1.2; display: flex; align-items: center; justify-content: center; }
-    .true-btn:active { background: #e05500 !important; transform: scale(0.95); }
-    .pay-btn { background: #004b87 !important; color: white !important; font-size: 13px !important; font-weight: bold !important; line-height: 1.2; display: flex; align-items: center; justify-content: center; }
-    .pay-btn:active { background: #003366 !important; transform: scale(0.95); }
-    
-    .custom-input-container { background: #f1f2f6; padding: 15px; border-radius: 15px; max-width: 500px; margin: 15px auto 20px auto; display: flex; align-items: center; justify-content: center; gap: 10px; }
-    .custom-input { width: 80px; font-size: 22px; padding: 8px; text-align: center; border: 2px solid #c1f2a1; border-radius: 10px; font-weight: bold; outline: none; color: #2d3436; }
-    
-    .copy-btn { margin-top: 5px; padding: 12px 20px; font-size: 15px; background: #e0ccff; color: #2d3436; border: none; border-radius: 12px; cursor: pointer; font-weight: bold; width: 100%; box-shadow: 0 4px 6px rgba(0,0,0,0.03); transition: 0.2s; }
-    .copy-btn:active { transform: scale(0.97); background: #d1b3ff; }
-    
-    #login-section { margin-top: 50px; }
-    .pin-input { font-size: 24px; padding: 10px; width: 120px; text-align: center; letter-spacing: 5px; border-radius: 10px; border: 2px solid #ddd; margin-bottom: 15px; outline: none; }
-    .login-btn { background: #2d3436; color: white; border: none; padding: 12px 25px; font-size: 16px; border-radius: 10px; font-weight: bold; cursor: pointer; }
-    .status-badge { display: inline-block; padding: 6px 15px; background: #e8f5e9; color: #2e7d32; font-weight: bold; border-radius: 20px; font-size: 14px; margin-top: 5px; margin-bottom: 5px; }
+    :root {
+      --bg-cream: #FDFCF0; --card-white: #FFFFFF; --text-brown: #4A3F35;
+      --text-light: #B0A69D; --matcha-green: #A3B18A; --matcha-dark: #7A8B62;
+      --line-green: #06C755; --true-orange: #FF6600; --bank-blue: #1565C0;
+      --border-color: #E8E2D9;
+    }
 
-    img { border: 4px solid #c1f2a1; border-radius: 15px; width: 100%; height: auto; cursor: pointer; transition: 0.3s; margin: 10px auto 5px auto; display: block; }
-    img:active { transform: scale(0.95); opacity: 0.7; }
-    .alert-text { color: #e74c3c; font-weight: bold; margin-top: 10px; font-size: 13px; cursor: pointer; }
-    .point-display { font-size: 22px; font-weight: 900; color: #2d3436; margin-bottom: 5px; width: 100%; }
+    body, html {
+      margin: 0; padding: 0; 
+      width: 100%; height: 100dvh; /* บังคับ 100% ของจอ */
+      background-color: var(--bg-cream);
+      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      display: flex; flex-direction: column;
+      overflow: hidden; /* ปิด Scroll ถาวร */
+      -webkit-user-select: none;
+    }
+
+    /* 📱 ส่วนบน: Preview หน้าจอลูกค้า */
+    .preview-section {
+      flex: 1; /* กินพื้นที่ที่เหลือ */
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 10px; min-height: 0; /* สำคัญมากเพื่อให้บีบตัวได้ */
+    }
+
+    .status-badge {
+      background: white; padding: 8px 20px; border-radius: 20px;
+      font-size: 18px; font-weight: bold; color: var(--text-brown);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 10px;
+    }
+    .status-badge span { color: var(--matcha-dark); font-size: 22px; }
+
+    .qr-preview-box {
+      background: white; padding: 10px; border-radius: 16px; border: 2px solid var(--border-color);
+      display: flex; justify-content: center; align-items: center;
+      height: 35vh; /* ล็อกความสูง QR ไม่ให้ใหญ่เกิน */
+      aspect-ratio: 1/1; 
+      margin-bottom: 10px;
+    }
+    .qr-preview-box img { width: 100%; height: 100%; object-fit: contain; }
+
+    .timer-text { font-size: 13px; font-weight: bold; color: #C57B57; }
+
+    /* 🎛️ ส่วนล่าง: แผงควบคุม (Control Panel) */
+    .control-section {
+      background: var(--card-white);
+      padding: 15px 20px 25px 20px;
+      border-top-left-radius: 30px; border-top-right-radius: 30px;
+      box-shadow: 0 -10px 30px rgba(140, 122, 107, 0.1);
+      display: flex; flex-direction: column; gap: 12px;
+    }
+
+    /* แถบระบุแต้มเอง */
+    .custom-point-row {
+      display: flex; justify-content: space-between; align-items: center;
+      background: var(--bg-cream); padding: 5px 15px; border-radius: 16px;
+    }
+    .custom-point-row label { font-size: 14px; font-weight: bold; color: var(--text-brown); }
+    .custom-input {
+      width: 60px; text-align: center; font-size: 18px; font-weight: bold; color: var(--matcha-dark);
+      border: 1px solid var(--border-color); border-radius: 10px; padding: 5px; background: white;
+    }
+    .btn-custom { background: var(--matcha-green); color: white; border: none; padding: 8px 15px; border-radius: 10px; font-weight: bold; }
+
+    /* แผงปุ่ม 4x3 Grid */
+    .keypad-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
+    .btn-key {
+      background: #EAF0E4; color: var(--matcha-dark);
+      border: none; border-radius: 14px;
+      padding: 15px 0; font-size: 22px; font-weight: 900;
+      box-shadow: 0 4px 0 #D5E0CB;
+      transition: all 0.1s;
+    }
+    .btn-key:active { transform: translateY(4px); box-shadow: 0 0 0 transparent; }
+
+    /* ปุ่มลัดพิเศษ */
+    .btn-line { background: var(--line-green); color: white; font-size: 15px; box-shadow: 0 4px 0 #04A044; }
+    .btn-true { background: var(--true-orange); color: white; font-size: 15px; box-shadow: 0 4px 0 #CC5200; }
+    .btn-bank { background: var(--bank-blue); color: white; font-size: 15px; box-shadow: 0 4px 0 #0E4788; }
+    
+    .btn-copy { background: #F4EEFF; color: #8A56E2; border: 1px dashed #B89AEB; width: 100%; padding: 12px; border-radius: 14px; font-size: 14px; font-weight: bold; margin-top: 5px; }
+
   </style>
 </head>
 <body>
-  <div id="login-section">
-    <h2>กรุณากรอกรหัส PIN</h2>
-    <p class="desc">เฉพาะพนักงาน KUB Cafe เท่านั้น</p>
-    <input type="password" inputmode="numeric" pattern="[0-9]*" id="pin-code" class="pin-input" maxlength="4" placeholder="****">
-    <br>
-    <button class="login-btn" id="login-submit-btn" onclick="checkPIN()">เข้าสู่ระบบ</button>
+
+  <div class="preview-section">
+    <div class="status-badge" id="status-badge">สถานะ: รอสั่งการ</div>
+    <div class="qr-preview-box">
+      <img id="qr-preview-img" src="https://via.placeholder.com/300x300.png?text=STANDBY" alt="QR Preview">
+    </div>
+    <div class="timer-text" id="timer-display">---</div>
   </div>
 
-  <div id="admin-section" style="display: none;">
+  <div class="control-section">
     
-    <div class="panel-card" id="qr-section-container">
-      <div id="dynamic-qr-header"></div>
-      <img id="qr-img" src="" onclick="refreshQR()">
-      <div id="dynamic-qr-footer"></div>
+    <div class="custom-point-row">
+      <label>ระบุแต้มเอง:</label>
+      <input type="number" id="custom-pts" class="custom-input" value="10">
+      <button class="btn-custom" onclick="sendCustomPoint()">ส่งแต้ม</button>
     </div>
 
-    <div class="custom-input-container">
-      <label style="font-weight:bold; color:#2d3436;">ระบุแต้มเอง:</label>
-      <input type="number" inputmode="numeric" pattern="[0-9]*" id="custom-point" class="custom-input" min="1" max="20" placeholder="0" oninput="handleCustomInput(this.value)">
+    <div class="keypad-grid">
+      <button class="btn-key" onclick="sendPoint(1)">1</button>
+      <button class="btn-key" onclick="sendPoint(2)">2</button>
+      <button class="btn-key" onclick="sendPoint(3)">3</button>
+      <button class="btn-key btn-line" onclick="sendMode('store_line')">LINE<br>ร้าน</button>
+
+      <button class="btn-key" onclick="sendPoint(4)">4</button>
+      <button class="btn-key" onclick="sendPoint(5)">5</button>
+      <button class="btn-key" onclick="sendPoint(6)">6</button>
+      <button class="btn-key btn-true" onclick="sendMode('true_payment')">True</button>
+
+      <button class="btn-key" onclick="sendPoint(7)">7</button>
+      <button class="btn-key" onclick="sendPoint(8)">8</button>
+      <button class="btn-key" onclick="sendPoint(9)">9</button>
+      <button class="btn-key btn-bank" onclick="sendMode('payment')">QR<br>รับเงิน</button>
     </div>
 
-    <div class="btn-grid">
-      <button class="point-btn" onclick="selectPoints(1, true)">1</button>
-      <button class="point-btn" onclick="selectPoints(2, true)">2</button>
-      <button class="point-btn" onclick="selectPoints(3, true)">3</button>
-      <button class="point-btn" onclick="selectPoints(4, true)">4</button>
-      <button class="point-btn" onclick="selectPoints(5, true)">5</button>
-      <button class="point-btn line-btn" onclick="selectStoreLine()">LINE<br>ร้าน</button>
-      <button class="point-btn" onclick="selectPoints(6, true)">6</button>
-      <button class="point-btn" onclick="selectPoints(7, true)">7</button>
-      <button class="point-btn" onclick="selectPoints(8, true)">8</button>
-      <button class="point-btn" onclick="selectPoints(9, true)">9</button>
-      <button class="point-btn true-btn" onclick="selectTruePayment()">True</button>
-      <button class="point-btn pay-btn" onclick="selectPayment()">QR<br>รับเงิน</button>
-    </div>
-
-    <div class="panel-card" id="status-link-container">
-      <div style="font-weight: bold; color: #555; font-size: 13px;">สถานะระบบ:</div>
-      <div id="live-status-text" class="status-badge">กำลังรอคำสั่ง...</div>
-      
-      <div id="remote-link-section" style="display: none; margin-top: 5px; border-top: 1px dashed #eee; padding-top: 15px;">
-        <button class="copy-btn" id="copy-btn" onclick="copyToClipboard()">📋 คัดลอกลิงก์ส่งให้ลูกค้าทางไลน์</button>
-      </div>
-    </div>
-
+    <button class="btn-copy" onclick="copyCurrentLink()">📋 คัดลอกลิงก์ส่งให้ลูกค้าทางไลน์</button>
   </div>
 
   <script>
@@ -98,187 +143,81 @@
     const PAYMENT_IMAGE_URL = "https://raw.githubusercontent.com/beenancy/kubcafe/eccfab9beafd7e3dbab13523292cd3cb15dbff74/qr%20kshop.jpg";
     const TRUE_IMAGE_URL = "https://raw.githubusercontent.com/beenancy/kubcafe/914d5947e4c635a2bf03f3f123dd837c2b0b29a2/truescan.jpg";
 
-    // 🔒 ตั้งรหัสผ่านตรงนี้ (เปลี่ยนเป็นเลขอะไรก็ได้ที่ต้องการ)
-    const CORRECT_PIN = "2423"; 
-
     const firebaseConfig = {
       apiKey: "AIzaSyAi-8gxkAs3N4b5r3EULZHckqq3tHa6tlE",
       authDomain: "kub-cafe-pos.firebaseapp.com",
       databaseURL: "https://kub-cafe-pos-default-rtdb.asia-southeast1.firebasedatabase.app",
       projectId: "kub-cafe-pos",
-      storageBucket: "kub-cafe-pos.firebasestorage.app",
-      messagingSenderId: "980123459582",
-      appId: "1:980123459582:web:8d1b54a7e1317975e06aaf",
-      measurementId: "G-FTTX7BDSYD"
+      storageBucket: "kub-cafe-pos.firebasestorage.app"
     };
 
-    firebase.initializeApp(firebaseConfig);
+    if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
     const db = firebase.database();
-    let currentGlobalState = {};
+
+    let currentLiffUrl = "";
     let localTimer;
 
-    // ระบบตรวจสอบรหัสผ่านแบบใหม่ เร็วขึ้น 10 เท่า!
-    function checkPIN() {
-      const pinInput = document.getElementById('pin-code').value;
-      if(pinInput.length !== 4 || isNaN(pinInput)) { alert("กรุณากรอกรหัสเป็นตัวเลขให้ครบ 4 หลักค่ะ"); return; }
-      
-      if (pinInput === CORRECT_PIN) {
-        document.getElementById('login-section').style.display = "none";
-        document.getElementById('admin-section').style.display = "block";
-        initRealtimeListener(); 
-      } else {
-        alert("รหัส PIN ไม่ถูกต้อง"); 
-        document.getElementById('pin-code').value = "";
-      }
+    function sendPoint(pts) {
+      const timestamp = Date.now();
+      const hash = CryptoJS.MD5(`${pts}-${timestamp}-${SECRET_SALT}`).toString();
+      const secretCode = `KUBBAR-${pts}-${timestamp}-${hash}`; 
+      currentLiffUrl = `https://liff.line.me/${SCAN_LIFF_ID}?code=${secretCode}`;
+
+      db.ref('pos_display').set({ mode: "points", points: pts, timestamp: timestamp });
+
+      document.getElementById('status-badge').innerHTML = `สแกนรับ <span>${pts}</span> แต้ม`;
+      document.getElementById('qr-preview-img').src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(currentLiffUrl)}`;
+      startLocalTimer();
     }
 
-    function selectPoints(points, clearInput = false) {
-      if (clearInput) { document.getElementById('custom-point').value = ""; }
-      db.ref('pos_display').set({
-        mode: "points",
-        points: points,
-        timestamp: new Date().getTime() 
-      });
+    function sendCustomPoint() {
+      const pts = parseInt(document.getElementById('custom-pts').value);
+      if(pts > 0) sendPoint(pts);
     }
 
-    function selectStoreLine() { document.getElementById('custom-point').value = ""; db.ref('pos_display').set({ mode: "store_line" }); }
-    function selectPayment() { document.getElementById('custom-point').value = ""; db.ref('pos_display').set({ mode: "payment" }); }
-    function selectTruePayment() { document.getElementById('custom-point').value = ""; db.ref('pos_display').set({ mode: "true_payment" }); }
-
-    function handleCustomInput(val) {
-      let pts = parseInt(val, 10);
-      if (isNaN(pts) || pts <= 0) { return; }
-      if (pts > 20) { 
-        alert("จำกัดการออกแต้มอิสระสูงสุดครั้งละ 20 แต้มค่ะ");
-        document.getElementById('custom-point').value = 20;
-        pts = 20;
-      }
-      selectPoints(pts, false);
-    }
-
-    function refreshQR() {
-      if (currentGlobalState.mode === "points" && currentGlobalState.points > 0) {
-        selectPoints(currentGlobalState.points, false);
-      }
-    }
-
-    function initRealtimeListener() {
-      db.ref('pos_display').on('value', (snapshot) => {
-        const data = snapshot.val();
-        if (!data) return;
-        currentGlobalState = data;
-        updateAdminControlUI(data);
-      });
-    }
-
-    function updateAdminControlUI(data) {
+    function sendMode(mode) {
+      db.ref('pos_display').set({ mode: mode, timestamp: Date.now() });
       clearInterval(localTimer);
-      const statusText = document.getElementById('live-status-text');
-      const remoteSection = document.getElementById('remote-link-section');
-      
-      const imgHeader = document.getElementById('dynamic-qr-header');
-      const imgElement = document.getElementById('qr-img');
-      const imgFooter = document.getElementById('dynamic-qr-footer');
-      
-      document.getElementById('qr-section-container').style.display = "block";
-      document.getElementById('status-link-container').style.display = "block";
-      
-      if (data.mode === "points") {
-        statusText.innerText = `โหมดแต้มสะสม: จ่ายออก`;
-        statusText.style.background = "#e8f5e9";
-        statusText.style.color = "#2e7d32";
-        remoteSection.style.display = "block";
-        
-        const rawString = data.points + "-" + data.timestamp + "-" + SECRET_SALT;
-        const hash = CryptoJS.MD5(rawString).toString();
-        const secretCode = "KUBBAR-" + data.points + "-" + data.timestamp + "-" + hash; 
-        const liffUrl = "https://liff.line.me/" + SCAN_LIFF_ID + "?code=" + secretCode;
-        
-        imgHeader.innerHTML = `<div class="point-display">สแกนรับ <span style="color:#27ae60;">${data.points}</span> แต้ม ☕</div>`;
-        imgElement.style.border = "4px solid #c1f2a1";
-        imgElement.style.padding = "0";
-        imgElement.src = "https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=" + encodeURIComponent(liffUrl);
-        
-        imgFooter.innerHTML = `
-          <p class="alert-text" onclick="refreshQR()">
-            🔄 กดที่รูปคิวอาร์โค้ดเพื่อสุ่มรหัสใหม่
-          </p>
-          <div id="timer-display" style="color:#8e44ad; font-weight:bold; font-size:13px; margin-top:5px;"></div>
-        `;
+      document.getElementById('timer-display').innerText = "---";
 
-        let limit = 5 * 60;
-        localTimer = setInterval(() => {
-          let elapsed = Math.floor((new Date().getTime() - data.timestamp) / 1000);
-          let remain = limit - elapsed;
-          if (remain < 0) { clearInterval(localTimer); selectPoints(1, true); return; }
-          let m = Math.floor(remain / 60); let s = remain % 60;
-          document.getElementById('timer-display').innerText = `รีเฟรชอัตโนมัติใน: ${m}:${s < 10 ? '0'+s : s}`;
-        }, 1000);
-      } 
-      else if (data.mode === "store_line") {
-        statusText.innerText = "โหมด LINE ร้าน OA";
-        statusText.style.background = "#e8f5e9";
-        statusText.style.color = "#06C755";
-        remoteSection.style.display = "none";
-        
-        imgHeader.innerHTML = `<div class="point-display"><span style="color:#06C755;">LINE Official Account</span> 💬</div>`;
-        imgElement.style.border = "4px solid #06C755";
-        imgElement.style.padding = "0";
-        imgElement.src = "https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=" + encodeURIComponent(STORE_LINE_OA_LINK);
-        imgFooter.innerHTML = "";
-      } 
-      else if (data.mode === "payment") {
-        statusText.innerText = "โหมดป้ายเงินสด (ธนาคาร)";
-        statusText.style.background = "#e3f2fd";
-        statusText.style.color = "#0d47a1";
-        remoteSection.style.display = "none";
-        
-        imgHeader.innerHTML = "";
-        imgElement.style.border = "none";
-        imgElement.style.padding = "0";
-        imgElement.src = PAYMENT_IMAGE_URL;
-        imgFooter.innerHTML = `
-          <div style="margin-top: 15px; padding: 10px; background: #fff3cd; border: 1px solid #ffe69c; color: #856404; border-radius: 10px; font-size: 12px; font-weight: bold; line-height: 1.4; width: 100%; box-sizing: border-box;">
-            ⚠️ กรุณาใช้ <span style="color:#d35400;">"แอปธนาคาร"</span> สแกนจ่ายเท่านั้น
-          </div>
-        `;
-      } 
-      else if (data.mode === "true_payment") {
-        statusText.innerText = "โหมดป้าย TrueMoney";
-        statusText.style.background = "#fff3e0";
-        statusText.style.color = "#e65100";
-        remoteSection.style.display = "none";
-        
-        imgHeader.innerHTML = "";
-        imgElement.style.border = "none";
-        imgElement.style.padding = "0";
-        imgElement.src = TRUE_IMAGE_URL;
-        imgFooter.innerHTML = `
-          <div style="margin-top: 15px; padding: 10px; background: #e3f2fd; border: 1px solid #90caf9; color: #0d47a1; border-radius: 10px; font-size: 12px; font-weight: bold; line-height: 1.4; width: 100%; box-sizing: border-box;">
-            🔸 รองรับการสแกนผ่าน <span style="color:#ff6600;">TrueMoney Wallet</span> และแอปธนาคาร
-          </div>
-        `;
+      if(mode === 'store_line') {
+        document.getElementById('status-badge').innerHTML = `โหมด: <span>เพิ่มเพื่อน LINE</span>`;
+        document.getElementById('qr-preview-img').src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(STORE_LINE_OA_LINK)}`;
+      } else if(mode === 'payment') {
+        document.getElementById('status-badge').innerHTML = `โหมด: <span>โอนเงินผ่านธนาคาร</span>`;
+        document.getElementById('qr-preview-img').src = PAYMENT_IMAGE_URL;
+      } else if(mode === 'true_payment') {
+        document.getElementById('status-badge').innerHTML = `โหมด: <span>จ่ายผ่าน TrueMoney</span>`;
+        document.getElementById('qr-preview-img').src = TRUE_IMAGE_URL;
       }
     }
 
-    function copyToClipboard() {
-      if (currentGlobalState.mode !== "points") return;
-      const timestamp = currentGlobalState.timestamp;
-      const points = currentGlobalState.points;
-      const rawString = points + "-" + timestamp + "-" + SECRET_SALT;
-      const hash = CryptoJS.MD5(rawString).toString();
-      const secretCode = "KUB-" + points + "-" + timestamp + "-" + hash; 
-      const remoteLink = "https://liff.line.me/" + SCAN_LIFF_ID + "?code=" + secretCode;
-
-      const text = "☕ รับแต้มสะสม KUB Cafe: " + remoteLink;
-      navigator.clipboard.writeText(text).then(() => {
-        const btn = document.getElementById('copy-btn');
-        btn.innerText = "✅ คัดลอกสำเร็จ (รหัส KUB-)";
-        setTimeout(() => { btn.innerText = "📋 คัดลอกลิงก์ส่งให้ลูกค้าทางไลน์"; }, 2500);
-      }).catch(err => { alert("ไม่สามารถคัดลอกได้"); });
+    function startLocalTimer() {
+      clearInterval(localTimer);
+      let remain = 5 * 60;
+      document.getElementById('timer-display').innerText = `รีเฟรชใหม่ใน: 05:00`;
+      
+      localTimer = setInterval(() => {
+        remain--;
+        if (remain < 0) {
+          clearInterval(localTimer);
+          document.getElementById('timer-display').innerText = "หมดเวลา (กลับสู่หน้าหลัก)";
+          document.getElementById('qr-preview-img').src = "https://via.placeholder.com/300x300.png?text=STANDBY";
+          document.getElementById('status-badge').innerHTML = "สถานะ: รอสั่งการ";
+          return;
+        }
+        let m = Math.floor(remain / 60);
+        let s = remain % 60;
+        document.getElementById('timer-display').innerText = `รีเฟรชใหม่ใน: ${m}:${s < 10 ? '0'+s : s}`;
+      }, 1000);
     }
 
-    window.addEventListener('load', function() { document.getElementById('custom-point').value = ""; });
+    function copyCurrentLink() {
+      if (!currentLiffUrl) { alert("กรุณากดสร้างแต้มก่อนคัดลอกลิงก์ครับ"); return; }
+      navigator.clipboard.writeText(currentLiffUrl).then(() => {
+        alert("คัดลอกลิงก์รับแต้มสำเร็จ! นำไปวางในแชทลูกค้าได้เลยครับ");
+      });
+    }
   </script>
 </body>
 </html>
