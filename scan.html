@@ -9,42 +9,39 @@
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   
   <style>
-    /* 🎨 โทนสี Cozy Minimal & Clean Background */
     body { 
-      background-color: #FDFCF0; /* พื้นหลังสีครีมคลีนๆ */
+      background-color: #FDFCF0; 
       display: flex; flex-direction: column; justify-content: center; align-items: center; 
       height: 100vh; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; 
       margin: 0; padding: 0 20px; text-align: center; 
     }
     
-    #loading-ui {
-      display: flex; flex-direction: column; align-items: center;
-    }
-    
+    #loading-ui { display: flex; flex-direction: column; align-items: center; }
     .loader { border: 5px solid #E8E2D9; border-top: 5px solid #A3B18A; border-radius: 50%; width: 45px; height: 45px; animation: spin 1s linear infinite; margin-bottom: 20px; }
     h2 { color: #4A3F35; font-size: 18px; margin: 0 0 10px 0; }
     .sub-text { font-size: 13px; color: #B0A69D; }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     
-    /* 🎨 Custom SweetAlert2 Style */
+    /* 🎨 Custom SweetAlert2 Style - Theme Integrated */
     .custom-swal-popup { 
       width: 85% !important; max-width: 310px !important; 
       padding: 2em 1.5em !important; border-radius: 24px !important; 
       background-color: #FFFFFF !important; 
       box-shadow: 0 15px 35px rgba(140, 122, 107, 0.15) !important;
     }
-    .swal2-icon { transform: scale(0.65) !important; margin: -15px auto 5px auto !important; }
     .custom-swal-title { font-size: 20px !important; font-weight: 700 !important; color: #4A3F35 !important; margin-bottom: 10px !important; }
     .custom-swal-html { font-size: 15px !important; color: #6B705C !important; line-height: 1.5 !important; }
-    .custom-swal-btn { 
+    
+    /* ปุ่มธีมมัทฉะหลัก */
+    .matcha-btn { 
       font-size: 16px !important; padding: 12px 30px !important; min-width: 140px !important; 
       border-radius: 14px !important; font-weight: 600 !important; 
-      background-color: #5cd969 !important; color: #ffffff !important; border: none !important;
-      box-shadow: 0 4px 15px rgba(92, 217, 105, 0.3) !important; cursor: pointer;
+      background-color: #A3B18A !important; color: #ffffff !important; border: none !important;
+      box-shadow: 0 4px 10px rgba(163, 177, 138, 0.4) !important; cursor: pointer;
     }
-    /* ปุ่มสีส้มสำหรับป๊อปอัปเตือนเวลา */
-    .custom-swal-btn-warning {
-      background-color: #FF8C00 !important; box-shadow: 0 4px 15px rgba(255, 140, 0, 0.3) !important;
+    /* ปุ่มสำหรับเตือนเวลา */
+    .warning-btn { 
+      background-color: #C57B57 !important; box-shadow: 0 4px 10px rgba(197, 123, 87, 0.4) !important;
     }
   </style>
 </head>
@@ -63,27 +60,17 @@
     
     let isProcessing = false; 
 
-    // 🚀 เด้งเข้าหน้าแชท LINE OA
-    function redirectToLINE() {
-      window.location.href = "https://line.me/R/ti/p/" + lineOA_ID;
-    }
+    function redirectToLINE() { window.location.href = "https://line.me/R/ti/p/" + lineOA_ID; }
 
-    async function showAlert(title, text, icon, btnText, extraClass = '') {
+    async function showAlert(title, text, icon, btnText, isWarning = false) {
       document.getElementById('loading-ui').style.display = 'none';
-      
-      if (typeof Swal !== 'undefined') {
-        const btnClass = extraClass === 'warning' ? 'custom-swal-btn-warning' : 'custom-swal-btn';
-        await Swal.fire({
-          title: title, html: text, icon: icon,
-          customClass: { popup: 'custom-swal-popup', title: 'custom-swal-title', htmlContainer: 'custom-swal-html', confirmButton: btnClass },
-          allowOutsideClick: false, confirmButtonText: btnText, buttonsStyling: false 
-        });
-      } else {
-        alert(title + "\n" + text.replace(/<[^>]*>?/gm, ''));
-      }
+      await Swal.fire({
+        title: title, html: text, icon: icon,
+        customClass: { popup: 'custom-swal-popup', title: 'custom-swal-title', htmlContainer: 'custom-swal-html', confirmButton: isWarning ? 'matcha-btn warning-btn' : 'matcha-btn' },
+        allowOutsideClick: false, confirmButtonText: btnText, buttonsStyling: false 
+      });
     }
 
-    // ⏳ ฟังก์ชันแสดงนาฬิกานับถอยหลังแบบเรียบง่าย (มีปุ่มตกลง)
     async function showCooldownCountdown(remainSec) {
       document.getElementById('loading-ui').style.display = 'none';
       let currentRemain = remainSec;
@@ -91,11 +78,11 @@
       
       await Swal.fire({
         title: 'คุณเพิ่งรับแต้มไป ⏱️',
-        html: `กรุณารอสแกนรอบถัดไปในอีก<br><span style="font-size:32px; font-weight:bold; color:#FF8C00;" id="cd-timer">${currentRemain}</span> วินาที`,
+        html: `กรุณารอสแกนรอบถัดไปในอีก<br><span style="font-size:36px; font-weight:900; color:#A3B18A;" id="cd-timer">${currentRemain}</span> วินาที`,
         icon: 'warning',
-        customClass: { popup: 'custom-swal-popup', title: 'custom-swal-title', htmlContainer: 'custom-swal-html', confirmButton: 'custom-swal-btn-warning' },
+        customClass: { popup: 'custom-swal-popup', title: 'custom-swal-title', htmlContainer: 'custom-swal-html', confirmButton: 'matcha-btn warning-btn' },
         allowOutsideClick: false,
-        showConfirmButton: true, // โชว์ปุ่มตกลงเลย ไม่ต้องรอ
+        showConfirmButton: true,
         confirmButtonText: 'ตกลง (OK)',
         buttonsStyling: false,
         didOpen: () => {
@@ -103,82 +90,45 @@
           countdownInterval = setInterval(() => {
             currentRemain--;
             if (timerSpan) timerSpan.innerText = currentRemain;
-            
-            // ถ้านับถึง 0 ก็หยุดนับ
             if (currentRemain <= 0) {
               clearInterval(countdownInterval);
               if (timerSpan) timerSpan.innerText = "0";
             }
           }, 1000);
         },
-        willClose: () => {
-          clearInterval(countdownInterval); // ล้างรอบเวลาก่อนปิดหน้าต่าง
-        }
+        willClose: () => { clearInterval(countdownInterval); }
       });
-
-      // พอลูกค้ากดปุ่ม "ตกลง (OK)" ก็เด้งกลับเข้าหน้าแชท LINE เลย
       redirectToLINE();
     }
 
     async function processPoints() {
       if (isProcessing) return;
       isProcessing = true;
-
       try {
-        if (!navigator.onLine) {
-          await showAlert('ไม่มีสัญญาณเน็ต', 'กรุณาตรวจสอบอินเทอร์เน็ตค่ะ', 'error', 'ตกลง (OK)');
-          redirectToLINE(); return;
-        }
-
+        if (!navigator.onLine) { await showAlert('ไม่มีสัญญาณเน็ต', 'กรุณาตรวจสอบอินเทอร์เน็ตค่ะ', 'error', 'ตกลง (OK)'); redirectToLINE(); return; }
         await liff.init({ liffId: LIFF_ID });
         if (!liff.isLoggedIn()) { liff.login({ redirectUri: window.location.href }); return; }
-
         const urlParams = new URLSearchParams(window.location.search);
         const shopCode = urlParams.get('code');
-
-        if (!shopCode) {
-          await showAlert('ไม่พบข้อมูลแต้ม', '❌ ข้อมูลแต้มไม่ถูกต้อง หรือสแกนผิดวิธีค่ะ', 'error', 'ตกลง (OK)');
-          redirectToLINE(); return;
-        }
-
+        if (!shopCode) { await showAlert('ไม่พบข้อมูลแต้ม', '❌ ข้อมูลแต้มไม่ถูกต้อง หรือสแกนผิดวิธีค่ะ', 'error', 'ตกลง (OK)'); redirectToLINE(); return; }
         const profile = await liff.getProfile();
         const cleanedName = encodeURIComponent((profile.displayName || '').replace(/[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF]/g, ''));
-        
         const response = await fetch(`${API_URL}?action=scanAddPoint&userId=${profile.userId}&name=${cleanedName}&shopCode=${encodeURIComponent(shopCode)}`);
         const data = await response.json();
         
-        if (data) {
-          if (data.status === "success") {
-            const isEN = data.lang === "EN";
-            const titleText = isEN ? 'Points Added! 🎉' : 'สะสมแต้มสำเร็จ! 🎉';
-            const btnText = isEN ? 'OK' : 'ตกลง (OK)';
-            
-            const ptsText = `<div style="font-size:32px; font-weight:900; color:#ff4d4d; margin:10px 0; line-height: 1;">+${data.ptsAdded} ${isEN ? 'PTS' : 'แต้ม'} ☕</div>`;
-            const totalLabel = isEN ? 'Total Balance:' : 'แต้มสะสมทั้งหมด:';
-            const totalText = `<div style="font-size:16px; color:#4A3F35; margin-bottom:20px; font-weight:bold;">${totalLabel} <span style="white-space: nowrap;"><span style="color:#00C851; font-size:22px; font-weight:900;">${data.totalPts}</span> ${isEN ? 'PTS' : 'แต้ม'}</span></div>`;
-            const remarkLabel = isEN ? '(Check history and redeem rewards via the menu below)' : '(เช็กแต้มย้อนหลังและแลกรางวัล ได้ที่เมนูด้านล่างในแชท)';
-            const remark = `<div style="font-size:12px; color:#B0A69D; border-top: 1px dashed #E8E2D9; padding-top: 15px;">${remarkLabel}</div>`;
-            
-            await showAlert(titleText, ptsText + totalText + remark, 'success', btnText);
-            redirectToLINE(); 
-          } 
-          // ⏳ ถ้าติดระบบหน่วงเวลา 30 วิ (Cooldown)
-          else if (data.status === "cooldown") {
-            await showCooldownCountdown(data.remain || 30);
-          } 
-          // ❌ ถ้ารหัสปลอม หรือ สแกนซ้ำข้ามวัน
-          else {
-            await showAlert('สะสมแต้มไม่สำเร็จ', `${data.message || 'รหัสผ่านหรือสิทธิ์ไม่ถูกต้อง'}`, 'error', 'ตกลง (OK)');
-            redirectToLINE(); 
-          }
+        if (data.status === "success") {
+          const ptsText = `<div style="font-size:32px; font-weight:900; color:#A3B18A; margin:10px 0;">+${data.ptsAdded} แต้ม ☕</div>`;
+          const totalText = `<div style="font-size:16px; color:#4A3F35; font-weight:bold;">แต้มสะสมทั้งหมด: <span style="color:#E65100; font-size:22px;">${data.totalPts}</span> แต้ม</div>`;
+          await showAlert('สะสมแต้มสำเร็จ! 🎉', ptsText + totalText, 'success', 'ตกลง (OK)');
+          redirectToLINE(); 
+        } else if (data.status === "cooldown") {
+          await showCooldownCountdown(data.remain || 30);
+        } else {
+          await showAlert('สะสมแต้มไม่สำเร็จ', `${data.message}`, 'error', 'ตกลง (OK)');
+          redirectToLINE(); 
         }
-
-      } catch (err) {
-        await showAlert('ระบบขัดข้องชั่วคราว', 'กรุณาสแกนใหม่อีกครั้งนะคะ', 'error', 'ตกลง (OK)');
-        redirectToLINE(); 
-      }
+      } catch (err) { redirectToLINE(); }
     }
-    
     document.addEventListener("DOMContentLoaded", processPoints);
   </script>
 </body>
