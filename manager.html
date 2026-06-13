@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>KUB CAFE MANAGER v5.0</title>
+  <title>KUB CAFE MANAGER v5.1</title>
   
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   
@@ -176,7 +176,7 @@
   </div>
 
   <script>
-    // 🔑 รหัสผ่านเข้าใช้งาน (ปรับเป็น PIN 4 ตัวให้เหมือนฝั่ง Admin)
+    // 🔑 รหัสผ่านเข้าใช้งาน (PIN 4 ตัว)
     const MANAGER_PIN = "2026"; 
 
     // เช็กว่าเคยล็อกอินไว้ไหม
@@ -186,7 +186,7 @@
       initApp();
     }
 
-    // 🔐 ระบบตรวจสอบรหัสผ่าน
+    // 🔐 ระบบตรวจสอบรหัสผ่าน (ไม่มี SweetAlert มาปนแล้ว)
     function checkPin() {
       const input = document.getElementById('pin-input').value;
       if(input === MANAGER_PIN) {
@@ -198,7 +198,7 @@
           initApp();
         }, 300);
       } else {
-        Swal.fire({ title: 'ผิดพลาด', text: 'รหัส PIN ไม่ถูกต้องครับ', icon: 'error', confirmButtonColor: '#C57B57' });
+        alert('รหัส PIN ไม่ถูกต้องครับ'); // ใช้ Alert ธรรมดาของ Browser
         document.getElementById('pin-input').value = "";
       }
     }
