@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>KUB CAFE MANAGER v5.3</title>
+  <title>KUB CAFE MANAGER v5.4</title>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <style>
     :root { --bg-color: #FDFCF0; --card-bg: #FFFFFF; --text-main: #4A3F35; --text-muted: #B0A69D; --primary-matcha: #A3B18A; --matcha-dark: #7A8B62; --accent-brick: #C57B57; --border-color: #E8E2D9; }
@@ -246,13 +246,24 @@
       try {
         const data = await fetch(`${CLOUDFLARE_WORKER_URL}/api/manager-history`, {
           method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Admin-PIN': activePin },
-          body: JSON.stringify({ structuredQuery: { from: [{ collectionId: "transactions" }], where: { fieldFilter: { field: { fieldPath: "userId" }, op: "EQUAL", value: { stringValue: userId } } }, limit: 50 } })
+          body: JSON.stringify({ 
+            structuredQuery: { 
+              from: [{ collectionId: "transactions" }], 
+              where: { fieldFilter: { field: { fieldPath: "userId" }, op: "EQUAL", value: { stringValue: userId } } }, 
+              limit: 200 
+            } 
+          })
         }).then(r => r.json());
         
-        const logs = [];
+        let logs = [];
         if (Array.isArray(data)) { data.forEach(item => { if (item.document && item.document.fields) logs.push(item.document.fields); }); }
         if (logs.length === 0) return Swal.fire('ไม่พบประวัติ', 'ลูกค้าท่านนี้ยังไม่มีรายการเคลื่อนไหวครับ', 'info');
+        
+        // 🔄 1. จัดเรียงข้อมูลจาก วันที่ล่าสุด -> ไปอดีต
         logs.sort((a,b) => new Date(b.timestamp.timestampValue) - new Date(a.timestamp.timestampValue));
+        
+        // ✂️ 2. ตัดโชว์แค่ 50 รายการใหม่ล่าสุด
+        logs = logs.slice(0, 50);
 
         let html = `<div style="max-height: 350px; overflow-y: auto;">`;
         logs.forEach(l => {
