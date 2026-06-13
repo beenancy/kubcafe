@@ -37,7 +37,11 @@
     .btn-line { background: var(--line-green); color: white; font-size: clamp(13px, 2vh, 15px); box-shadow: 0 4px 0 #04A044; }
     .btn-true { background: var(--true-orange); color: white; font-size: clamp(13px, 2vh, 15px); box-shadow: 0 4px 0 #CC5200; }
     .btn-bank { background: var(--bank-blue); color: white; font-size: clamp(13px, 2vh, 15px); box-shadow: 0 4px 0 #0E4788; }
-    .btn-copy { background: #F4EEFF; color: #8A56E2; border: 1px dashed #B89AEB; width: 100%; padding: clamp(10px, 1.5vh, 14px); border-radius: 14px; font-size: clamp(13px, 2vh, 15px); font-weight: bold; margin-top: 2px; }
+    
+    /* ปุ่มใหม่ */
+    .btn-action-group { display: flex; gap: 10px; margin-top: 2px; }
+    .btn-copy { background: #F4EEFF; color: #8A56E2; border: 1px dashed #B89AEB; width: 100%; padding: clamp(10px, 1.5vh, 14px); border-radius: 14px; font-size: clamp(13px, 2vh, 15px); font-weight: bold; flex: 2; }
+    .btn-lock { background: #FFEBEE; color: #D32F2F; border: 1px dashed #EF9A9A; width: 100%; padding: clamp(10px, 1.5vh, 14px); border-radius: 14px; font-size: clamp(13px, 2vh, 15px); font-weight: bold; flex: 1; cursor: pointer; }
   </style>
 </head>
 <body>
@@ -82,7 +86,10 @@
         <button class="btn-key btn-bank" onclick="writeToFirebase('payment')">Bank</button>
       </div>
 
-      <button class="btn-copy" onclick="copyCurrentLink()">📋 คัดลอกลิงก์ส่งให้ลูกค้า</button>
+      <div class="btn-action-group">
+        <button class="btn-copy" onclick="copyCurrentLink()">📋 คัดลอกลิงก์ส่งให้ลูกค้า</button>
+        <button class="btn-lock" onclick="lockSystem()">🔒 ล็อกหน้าจอ</button>
+      </div>
     </div>
   </div>
 
@@ -109,6 +116,12 @@
         alert("รหัส PIN ไม่ถูกต้องครับ");
         document.getElementById('pin-input').value = "";
       }
+    }
+
+    // ฟังก์ชันใหม่สำหรับล็อกจอ
+    function lockSystem() {
+      localStorage.removeItem("kub_admin_unlocked");
+      location.reload(); // รีเฟรชหน้าเว็บเพื่อให้กลับไปหน้าใส่รหัส
     }
 
     function initApp() {
@@ -201,7 +214,6 @@
 
     function writeToFirebase(mode, points = 0) {
       document.getElementById('custom-pts').value = ''; 
-      // 🔒 แนบกุญแจลับไปตอนอัปเดตหน้าจอ
       window.db.ref('pos_display').set({ 
         mode: mode, 
         points: points, 
