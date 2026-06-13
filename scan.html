@@ -9,59 +9,48 @@
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   
   <style>
-    body { background-color: #fdfdfd; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; font-family: sans-serif; margin: 0; padding: 0 20px; text-align: center; }
-    .loader { border: 5px solid #f3f3f3; border-top: 5px solid #A3B18A; border-radius: 50%; width: 45px; height: 45px; animation: spin 1s linear infinite; margin-bottom: 20px; }
+    /* 🎨 โทนสี Cozy Minimal & Clean Background */
+    body { 
+      background-color: #FDFCF0; /* พื้นหลังสีครีมคลีนๆ */
+      display: flex; flex-direction: column; justify-content: center; align-items: center; 
+      height: 100vh; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; 
+      margin: 0; padding: 0 20px; text-align: center; 
+    }
+    
+    #loading-ui {
+      display: flex; flex-direction: column; align-items: center;
+    }
+    
+    .loader { border: 5px solid #E8E2D9; border-top: 5px solid #A3B18A; border-radius: 50%; width: 45px; height: 45px; animation: spin 1s linear infinite; margin-bottom: 20px; }
     h2 { color: #4A3F35; font-size: 18px; margin: 0 0 10px 0; }
-    .sub-text { font-size: 13px; color: #b2bec3; }
+    .sub-text { font-size: 13px; color: #B0A69D; }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     
-    /* 🎨 Cozy Minimal Popup Style */
+    /* 🎨 Custom SweetAlert2 Style */
     .custom-swal-popup { 
-      width: 85% !important; 
-      max-width: 310px !important; 
-      padding: 2em 1.5em !important; 
-      border-radius: 24px !important; 
-      background-color: #FDFCF0 !important; 
-      box-shadow: 0 10px 30px rgba(140, 122, 107, 0.15) !important;
+      width: 85% !important; max-width: 310px !important; 
+      padding: 2em 1.5em !important; border-radius: 24px !important; 
+      background-color: #FFFFFF !important; 
+      box-shadow: 0 15px 35px rgba(140, 122, 107, 0.15) !important;
     }
-    
-    .swal2-icon { 
-      transform: scale(0.65) !important; 
-      margin: -15px auto 5px auto !important; 
-    }
-    
-    .custom-swal-title { 
-      font-size: 20px !important; 
-      font-weight: 700 !important; 
-      color: #4A3F35 !important; 
-      margin-bottom: 10px !important;
-    }
-    .custom-swal-html { 
-      font-size: 15px !important; 
-      color: #6B705C !important; 
-      line-height: 1.5 !important; 
-    }
-    
-    /* 🔘 แก้ไขปุ่ม: บังคับความกว้างให้สวยงาม ไม่หดตัวตามข้อความ */
+    .swal2-icon { transform: scale(0.65) !important; margin: -15px auto 5px auto !important; }
+    .custom-swal-title { font-size: 20px !important; font-weight: 700 !important; color: #4A3F35 !important; margin-bottom: 10px !important; }
+    .custom-swal-html { font-size: 15px !important; color: #6B705C !important; line-height: 1.5 !important; }
     .custom-swal-btn { 
-      font-size: 16px !important; 
-      padding: 12px 30px !important; /* เพิ่มระยะซ้าย-ขวา */
-      min-width: 140px !important; /* บังคับปุ่มให้กว้างกำลังดีเสมอ */
-      border-radius: 14px !important; 
-      font-weight: 600 !important; 
-      background-color: #5cd969 !important; 
-      color: #ffffff !important;
-      border: none !important;
-      box-shadow: 0 4px 15px rgba(163, 177, 138, 0.3) !important;
-      cursor: pointer;
+      font-size: 16px !important; padding: 12px 30px !important; min-width: 140px !important; 
+      border-radius: 14px !important; font-weight: 600 !important; 
+      background-color: #5cd969 !important; color: #ffffff !important; border: none !important;
+      box-shadow: 0 4px 15px rgba(92, 217, 105, 0.3) !important; cursor: pointer;
     }
   </style>
 </head>
 <body>
   
-  <div class="loader"></div>
-  <h2 id="status-text">กำลังประมวลผลแต้ม...</h2>
-  <div class="sub-text">กรุณารอสักครู่ ห้ามปิดหน้าจอ</div>
+  <div id="loading-ui">
+    <div class="loader"></div>
+    <h2 id="status-text">กำลังประมวลผลแต้ม...</h2>
+    <div class="sub-text">กรุณารอสักครู่ ห้ามปิดหน้าจอ</div>
+  </div>
 
   <script>
     const LIFF_ID = "2010206186-u1XRJldq"; 
@@ -70,24 +59,21 @@
     
     let isProcessing = false; 
 
+    // 🚀 บังคับเด้งเข้าหน้า LINE Official Account เสมอ
     function redirectToLINE() {
-      if (liff.isInClient()) {
-        liff.closeWindow(); 
-      } else {
-        window.location.replace("https://line.me/R/ti/p/" + lineOA_ID); 
-      }
+      // ใช้ URL Scheme ของ LINE เพื่อให้พุ่งเข้าหน้าเพิ่มเพื่อน/แชท ทันที
+      window.location.href = "https://line.me/R/ti/p/" + lineOA_ID;
     }
 
     async function showAlert(title, text, icon, btnText) {
+      // 🧹 ซ่อนหน้าต่างโหลดดิ้งรกๆ ทิ้งไป ให้เหลือแต่พื้นหลังครีมคลีนๆ
+      document.getElementById('loading-ui').style.display = 'none';
+      
       if (typeof Swal !== 'undefined') {
         await Swal.fire({
-          title: title, 
-          html: text, 
-          icon: icon,
+          title: title, html: text, icon: icon,
           customClass: { popup: 'custom-swal-popup', title: 'custom-swal-title', htmlContainer: 'custom-swal-html', confirmButton: 'custom-swal-btn' },
-          allowOutsideClick: false, 
-          confirmButtonText: btnText,
-          buttonsStyling: false 
+          allowOutsideClick: false, confirmButtonText: btnText, buttonsStyling: false 
         });
       } else {
         alert(title + "\n" + text.replace(/<[^>]*>?/gm, ''));
@@ -130,7 +116,6 @@
           const ptsText = `<div style="font-size:32px; font-weight:900; color:#ff4d4d; margin:10px 0; line-height: 1;">+${data.ptsAdded} ${isEN ? 'PTS' : 'แต้ม'} ☕</div>`;
           const totalLabel = isEN ? 'Total Balance:' : 'แต้มสะสมทั้งหมด:';
           
-          // ใช้ white-space: nowrap เพื่อบังคับให้ตัวเลขกับคำว่า PTS อยู่บรรทัดเดียวกันเสมอ
           const totalText = `<div style="font-size:16px; color:#4A3F35; margin-bottom:20px; font-weight:bold;">${totalLabel} <span style="white-space: nowrap;"><span style="color:#00C851; font-size:22px; font-weight:900;">${data.totalPts}</span> ${isEN ? 'PTS' : 'แต้ม'}</span></div>`;
           
           const remarkLabel = isEN 
@@ -139,16 +124,16 @@
           const remark = `<div style="font-size:12px; color:#B0A69D; border-top: 1px dashed #E8E2D9; padding-top: 15px;">${remarkLabel}</div>`;
           
           await showAlert(titleText, ptsText + totalText + remark, 'success', btnText);
-          redirectToLINE(); 
+          redirectToLINE(); // พุ่งไปหน้าร้าน
           
         } else {
           await showAlert('สะสมแต้มไม่สำเร็จ', `${data.message || 'รหัสผ่านหรือสิทธิ์ไม่ถูกต้อง'}`, 'error', 'ตกลง (OK)');
-          redirectToLINE();
+          redirectToLINE(); // พุ่งไปหน้าร้าน
         }
 
       } catch (err) {
         await showAlert('ระบบขัดข้องชั่วคราว', 'กรุณาสแกนใหม่อีกครั้งนะคะ', 'error', 'ตกลง (OK)');
-        redirectToLINE();
+        redirectToLINE(); // พุ่งไปหน้าร้าน
       }
     }
     
