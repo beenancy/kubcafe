@@ -63,9 +63,14 @@
     
     let isProcessing = false; 
 
-    // 🚀 บังคับเด้งเข้าหน้า LINE Official Account เสมอ
+    // 🚀 เด้งเข้าหน้าแชท LINE OA
     function redirectToLINE() {
       window.location.href = "https://line.me/R/ti/p/" + lineOA_ID;
+    }
+
+    // 📷 คำสั่งลับ เด้งเข้าหน้ากล้องสแกน QR ของแอป LINE โดยตรง
+    function openLineScanner() {
+      window.location.href = "https://line.me/R/nv/QRCodeReader";
     }
 
     async function showAlert(title, text, icon, btnText, extraClass = '') {
@@ -83,20 +88,21 @@
       }
     }
 
-    // ⏳ ฟังก์ชันพิเศษสำหรับแสดงนาฬิกานับถอยหลัง
+    // ⏳ ฟังก์ชันแสดงนาฬิกานับถอยหลัง & เปิดกล้องอัตโนมัติ
     async function showCooldownCountdown(remainSec) {
       document.getElementById('loading-ui').style.display = 'none';
       let currentRemain = remainSec;
       
+      // สเตป 1: โชว์กล่องนับถอยหลัง (ซ่อนปุ่มกด)
       await Swal.fire({
         title: 'คุณเพิ่งสแกนไป ⏱️',
         html: `กรุณารอสักครู่...<br><span style="font-size:32px; font-weight:bold; color:#FF8C00;" id="cd-timer">${currentRemain}</span> วินาที`,
         icon: 'warning',
         customClass: { popup: 'custom-swal-popup', title: 'custom-swal-title', htmlContainer: 'custom-swal-html', confirmButton: 'custom-swal-btn-warning' },
         allowOutsideClick: false,
-        showConfirmButton: false, // ซ่อนปุ่มกดระหว่างนับถอยหลัง
+        showConfirmButton: false, 
         didOpen: () => {
-          Swal.showLoading(); // โชว์วงกลมหมุนๆ ระหว่างรอ
+          Swal.showLoading(); 
           const timerSpan = document.getElementById('cd-timer');
           const countdownInterval = setInterval(() => {
             currentRemain--;
@@ -104,20 +110,29 @@
             
             if (currentRemain <= 0) {
               clearInterval(countdownInterval);
-              Swal.hideLoading(); // หยุดหมุน
-              Swal.update({
-                title: 'พร้อมสแกนแล้ว! ✅',
-                html: 'หมดเวลาพัก คุณสามารถสแกนแต้มใหม่ได้แล้วค่ะ',
-                icon: 'success',
-                showConfirmButton: true,
-                confirmButtonText: 'กลับไปหน้าร้าน'
-              });
+              Swal.close(); // ปิดกล่องเดิมเพื่อไปสร้างกล่องใหม่
             }
           }, 1000);
         }
       });
-      // พอกดปุ่มตกลง จะเด้งกลับไปหน้าแชท
-      redirectToLINE();
+
+      // สเตป 2: พอนับถึง 0 โชว์กล่องใหม่พร้อมปุ่ม "เปิดกล้อง"
+      if (currentRemain <= 0) {
+        await Swal.fire({
+          title: 'พร้อมสแกนแล้ว! ✅',
+          html: 'หมดเวลาพัก คุณสามารถสแกนแต้มใหม่ได้แล้วค่ะ',
+          icon: 'success',
+          customClass: { popup: 'custom-swal-popup', title: 'custom-swal-title', htmlContainer: 'custom-swal-html', confirmButton: 'custom-swal-btn' },
+          allowOutsideClick: false,
+          confirmButtonText: 'เปิดกล้องสแกน 📷',
+          buttonsStyling: false
+        });
+        
+        // ลูกค้ากดปุ่มปุ๊บ เปิดกล้องสแกนเลย!
+        openLineScanner();
+      } else {
+        redirectToLINE();
+      }
     }
 
     async function processPoints() {
