@@ -3,10 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>KUB CAFE MANAGER v5.2</title>
-  
+  <title>KUB CAFE MANAGER v5.3</title>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  
   <style>
     :root { --bg-color: #FDFCF0; --card-bg: #FFFFFF; --text-main: #4A3F35; --text-muted: #B0A69D; --primary-matcha: #A3B18A; --matcha-dark: #7A8B62; --accent-brick: #C57B57; --border-color: #E8E2D9; }
     body, html { background-color: var(--bg-color); font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; margin: 0; padding: 0; width: 100%; height: 100%; color: var(--text-main); }
@@ -14,7 +12,6 @@
     #pin-overlay h2 { margin-bottom: 20px; font-size: 24px; letter-spacing: 2px; color: var(--primary-matcha); }
     #pin-overlay p { margin-top: -10px; margin-bottom: 30px; font-size: 14px; color: var(--text-muted); }
     #pin-input { width: 150px; text-align: center; font-size: 28px; padding: 10px; border: 3px solid var(--primary-matcha); border-radius: 15px; background: rgba(255,255,255,0.1); color: white; font-weight: bold; margin-bottom: 20px; outline: none; }
-    #pin-input::placeholder { color: rgba(255,255,255,0.3); }
     #btn-unlock { background: var(--primary-matcha); color: white; border: none; padding: 12px 40px; border-radius: 20px; font-size: 18px; font-weight: bold; box-shadow: 0 4px 10px rgba(0,0,0,0.3); cursor: pointer; }
     #main-app { display: none; padding: 15px; }
     .container { max-width: 1100px; margin: 0 auto; }
@@ -23,7 +20,7 @@
     .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 20px; }
     .stat-card { background: var(--card-bg); padding: 20px; border-radius: 16px; border: 1px solid var(--border-color); box-shadow: 0 5px 15px rgba(140, 122, 107, 0.05); text-align: center; }
     .stat-card h3 { margin: 0; font-size: 12px; color: var(--text-muted); text-transform: uppercase; }
-    .stat-card .num { font-size: clamp(24px, 6vw, 36px); font-weight: 800; color: var(--primary-matcha); margin-top: 5px; }
+    .stat-card .num { font-size: clamp(24px, vw, 36px); font-weight: 800; color: var(--primary-matcha); margin-top: 5px; }
     .card { background-color: var(--card-bg); border-radius: 16px; box-shadow: 0 5px 20px rgba(140, 122, 107, 0.08); padding: clamp(15px, 4vw, 30px); border: 1px solid var(--border-color); overflow: hidden; }
     .toolbar { display: flex; flex-direction: column; gap: 15px; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px dashed var(--border-color); }
     @media (min-width: 600px) { .toolbar { flex-direction: row; justify-content: space-between; align-items: center; } }
@@ -72,7 +69,6 @@
       <div class="header-container">
         <h1>☕ KUB CAFE <span style="font-weight:200; color:var(--text-muted);">| PRO</span></h1>
       </div>
-
       <div class="summary-grid">
         <div class="stat-card">
           <h3>Members</h3>
@@ -83,7 +79,6 @@
           <div class="num" id="stat-points">0</div>
         </div>
       </div>
-
       <div class="card">
         <div class="toolbar">
           <div class="search-box">
@@ -96,18 +91,10 @@
             <button class="btn btn-lock" onclick="lockSystem()">🔒 ล็อกหน้าจอ</button>
           </div>
         </div>
-
         <div class="table-responsive">
           <table>
             <thead>
-              <tr>
-                <th>ลำดับ</th>
-                <th>ชื่อลูกค้า</th>
-                <th>แต้มปัจจุบัน</th>
-                <th>แต้มเก่า</th>
-                <th>อัปเดตล่าสุด</th>
-                <th>จัดการ</th>
-              </tr>
+              <tr><th>ลำดับ</th><th>ชื่อลูกค้า</th><th>แต้มปัจจุบัน</th><th>แต้มเก่า</th><th>อัปเดตล่าสุด</th><th>จัดการ</th></tr>
             </thead>
             <tbody id="user-table-body">
               <tr><td colspan="6" style="text-align:center; padding:40px; color:#ccc;">กรุณาปลดล็อกเพื่อดูข้อมูล...</td></tr>
@@ -119,7 +106,8 @@
   </div>
 
   <script>
-    const MANAGER_PIN = "2026"; 
+    // 🌐 [ สำคัญมาก 🌟 ] ใส่ URL ของ Cloudflare Worker ของร้านลงในช่องนี้ครับ
+    const CLOUDFLARE_WORKER_URL = "https://ใส่ลิงก์เวิร์กเกอร์ของคุณตรงนี้.workers.dev";
 
     if(localStorage.getItem("kub_manager_unlocked") === "true") {
       document.getElementById('pin-overlay').style.display = 'none';
@@ -128,36 +116,30 @@
     }
 
     function checkPin() {
-      const input = document.getElementById('pin-input').value;
-      if(input === MANAGER_PIN) {
-        localStorage.setItem("kub_manager_unlocked", "true");
-        document.getElementById('pin-overlay').style.opacity = '0';
-        setTimeout(() => {
-          document.getElementById('pin-overlay').style.display = 'none';
-          document.getElementById('main-app').style.display = 'block';
-          initApp();
-        }, 300);
-      } else {
-        alert('รหัส PIN ไม่ถูกต้องครับ'); 
-        document.getElementById('pin-input').value = "";
+      const pin = document.getElementById('pin-input').value;
+      if(pin.length === 4) {
+        // ยิงเทสถามข้อมูลลูกค้า ถ้า PIN ถูกต้องจะผ่านสเตปทันที
+        fetch(`${CLOUDFLARE_WORKER_URL}/api/manager-users`, {
+          method: 'GET', headers: { 'X-Admin-PIN': pin }
+        }).then(res => {
+          if(res.status === 200) {
+            localStorage.setItem("kub_manager_pin", pin);
+            localStorage.setItem("kub_manager_unlocked", "true");
+            location.reload();
+          } else { alert('รหัส PIN หลังบ้านไม่ถูกต้องครับ'); }
+        }).catch(() => alert('เชื่อมต่อระบบความปลอดภัยหลังบ้านล้มเหลว'));
       }
     }
 
     function lockSystem() {
       localStorage.removeItem("kub_manager_unlocked");
+      localStorage.removeItem("kub_manager_pin");
       location.reload(); 
     }
 
     function initApp() {
-      const FIREBASE_PROJECT_ID = "kub-cafe-pos";
-      const FIREBASE_API_KEY = "AIzaSyAi-8gxkAs3N4b5r3EULZHckqq3tHa6tLE";
-      window.BASE_URL = `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT_ID}/databases/(default)/documents`;
-      window.QUERY_URL = `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT_ID}/databases/(default)/documents:runQuery?key=${FIREBASE_API_KEY}`;
-      window.API_KEY = FIREBASE_API_KEY;
-
       window.allUsersData = [];
       window.todayEarnCounts = {}; 
-
       fetchData();
     }
 
@@ -169,38 +151,21 @@
     }
 
     async function fetchData() {
-      if(!window.BASE_URL) return; 
       const tbody = document.getElementById('user-table-body');
       tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:40px;">กำลังโหลดข้อมูล...</td></tr>';
-      
+      const activePin = localStorage.getItem("kub_manager_pin");
       try {
         window.todayEarnCounts = {};
-        const todayStart = new Date();
-        todayStart.setHours(0,0,0,0); 
+        const todayStart = new Date(); todayStart.setHours(0,0,0,0); 
 
-        // 🚀 ดึงประวัติเฉพาะของวันนี้เท่านั้นด้วย runQuery
-        const txQuery = {
-          structuredQuery: {
-            from: [{ collectionId: "transactions" }],
-            where: {
-              fieldFilter: {
-                field: { fieldPath: "timestamp" },
-                op: "GREATER_THAN_OR_EQUAL",
-                value: { timestampValue: todayStart.toISOString() }
-              }
-            },
-            limit: 500
-          }
-        };
-
-        const txRes = await fetch(window.QUERY_URL, {
-          method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(txQuery)
-        });
-        const txData = await txRes.json();
+        // 1. ดึงข้อมูลสแกนซ้ำของวันนี้ ผ่าน Cloudflare Gateway
+        const txRes = await fetch(`${CLOUDFLARE_WORKER_URL}/api/manager-today-tx`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Admin-PIN': activePin },
+          body: JSON.stringify({ structuredQuery: { from: [{ collectionId: "transactions" }], where: { fieldFilter: { field: { fieldPath: "timestamp" }, op: "GREATER_THAN_OR_EQUAL", value: { timestampValue: todayStart.toISOString() } } }, limit: 500 } })
+        }).then(r => r.json());
         
-        if (Array.isArray(txData)) {
-          txData.forEach(item => {
+        if (Array.isArray(txRes)) {
+          txRes.forEach(item => {
             if (item.document && item.document.fields) {
               const f = item.document.fields;
               if (f.type?.stringValue === 'earn') {
@@ -211,22 +176,17 @@
           });
         }
 
-        // โหลดข้อมูลลูกค้า
-        const response = await fetch(`${window.BASE_URL}/users?key=${window.API_KEY}&pageSize=500`);
-        const data = await response.json();
+        // 2. ดึงรายชื่อพนักงานและลูกค้าผ่าน Cloudflare Gateway
+        const uRes = await fetch(`${CLOUDFLARE_WORKER_URL}/api/manager-users`, {
+          method: 'GET', headers: { 'X-Admin-PIN': activePin }
+        }).then(r => r.json());
         
-        if (!data.documents) {
-          tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:40px;">ยังไม่มีสมาชิก</td></tr>';
-          return;
-        }
+        if (!uRes.documents) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:40px;">ยังไม่มีสมาชิก</td></tr>'; return; }
 
         let totalPts = 0;
-        window.allUsersData = data.documents.map(doc => {
-          const fields = doc.fields || {};
-          const paths = doc.name.split('/');
-          const p = parseInt(fields.totalPoints?.integerValue) || 0;
-          totalPts += p;
-
+        window.allUsersData = uRes.documents.map(doc => {
+          const fields = doc.fields || {}; const paths = doc.name.split('/');
+          const p = parseInt(fields.totalPoints?.integerValue) || 0; totalPts += p;
           return {
             id: paths[paths.length - 1],
             displayName: fields.displayName?.stringValue || 'Guest',
@@ -239,46 +199,24 @@
 
         document.getElementById('stat-users').innerText = window.allUsersData.length;
         document.getElementById('stat-points').innerText = totalPts.toLocaleString();
-
         renderTable(window.allUsersData);
-      } catch (error) {
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:red; padding:40px;">โหลดข้อมูลไม่สำเร็จ</td></tr>';
-      }
+      } catch (error) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:red; padding:40px;">โหลดข้อมูลไม่สำเร็จ</td></tr>'; }
     }
 
     function renderTable(users) {
-      const tbody = document.getElementById('user-table-body');
-      tbody.innerHTML = '';
-
+      const tbody = document.getElementById('user-table-body'); tbody.innerHTML = '';
       users.forEach((user, index) => {
         const pic = user.pictureUrl ? `<img src="${user.pictureUrl}" class="profile-pic">` : `<div class="no-pic">👤</div>`;
-        
         const todayCount = window.todayEarnCounts[user.id] || 0;
-        const alertHtml = todayCount > 1 
-          ? `<div class="alert-badge">🚨 สแกนวันนี้ ${todayCount} ครั้ง</div>` 
-          : '';
-
+        const alertHtml = todayCount > 1 ? `<div class="alert-badge">🚨 สแกนวันนี้ ${todayCount} ครั้ง</div>` : '';
         const tr = document.createElement('tr');
         tr.innerHTML = `
           <td style="color:#B0A69D; font-size:12px;">${index + 1}</td>
-          <td>
-            <div class="user-info">
-              ${pic}
-              <div>
-                <span class="user-name-text">${user.displayName}</span>
-                ${alertHtml}
-              </div>
-            </div>
-          </td>
+          <td><div class="user-info">${pic}<div><span class="user-name-text">${user.displayName}</span>${alertHtml}</div></div></td>
           <td><span class="pill-pts">${user.totalPoints}</span></td>
           <td style="color:#B0A69D;">${user.legacyPoints}</td>
           <td style="font-size:12px; color:#9A958F;">${formatThaiDate(user.lastUpdated)}</td>
-          <td>
-            <div class="action-group">
-              <button class="btn btn-edit" onclick="editPoints('${user.id}', '${user.displayName}', ${user.totalPoints})">✏️ แก้ไข</button>
-              <button class="btn btn-history" onclick="viewHistory('${user.id}', '${user.displayName}')">📜 ประวัติ</button>
-            </div>
-          </td>
+          <td><div class="action-group"><button class="btn btn-edit" onclick="editPoints('${user.id}', '${user.displayName}', ${user.totalPoints})">✏️ แก้ไข</button><button class="btn btn-history" onclick="viewHistory('${user.id}', '${user.displayName}')">📜 ประวัติ</button></div></td>
         `;
         tbody.appendChild(tr);
       });
@@ -291,16 +229,13 @@
     }
 
     async function editPoints(userId, name, current) {
-      const { value: val } = await Swal.fire({
-        title: 'แก้ไขแต้ม', html: `ระบุแต้มใหม่สำหรับ <b>${name}</b>`,
-        input: 'number', inputValue: current, showCancelButton: true, confirmButtonColor: '#A3B18A'
-      });
-
+      const { value: val } = await Swal.fire({ title: 'แก้ไขแต้ม', html: `ระบุแต้มใหม่สำหรับ <b>${name}</b>`, input: 'number', inputValue: current, showCancelButton: true, confirmButtonColor: '#A3B18A' });
       if (val) {
         Swal.fire({ title: 'กำลังบันทึก...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+        const activePin = localStorage.getItem("kub_manager_pin");
         try {
-          await fetch(`${window.BASE_URL}/users/${userId}?updateMask.fieldPaths=totalPoints&updateMask.fieldPaths=lastUpdated&key=${window.API_KEY}`, {
-            method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+          await fetch(`${CLOUDFLARE_WORKER_URL}/api/manager-edit?userId=${userId}`, {
+            method: 'PATCH', headers: { 'Content-Type': 'application/json', 'X-Admin-PIN': activePin },
             body: JSON.stringify({ fields: { totalPoints: { integerValue: val }, lastUpdated: { timestampValue: new Date().toISOString() } } })
           });
           Swal.fire('สำเร็จ!', 'อัปเดตแต้มเรียบร้อย', 'success').then(fetchData);
@@ -310,76 +245,37 @@
 
     async function viewHistory(userId, name) {
       Swal.fire({ title: 'กำลังดึงประวัติ...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+      const activePin = localStorage.getItem("kub_manager_pin");
       try {
-        // 🚀 ดึงข้อมูลเฉพาะคนนี้ ด้วย runQuery
-        const queryPayload = {
-          structuredQuery: {
-            from: [{ collectionId: "transactions" }],
-            where: {
-              fieldFilter: {
-                field: { fieldPath: "userId" },
-                op: "EQUAL",
-                value: { stringValue: userId }
-              }
-            },
-            limit: 50 // ดูย้อนหลัง 50 รายการล่าสุด
-          }
-        };
-
-        const res = await fetch(window.QUERY_URL, {
-          method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(queryPayload)
-        });
-
-        const data = await res.json();
+        const data = await fetch(`${CLOUDFLARE_WORKER_URL}/api/manager-history`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Admin-PIN': activePin },
+          body: JSON.stringify({ structuredQuery: { from: [{ collectionId: "transactions" }], where: { fieldFilter: { field: { fieldPath: "userId" }, op: "EQUAL", value: { stringValue: userId } } }, limit: 50 } })
+        }).then(r => r.json());
         
         const logs = [];
-        if (Array.isArray(data)) {
-          data.forEach(item => {
-            if (item.document && item.document.fields) logs.push(item.document.fields);
-          });
-        }
-
+        if (Array.isArray(data)) { data.forEach(item => { if (item.document && item.document.fields) logs.push(item.document.fields); }); }
         if (logs.length === 0) return Swal.fire('ไม่พบประวัติ', 'ลูกค้าท่านนี้ยังไม่มีรายการเคลื่อนไหวครับ', 'info');
-
-        // เรียงลำดับจากใหม่ไปเก่า
         logs.sort((a,b) => new Date(b.timestamp.timestampValue) - new Date(a.timestamp.timestampValue));
 
         let html = `<div style="max-height: 350px; overflow-y: auto;">`;
         logs.forEach(l => {
-          const isEarn = l.type.stringValue === 'earn';
-          const pts = l.points.integerValue;
-          html += `
-            <div class="history-item">
-              <div>
-                <div style="font-weight:bold;">${isEarn ? '☕ สะสมแต้ม' : '🎁 แลกรางวัล'}</div>
-                <div class="history-date">${formatThaiDate(l.timestamp.timestampValue)}</div>
-              </div>
-              <div class="history-points ${isEarn ? 'pts-plus' : 'pts-minus'}">${isEarn ? '+' : '-'}${pts}</div>
-            </div>`;
+          const isEarn = l.type.stringValue === 'earn'; const pts = l.points.integerValue;
+          html += `<div class="history-item"><div><div style="font-weight:bold;">${isEarn ? '☕ สะสมแต้ม' : '🎁 แลกรางวัล'}</div><div class="history-date">${formatThaiDate(l.timestamp.timestampValue)}</div></div><div class="history-points ${isEarn ? 'pts-plus' : 'pts-minus'}">${isEarn ? '+' : '-'}${pts}</div></div>`;
         });
         html += `</div>`;
-
         Swal.fire({ title: `ประวัติคุณ ${name}`, html: html, confirmButtonColor: '#8C7A6B' });
       } catch (e) { Swal.fire('Error', 'ไม่สามารถโหลดประวัติได้', 'error'); }
     }
 
     async function clearQRGarbage() {
-      const ask = await Swal.fire({
-        title: 'ล้างขยะ QR?', text: 'ลบประวัติการสแกนเพื่อประหยัดพื้นที่', icon: 'warning',
-        showCancelButton: true, confirmButtonColor: '#C57B57'
-      });
-
+      const ask = await Swal.fire({ title: 'ล้างขยะ QR?', text: 'ลบประวัติการสแกนเพื่อประหยัดพื้นที่', icon: 'warning', showCancelButton: true, confirmButtonColor: '#C57B57' });
       if (ask.isConfirmed) {
         Swal.fire({ title: 'กำลังกวาดขยะ...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-        const res = await fetch(`${window.BASE_URL}/used_qrs?key=${window.API_KEY}&pageSize=100`);
-        const data = await res.json();
-        if (data.documents) {
-          for (const doc of data.documents) { await fetch(`https://firestore.googleapis.com/v1/${doc.name}?key=${window.API_KEY}`, { method: 'DELETE' }); }
+        const activePin = localStorage.getItem("kub_manager_pin");
+        try {
+          await fetch(`${CLOUDFLARE_WORKER_URL}/api/manager-clean`, { method: 'POST', headers: { 'X-Admin-PIN': activePin } });
           Swal.fire('สำเร็จ!', 'ล้างขยะ QR เรียบร้อยแล้วครับ', 'success');
-        } else {
-          Swal.fire('สะอาดแล้ว', 'ไม่มีขยะ QR ให้ล้างครับ', 'success');
-        }
+        } catch(e) { Swal.fire('Error', 'ล้างขยะไม่สำเร็จ', 'error'); }
       }
     }
   </script>
