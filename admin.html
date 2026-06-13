@@ -35,7 +35,7 @@
     .btn-true { background: var(--true-orange); color: white; font-size: clamp(13px, 2vh, 15px); box-shadow: 0 4px 0 #CC5200; }
     .btn-bank { background: var(--bank-blue); color: white; font-size: clamp(13px, 2vh, 15px); box-shadow: 0 4px 0 #0E4788; }
     .btn-action-group { display: flex; gap: 10px; margin-top: 2px; }
-    .btn-copy { background: #F4EEFF; color: #8A56E2; border: 1px dashed #B89AEB; width: 100%; padding: clamp(10px, 1.5vh, 14px); border-radius: 14px; font-size: clamp(13px, 2vh, 15px); font-weight: bold; flex: 2; }
+    .btn-copy { background: #F4EEFF; color: #8A56E2; border: 1px dashed #B89AEB; width: 100%; padding: clamp(10px, 1.5vh, 14px); border-radius: 14px; font-size: clamp(13px, 2vh, 15px); font-weight: bold; flex: 2; cursor: pointer; }
     .btn-lock { background: #FFEBEE; color: #D32F2F; border: 1px dashed #EF9A9A; width: 100%; padding: clamp(10px, 1.5vh, 14px); border-radius: 14px; font-size: clamp(13px, 2vh, 15px); font-weight: bold; flex: 1; cursor: pointer; }
   </style>
 </head>
@@ -52,7 +52,7 @@
       <div class="qr-preview-box" onclick="refreshCurrentPoint()">
         <img id="qr-preview-img" src="https://via.placeholder.com/300x300.png?text=STANDBY" alt="QR Preview">
       </div>
-      <div class="refresh-hint">🔄 แต้ที่รูปเพื่อรีเฟรชแต้มใหม่ (หรือเคลียร์จอ)</div>
+      <div class="refresh-hint">🔄 แตะที่รูปเพื่อรีเฟรชแต้มใหม่ (หรือเคลียร์จอ)</div>
     </div>
 
     <div class="control-section">
@@ -89,7 +89,6 @@
   </div>
 
   <script>
-    // 🌐 [ สำคัญมาก 🌟 ] ใส่ URL ของ Cloudflare Worker ของร้านลงในช่องนี้ครับ
     const CLOUDFLARE_WORKER_URL = "https://kub-backend.nan23082526.workers.dev";
 
     if(localStorage.getItem("kub_admin_unlocked") === "true") {
@@ -101,7 +100,6 @@
     function checkPin() {
       const pin = document.getElementById('pin-input').value;
       if (pin.length === 4) {
-        // ทดลองยิงเข้าหลังบ้าน ถ้า PIN ผิด Cloudflare จะตีกลับ 401 ทันที
         fetch(`${CLOUDFLARE_WORKER_URL}/api/pos-update`, {
           method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Admin-PIN': pin },
           body: JSON.stringify({ mode: 'idle' })
@@ -122,10 +120,7 @@
     }
 
     function initApp() {
-      // ดึงแค่ฟังก์ชันการอ่านข้อมูลแบบ Realtime จาก Firebase มาแสดงผลพรีวิว
-      const firebaseConfig = {
-        databaseURL: "https://kub-cafe-pos-default-rtdb.asia-southeast1.firebasedatabase.app"
-      };
+      const firebaseConfig = { databaseURL: "https://kub-cafe-pos-default-rtdb.asia-southeast1.firebasedatabase.app" };
       if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
       const db = firebase.database();
       window.syncedState = { mode: 'idle', points: 0, timestamp: 0 };
@@ -138,9 +133,8 @@
         if (!data) return;
         window.syncedState = data;
         
-        // จำลองสร้าง URL ขาถอดรหัสในเครื่องแอดมิน เพื่อใช้ฟังก์ชันปุ่มก็อปปี้ลิงก์ส่งงานได้เหมือนเดิม
         if(data.mode === 'points') {
-          const hash = data.shopCode ? data.shopCode.split('-')[3] : ''; 
+          const hash = data.hash || ''; 
           window.currentLiffUrl = `https://liff.line.me/2010206186-u1XRJldq?code=KUBBAR-${data.points}-${data.timestamp}-${hash}`;
         }
         updateAdminUI(data);
@@ -186,7 +180,6 @@
       }, 1000);
     }
 
-    // 🚀 ยิงคำสั่งเข้าถังควบคุมหลังบ้านผ่าน Cloudflare ตัวเดียว
     function fireAction(mode, points = 0) {
       document.getElementById('custom-pts').value = '';
       const activePin = localStorage.getItem("kub_admin_pin");
