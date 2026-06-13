@@ -20,21 +20,22 @@
       --border-color: #E8E2D9;
     }
 
+    /* 🔒 ล็อกหน้าจอ 100% ห้ามเลื่อนห้ามขยับ */
     body, html {
       margin: 0; padding: 0; 
-      width: 100%; 
-      min-height: 100dvh; 
+      width: 100%; height: 100dvh; 
       background-color: var(--bg-cream);
       font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
       display: flex; justify-content: center; align-items: center;
+      overflow: hidden; /* ล็อกการเลื่อนหน้าจอ */
       -webkit-user-select: none; 
     }
 
+    /* 📦 กรอบหลัก (Card) ที่ล็อกความสูงไว้ */
     .display-card {
       background: var(--card-white);
       width: 92vw; max-width: 420px;
-      min-height: 85vh; 
-      margin: 20px auto; 
+      height: 85vh; max-height: 680px; /* ล็อกความสูงเพื่อไม่ให้จอกระตุก */
       border-radius: 28px;
       box-shadow: 0 15px 40px rgba(140, 122, 107, 0.1);
       display: flex; flex-direction: column; justify-content: center; align-items: center;
@@ -44,14 +45,10 @@
       border: 1px solid var(--border-color);
     }
 
-    .fade-content {
+    /* ⚡ ถอด Animation ออก เพื่อให้เปลี่ยนจอทันที (Instant) */
+    .instant-content {
       display: flex; flex-direction: column; align-items: center; justify-content: center;
       width: 100%; height: 100%;
-      animation: fadeIn 0.4s ease-out forwards;
-    }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: scale(0.98); }
-      to { opacity: 1; transform: scale(1); }
     }
 
     /* 1. โหมดสแตนด์บาย */
@@ -137,7 +134,7 @@
     function renderStandby() {
       clearInterval(timerInterval);
       displayCard.innerHTML = `
-        <div class="fade-content">
+        <div class="instant-content">
           <div class="logo-icon">☕</div>
           <div class="cafe-name">KUB CAFÉ</div>
           <div class="cafe-desc">ยินดีต้อนรับ<br>กรุณาสั่งเครื่องดื่มที่บาร์ค่ะ</div>
@@ -162,7 +159,7 @@
         const liffUrl = `https://liff.line.me/${SCAN_LIFF_ID}?code=${secretCode}`;
         
         htmlContent = `
-          <div class="fade-content">
+          <div class="instant-content">
             <div class="badge-title badge-matcha">สแกนรับ +${points} แต้ม</div>
             <div class="qr-box">
               <img src="https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(liffUrl)}">
@@ -175,7 +172,7 @@
       } 
       else if (data.mode === "store_line") {
         htmlContent = `
-          <div class="fade-content">
+          <div class="instant-content">
             <div class="badge-title badge-line">LINE Official 💬</div>
             <div class="qr-box">
               <img src="https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(STORE_LINE_OA_LINK)}">
@@ -186,7 +183,7 @@
       } 
       else if (data.mode === "payment") {
         htmlContent = `
-          <div class="fade-content" style="justify-content: center;">
+          <div class="instant-content" style="justify-content: center;">
             <img src="${PAYMENT_IMAGE_URL}" class="payment-img">
             <div class="payment-note">
               ⚠️ กรุณาใช้ <span style="color:#d35400;">"แอปธนาคาร"</span> สแกนจ่ายเท่านั้น<br>
@@ -197,7 +194,7 @@
       } 
       else if (data.mode === "true_payment") {
         htmlContent = `
-          <div class="fade-content" style="justify-content: center;">
+          <div class="instant-content" style="justify-content: center;">
             <img src="${TRUE_IMAGE_URL}" class="payment-img">
             <div class="payment-note true-note">
               🔸 รองรับสแกนผ่าน <span style="color:#ff6600;">TrueMoney</span> และแอปธนาคาร
