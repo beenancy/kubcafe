@@ -3,26 +3,45 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>KUB CAFE MANAGER v4.6</title>
+  <title>KUB CAFE MANAGER v5.0</title>
   
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   
   <style>
     :root {
-      --bg-color: #FDFCF0; 
-      --card-bg: #FFFFFF;
-      --text-main: #4A3F35; 
-      --text-muted: #B0A69D;
-      --primary-matcha: #A3B18A; 
-      --accent-brick: #C57B57; 
-      --border-color: #E8E2D9;
+      --bg-color: #FDFCF0; --card-bg: #FFFFFF; --text-main: #4A3F35; 
+      --text-muted: #B0A69D; --primary-matcha: #A3B18A; --matcha-dark: #7A8B62;
+      --accent-brick: #C57B57; --border-color: #E8E2D9;
     }
 
-    body {
+    body, html {
       background-color: var(--bg-color); font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-      margin: 0; padding: 15px; color: var(--text-main);
+      margin: 0; padding: 0; width: 100%; height: 100%; color: var(--text-main);
     }
 
+    /* 🔒 PIN Overlay (Hard Gate) */
+    #pin-overlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: var(--text-main); z-index: 9999;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      color: white; transition: opacity 0.3s;
+    }
+    #pin-overlay h2 { margin-bottom: 20px; font-size: 24px; letter-spacing: 2px; color: var(--primary-matcha); }
+    #pin-overlay p { margin-top: -10px; margin-bottom: 30px; font-size: 14px; color: var(--text-muted); }
+    #pin-input {
+      width: 150px; text-align: center; font-size: 28px; padding: 10px;
+      border: 3px solid var(--primary-matcha); border-radius: 15px; background: rgba(255,255,255,0.1);
+      color: white; font-weight: bold; margin-bottom: 20px; outline: none;
+    }
+    #pin-input::placeholder { color: rgba(255,255,255,0.3); }
+    #btn-unlock {
+      background: var(--primary-matcha); color: white; border: none;
+      padding: 12px 40px; border-radius: 20px; font-size: 18px; font-weight: bold;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3); cursor: pointer;
+    }
+
+    /* 📱 Main Application (Hidden by Default) */
+    #main-app { display: none; padding: 15px; }
     .container { max-width: 1100px; margin: 0 auto; }
 
     /* 📊 Header */
@@ -48,11 +67,8 @@
       display: flex; flex-direction: column; gap: 15px; margin-bottom: 20px; padding-bottom: 15px; 
       border-bottom: 1px dashed var(--border-color);
     }
-    @media (min-width: 600px) {
-      .toolbar { flex-direction: row; justify-content: space-between; align-items: center; }
-    }
+    @media (min-width: 600px) { .toolbar { flex-direction: row; justify-content: space-between; align-items: center; } }
 
-    /* 🔍 Search Box */
     .search-box { width: 100%; position: relative; }
     @media (min-width: 600px) { .search-box { flex: 1; max-width: 350px; } }
     .search-box input {
@@ -62,23 +78,24 @@
     .search-box input:focus { border-color: var(--primary-matcha); background: #fff; }
     .search-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); opacity: 0.4; }
 
-    .btn-group { display: flex; gap: 10px; width: 100%; justify-content: space-between; }
+    .btn-group { display: flex; gap: 10px; width: 100%; justify-content: space-between; flex-wrap: wrap; }
     @media (min-width: 600px) { .btn-group { width: auto; justify-content: flex-end; } }
 
     .btn {
       padding: 10px 15px; border-radius: 10px; cursor: pointer; font-weight: 600; font-size: 13px; 
-      border: none; color: #fff; display: flex; align-items: center; justify-content: center; gap: 5px; flex: 1;
+      border: none; color: #fff; display: flex; align-items: center; justify-content: center; gap: 5px; flex: 1; min-width: 100px;
     }
     @media (min-width: 600px) { .btn { flex: none; } }
     
     .btn-refresh { background-color: #8C7A6B; }
     .btn-clean { background-color: var(--accent-brick); }
+    .btn-lock { background-color: #D32F2F; }
     .btn-edit { background-color: var(--primary-matcha); padding: 8px 12px; font-size: 12px; }
     .btn-history { background-color: #D4A373; padding: 8px 12px; font-size: 12px; }
 
     /* 📅 Responsive Table */
     .table-responsive { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-    table { width: 100%; border-collapse: collapse; min-width: 700px; /* บังคับให้ตารางไม่หดจนเละ */ }
+    table { width: 100%; border-collapse: collapse; min-width: 700px; }
     th { color: var(--text-muted); font-size: 12px; padding: 12px 10px; border-bottom: 2px solid var(--border-color); text-align: left; white-space: nowrap; }
     td { padding: 15px 10px; border-bottom: 1px solid #F4F1EC; vertical-align: middle; font-size: 14px; }
 
@@ -87,10 +104,7 @@
 
     .user-info { display: flex; align-items: center; gap: 10px; }
     .user-name-text { font-weight: 600; color: var(--text-main); display: block; }
-    
-    /* 🚨 ป้ายเตือนสแกนซ้ำ */
     .alert-badge { display: inline-block; background: #ffeaa7; color: #d35400; font-size: 10px; padding: 2px 6px; border-radius: 6px; margin-top: 4px; font-weight: bold; border: 1px solid #fdcb6e; }
-
     .pill-pts { background-color: #FDFCF0; color: #D35400; padding: 5px 12px; border-radius: 10px; font-weight: 800; border: 1px solid #FAE5D3; }
     .action-group { display: flex; gap: 6px; }
 
@@ -103,64 +117,110 @@
 </head>
 <body>
 
-  <div class="container">
-    <div class="header-container">
-      <h1>☕ KUB CAFE <span style="font-weight:200; color:var(--text-muted);">| PRO</span></h1>
-    </div>
+  <div id="pin-overlay">
+    <h2>MANAGER PRO</h2>
+    <p>Data Privacy Secured</p>
+    <input type="password" id="pin-input" inputmode="numeric" pattern="[0-9]*" placeholder="PIN" maxlength="4">
+    <button id="btn-unlock" onclick="checkPin()">UNLOCK</button>
+  </div>
 
-    <div class="summary-grid">
-      <div class="stat-card">
-        <h3>Members</h3>
-        <div class="num" id="stat-users">0</div>
+  <div id="main-app">
+    <div class="container">
+      <div class="header-container">
+        <h1>☕ KUB CAFE <span style="font-weight:200; color:var(--text-muted);">| PRO</span></h1>
       </div>
-      <div class="stat-card">
-        <h3>Total Points</h3>
-        <div class="num" id="stat-points">0</div>
-      </div>
-    </div>
 
-    <div class="card">
-      <div class="toolbar">
-        <div class="search-box">
-          <span class="search-icon">🔍</span>
-          <input type="text" id="searchInput" placeholder="ค้นหาชื่อลูกค้า..." onkeyup="filterTable()">
+      <div class="summary-grid">
+        <div class="stat-card">
+          <h3>Members</h3>
+          <div class="num" id="stat-users">0</div>
         </div>
-        <div class="btn-group">
-          <button class="btn btn-refresh" onclick="fetchData()">🔄 โหลดใหม่</button>
-          <button class="btn btn-clean" onclick="clearQRGarbage()">🧹 ล้างขยะ</button>
+        <div class="stat-card">
+          <h3>Total Points</h3>
+          <div class="num" id="stat-points">0</div>
         </div>
       </div>
 
-      <div class="table-responsive">
-        <table>
-          <thead>
-            <tr>
-              <th>ลำดับ</th>
-              <th>ชื่อลูกค้า</th>
-              <th>แต้มปัจจุบัน</th>
-              <th>แต้มเก่า</th>
-              <th>อัปเดตล่าสุด</th>
-              <th>จัดการ</th>
-            </tr>
-          </thead>
-          <tbody id="user-table-body">
-            <tr><td colspan="6" style="text-align:center; padding:40px; color:#ccc;">กำลังรอตรวจสอบรหัสผ่าน...</td></tr>
-          </tbody>
-        </table>
+      <div class="card">
+        <div class="toolbar">
+          <div class="search-box">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="searchInput" placeholder="ค้นหาชื่อลูกค้า..." onkeyup="filterTable()">
+          </div>
+          <div class="btn-group">
+            <button class="btn btn-refresh" onclick="fetchData()">🔄 โหลดใหม่</button>
+            <button class="btn btn-clean" onclick="clearQRGarbage()">🧹 ล้างขยะ</button>
+            <button class="btn btn-lock" onclick="lockSystem()">🔒 ล็อกหน้าจอ</button>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th>ลำดับ</th>
+                <th>ชื่อลูกค้า</th>
+                <th>แต้มปัจจุบัน</th>
+                <th>แต้มเก่า</th>
+                <th>อัปเดตล่าสุด</th>
+                <th>จัดการ</th>
+              </tr>
+            </thead>
+            <tbody id="user-table-body">
+              <tr><td colspan="6" style="text-align:center; padding:40px; color:#ccc;">กรุณาปลดล็อกเพื่อดูข้อมูล...</td></tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   </div>
 
   <script>
-    // 🔑 รหัสผ่านเข้าใช้งาน (เปลี่ยนตรงนี้ได้เลย)
-    const ADMIN_PASSWORD = "kub2026"; 
+    // 🔑 รหัสผ่านเข้าใช้งาน (ปรับเป็น PIN 4 ตัวให้เหมือนฝั่ง Admin)
+    const MANAGER_PIN = "2026"; 
 
-    const FIREBASE_PROJECT_ID = "kub-cafe-pos";
-    const FIREBASE_API_KEY = "AIzaSyAi-8gxkAs3N4b5r3EULZHckqq3tHa6tLE";
-    const BASE_URL = `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT_ID}/databases/(default)/documents`;
+    // เช็กว่าเคยล็อกอินไว้ไหม
+    if(localStorage.getItem("kub_manager_unlocked") === "true") {
+      document.getElementById('pin-overlay').style.display = 'none';
+      document.getElementById('main-app').style.display = 'block';
+      initApp();
+    }
 
-    let allUsersData = [];
-    let todayEarnCounts = {}; // เก็บสถิติการสแกนของวันนี้ { userId: count }
+    // 🔐 ระบบตรวจสอบรหัสผ่าน
+    function checkPin() {
+      const input = document.getElementById('pin-input').value;
+      if(input === MANAGER_PIN) {
+        localStorage.setItem("kub_manager_unlocked", "true");
+        document.getElementById('pin-overlay').style.opacity = '0';
+        setTimeout(() => {
+          document.getElementById('pin-overlay').style.display = 'none';
+          document.getElementById('main-app').style.display = 'block';
+          initApp();
+        }, 300);
+      } else {
+        Swal.fire({ title: 'ผิดพลาด', text: 'รหัส PIN ไม่ถูกต้องครับ', icon: 'error', confirmButtonColor: '#C57B57' });
+        document.getElementById('pin-input').value = "";
+      }
+    }
+
+    // 🔒 ล็อกหน้าจอ
+    function lockSystem() {
+      localStorage.removeItem("kub_manager_unlocked");
+      location.reload(); 
+    }
+
+    // 🚀 ฟังก์ชันหลัก (จะทำงานต่อเมื่อใส่รหัสถูกเท่านั้น)
+    function initApp() {
+      const FIREBASE_PROJECT_ID = "kub-cafe-pos";
+      const FIREBASE_API_KEY = "AIzaSyAi-8gxkAs3N4b5r3EULZHckqq3tHa6tLE";
+      window.BASE_URL = `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT_ID}/databases/(default)/documents`;
+      window.API_KEY = FIREBASE_API_KEY;
+
+      window.allUsersData = [];
+      window.todayEarnCounts = {}; 
+
+      fetchData();
+    }
 
     function formatThaiDate(isoString) {
       if (!isoString) return "-";
@@ -169,44 +229,17 @@
       return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear() + 543} ${String(date.getHours()).padStart(2,'0')}:${String(date.getMinutes()).padStart(2,'0')}`;
     }
 
-    // 🔐 ระบบเช็กรหัสผ่านก่อนทำงาน
-    async function checkLogin() {
-      const isLogged = sessionStorage.getItem("kubAdminLogin");
-      if (isLogged === "true") {
-        fetchData();
-        return;
-      }
-
-      const { value: password } = await Swal.fire({
-        title: '🔐 กรุณาใส่รหัสผ่าน',
-        input: 'password',
-        inputPlaceholder: 'รหัสผ่านแอดมิน',
-        allowOutsideClick: false,
-        confirmButtonColor: '#A3B18A',
-        confirmButtonText: 'เข้าสู่ระบบ'
-      });
-
-      if (password === ADMIN_PASSWORD) {
-        sessionStorage.setItem("kubAdminLogin", "true");
-        fetchData();
-      } else {
-        Swal.fire({ title: 'ผิดพลาด', text: 'รหัสผ่านไม่ถูกต้อง', icon: 'error', confirmButtonColor: '#C57B57' })
-            .then(checkLogin);
-      }
-    }
-
-    // 🔄 ดึงข้อมูลลูกค้า + ดึงประวัติของวันนี้เพื่อเช็กสแกนซ้ำ
     async function fetchData() {
+      if(!window.BASE_URL) return; // ป้องกันการเรียกก่อน unlock
       const tbody = document.getElementById('user-table-body');
       tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:40px;">กำลังโหลดข้อมูล...</td></tr>';
       
       try {
-        // 1. ดึงประวัติธุรกรรม (Transactions) ล่าสุด เพื่อเช็กยอดของ "วันนี้"
-        todayEarnCounts = {};
+        window.todayEarnCounts = {};
         const todayStart = new Date();
-        todayStart.setHours(0,0,0,0); // เริ่มต้นของวันนี้
+        todayStart.setHours(0,0,0,0); 
 
-        const txRes = await fetch(`${BASE_URL}/transactions?key=${FIREBASE_API_KEY}&pageSize=300`);
+        const txRes = await fetch(`${window.BASE_URL}/transactions?key=${window.API_KEY}&pageSize=300`);
         const txData = await txRes.json();
         
         if (txData.documents) {
@@ -216,14 +249,13 @@
               const txDate = new Date(f.timestamp?.timestampValue);
               if (txDate >= todayStart) {
                 const uid = f.userId?.stringValue;
-                if(uid) todayEarnCounts[uid] = (todayEarnCounts[uid] || 0) + 1;
+                if(uid) window.todayEarnCounts[uid] = (window.todayEarnCounts[uid] || 0) + 1;
               }
             }
           });
         }
 
-        // 2. ดึงรายชื่อลูกค้าทั้งหมด
-        const response = await fetch(`${BASE_URL}/users?key=${FIREBASE_API_KEY}&pageSize=500`);
+        const response = await fetch(`${window.BASE_URL}/users?key=${window.API_KEY}&pageSize=500`);
         const data = await response.json();
         
         if (!data.documents) {
@@ -232,7 +264,7 @@
         }
 
         let totalPts = 0;
-        allUsersData = data.documents.map(doc => {
+        window.allUsersData = data.documents.map(doc => {
           const fields = doc.fields || {};
           const paths = doc.name.split('/');
           const p = parseInt(fields.totalPoints?.integerValue) || 0;
@@ -248,16 +280,15 @@
           };
         }).sort((a, b) => new Date(b.lastUpdated) - new Date(a.lastUpdated));
 
-        document.getElementById('stat-users').innerText = allUsersData.length;
+        document.getElementById('stat-users').innerText = window.allUsersData.length;
         document.getElementById('stat-points').innerText = totalPts.toLocaleString();
 
-        renderTable(allUsersData);
+        renderTable(window.allUsersData);
       } catch (error) {
         tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:red; padding:40px;">โหลดข้อมูลไม่สำเร็จ</td></tr>';
       }
     }
 
-    // 🎨 วาดตารางข้อมูล
     function renderTable(users) {
       const tbody = document.getElementById('user-table-body');
       tbody.innerHTML = '';
@@ -265,8 +296,7 @@
       users.forEach((user, index) => {
         const pic = user.pictureUrl ? `<img src="${user.pictureUrl}" class="profile-pic">` : `<div class="no-pic">👤</div>`;
         
-        // 🚨 เช็กว่าวันนี้ได้แต้มเกิน 1 ครั้งไหม
-        const todayCount = todayEarnCounts[user.id] || 0;
+        const todayCount = window.todayEarnCounts[user.id] || 0;
         const alertHtml = todayCount > 1 
           ? `<div class="alert-badge">🚨 สแกนวันนี้ ${todayCount} ครั้ง</div>` 
           : '';
@@ -299,7 +329,7 @@
 
     function filterTable() {
       const q = document.getElementById('searchInput').value.toLowerCase();
-      const filtered = allUsersData.filter(u => u.displayName.toLowerCase().includes(q));
+      const filtered = window.allUsersData.filter(u => u.displayName.toLowerCase().includes(q));
       renderTable(filtered);
     }
 
@@ -312,7 +342,7 @@
       if (val) {
         Swal.fire({ title: 'กำลังบันทึก...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
         try {
-          await fetch(`${BASE_URL}/users/${userId}?updateMask.fieldPaths=totalPoints&updateMask.fieldPaths=lastUpdated&key=${FIREBASE_API_KEY}`, {
+          await fetch(`${window.BASE_URL}/users/${userId}?updateMask.fieldPaths=totalPoints&updateMask.fieldPaths=lastUpdated&key=${window.API_KEY}`, {
             method: 'PATCH', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ fields: { totalPoints: { integerValue: val }, lastUpdated: { timestampValue: new Date().toISOString() } } })
           });
@@ -324,7 +354,7 @@
     async function viewHistory(userId, name) {
       Swal.fire({ title: 'กำลังดึงประวัติ...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
       try {
-        const res = await fetch(`${BASE_URL}/transactions?key=${FIREBASE_API_KEY}&pageSize=100`);
+        const res = await fetch(`${window.BASE_URL}/transactions?key=${window.API_KEY}&pageSize=100`);
         const data = await res.json();
         
         if (!data.documents) return Swal.fire('ไม่พบประวัติ', 'ลูกค้าท่านนี้ยังไม่มีรายการเคลื่อนไหวครับ', 'info');
@@ -361,19 +391,16 @@
 
       if (ask.isConfirmed) {
         Swal.fire({ title: 'กำลังกวาดขยะ...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-        const res = await fetch(`${BASE_URL}/used_qrs?key=${FIREBASE_API_KEY}&pageSize=100`);
+        const res = await fetch(`${window.BASE_URL}/used_qrs?key=${window.API_KEY}&pageSize=100`);
         const data = await res.json();
         if (data.documents) {
-          for (const doc of data.documents) { await fetch(`https://firestore.googleapis.com/v1/${doc.name}?key=${FIREBASE_API_KEY}`, { method: 'DELETE' }); }
+          for (const doc of data.documents) { await fetch(`https://firestore.googleapis.com/v1/${doc.name}?key=${window.API_KEY}`, { method: 'DELETE' }); }
           Swal.fire('สำเร็จ!', 'ล้างขยะ QR เรียบร้อยแล้วครับ', 'success');
         } else {
           Swal.fire('สะอาดแล้ว', 'ไม่มีขยะ QR ให้ล้างครับ', 'success');
         }
       }
     }
-
-    // 🚀 เริ่มทำงานด้วยการเช็กรหัสผ่าน
-    document.addEventListener("DOMContentLoaded", checkLogin);
   </script>
 </body>
 </html>
