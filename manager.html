@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>KUB CAFE MANAGER v5.4</title>
+  <title>KUB CAFE MANAGER v5.5</title>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <style>
     :root { --bg-color: #FDFCF0; --card-bg: #FFFFFF; --text-main: #4A3F35; --text-muted: #B0A69D; --primary-matcha: #A3B18A; --matcha-dark: #7A8B62; --accent-brick: #C57B57; --border-color: #E8E2D9; }
@@ -107,6 +107,7 @@
   </div>
 
   <script>
+    // 🌐 [ สำคัญมาก 🌟 ] ลิงก์ Cloudflare Worker
     const CLOUDFLARE_WORKER_URL = "https://kub-backend.nan23082526.workers.dev";
 
     if(localStorage.getItem("kub_manager_unlocked") === "true") {
@@ -233,7 +234,7 @@
         try {
           await fetch(`${CLOUDFLARE_WORKER_URL}/api/manager-edit?userId=${userId}`, {
             method: 'PATCH', headers: { 'Content-Type': 'application/json', 'X-Admin-PIN': activePin },
-            body: JSON.stringify({ fields: { totalPoints: { integerValue: val }, lastUpdated: { timestampValue: new Date().toISOString() } } })
+            body: JSON.stringify({ newPts: val, oldPts: current }) // 🚀 ส่งแต้มเก่าและใหม่ ไปประมวลผลเป็น Edit Transaction
           });
           Swal.fire('สำเร็จ!', 'อัปเดตแต้มเรียบร้อย', 'success').then(fetchData);
         } catch (e) { Swal.fire('Error', 'บันทึกไม่สำเร็จ', 'error'); }
@@ -259,16 +260,20 @@
         if (Array.isArray(data)) { data.forEach(item => { if (item.document && item.document.fields) logs.push(item.document.fields); }); }
         if (logs.length === 0) return Swal.fire('ไม่พบประวัติ', 'ลูกค้าท่านนี้ยังไม่มีรายการเคลื่อนไหวครับ', 'info');
         
-        // 🔄 1. จัดเรียงข้อมูลจาก วันที่ล่าสุด -> ไปอดีต
         logs.sort((a,b) => new Date(b.timestamp.timestampValue) - new Date(a.timestamp.timestampValue));
-        
-        // ✂️ 2. ตัดโชว์แค่ 50 รายการใหม่ล่าสุด
         logs = logs.slice(0, 50);
 
         let html = `<div style="max-height: 350px; overflow-y: auto;">`;
         logs.forEach(l => {
-          const isEarn = l.type.stringValue === 'earn'; const pts = l.points.integerValue;
-          html += `<div class="history-item"><div><div style="font-weight:bold;">${isEarn ? '☕ สะสมแต้ม' : '🎁 แลกรางวัล'}</div><div class="history-date">${formatThaiDate(l.timestamp.timestampValue)}</div></div><div class="history-points ${isEarn ? 'pts-plus' : 'pts-minus'}">${isEarn ? '+' : '-'}${pts}</div></div>`;
+          const type = l.type?.stringValue || 'earn'; 
+          const pts = parseInt(l.points?.integerValue || 0);
+          
+          let title = "", sign = "", cssClass = "";
+          if (type === 'earn') { title = '☕ สะสมแต้ม'; sign = '+'; cssClass = 'pts-plus'; }
+          else if (type === 'redeem') { title = '🎁 แลกรางวัล'; sign = '-'; cssClass = 'pts-minus'; }
+          else if (type === 'edit') { title = '🛠️ แอดมินแก้ไข'; sign = pts >= 0 ? '+' : ''; cssClass = pts >= 0 ? 'pts-plus' : 'pts-minus'; }
+
+          html += `<div class="history-item"><div><div style="font-weight:bold;">${title}</div><div class="history-date">${formatThaiDate(l.timestamp.timestampValue)}</div></div><div class="history-points ${cssClass}">${sign}${pts}</div></div>`;
         });
         html += `</div>`;
         Swal.fire({ title: `ประวัติคุณ ${name}`, html: html, confirmButtonColor: '#8C7A6B' });
