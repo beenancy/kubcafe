@@ -24,7 +24,7 @@
     .control-section { background: var(--card-white); padding: clamp(12px, 2vh, 15px) 20px clamp(15px, 3vh, 25px) 20px; border-top-left-radius: 30px; border-top-right-radius: 30px; box-shadow: 0 -10px 30px rgba(140, 122, 107, 0.1); display: flex; flex-direction: column; gap: clamp(10px, 1.5vh, 12px); flex-shrink: 0; }
     .custom-point-row { display: flex; justify-content: space-between; align-items: center; background: var(--bg-cream); padding: clamp(8px, 1vh, 10px) 15px; border-radius: 16px; }
     .input-group { display: flex; align-items: center; gap: 8px; }
-    #sync-status-label { font-size: clamp(12px, 2vh, 15px); font-weight: 800; color: var(--text-brown); background: white; padding: 5px 10px; border-radius: 10px; border: 1px solid var(--border-color); }
+    #sync-status-label { display: inline-flex; align-items: center; gap: 4px; font-size: clamp(12px, 2vh, 15px); font-weight: 800; color: var(--text-brown); background: white; padding: 5px 12px; border-radius: 10px; border: 1px solid var(--border-color); transition: all 0.2s; }
     .custom-input { width: 55px; text-align: center; font-size: clamp(18px, 2.5vh, 22px); font-weight: bold; color: var(--matcha-dark); border: 1px solid var(--border-color); border-radius: 10px; padding: clamp(4px, 0.5vh, 6px); background: white; }
     .custom-input:focus { outline: 2px solid var(--matcha-green); border-color: transparent; }
     .timer-text { font-size: clamp(12px, 2vh, 14px); font-weight: bold; color: #C57B57; }
@@ -148,26 +148,43 @@
       const timerDisplay = document.getElementById('timer-display');
 
       if (data.mode === "idle") {
-        label.innerHTML = "⚪ ว่าง"; label.style.color = "#B0A69D";
+        label.innerHTML = "⚪ ว่าง"; 
+        label.style.color = "#B0A69D";
+        label.style.backgroundColor = "white";
+        label.style.borderColor = "var(--border-color)";
         previewImg.src = "https://via.placeholder.com/300x300.png?text=STANDBY";
         timerDisplay.innerText = "---"; window.currentLiffUrl = "";
       } 
       else if (data.mode === "points") {
-        label.innerHTML = `☕ <b>${data.points}</b> แต้ม`; label.style.color = "#A3B18A";
+        // 🚀 อัปเดตตัวเลขแต้มให้ใหญ่สะใจและเป็นสีแดง
+        label.innerHTML = `☕ <b style="font-size: 26px; color: #D32F2F; line-height: 1;">${data.points}</b> <span style="color: #D32F2F;">แต้ม</span>`; 
+        label.style.color = "#D32F2F";
+        label.style.backgroundColor = "#FFEBEE"; // พื้นหลังแดงอ่อนๆ ให้โดดเด่น
+        label.style.borderColor = "#EF9A9A";
+        
         previewImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(window.currentLiffUrl)}`;
         startGlobalTimer(data.timestamp);
       } 
       else if (data.mode === "store_line") {
-        label.innerHTML = `💬 LINE OA`; label.style.color = "#06C755";
+        label.innerHTML = `💬 LINE OA`; 
+        label.style.color = "#06C755";
+        label.style.backgroundColor = "white";
+        label.style.borderColor = "var(--border-color)";
         previewImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent("https://line.me/R/ti/p/@848dmzja")}`;
         timerDisplay.innerText = "---";
       } 
       else if (data.mode === "payment") {
-        label.innerHTML = `🏦 ธนาคาร`; label.style.color = "#1565C0";
+        label.innerHTML = `🏦 ธนาคาร`; 
+        label.style.color = "#1565C0";
+        label.style.backgroundColor = "white";
+        label.style.borderColor = "var(--border-color)";
         previewImg.src = "https://raw.githubusercontent.com/beenancy/kubcafe/eccfab9beafd7e3dbab13523292cd3cb15dbff74/qr%20kshop.jpg"; timerDisplay.innerText = "---";
       } 
       else if (data.mode === "true_payment") {
-        label.innerHTML = `🧡 TrueMoney`; label.style.color = "#FF6600";
+        label.innerHTML = `🧡 TrueMoney`; 
+        label.style.color = "#FF6600";
+        label.style.backgroundColor = "white";
+        label.style.borderColor = "var(--border-color)";
         previewImg.src = "https://raw.githubusercontent.com/beenancy/kubcafe/914d5947e4c635a2bf03f3f123dd837c2b0b29a2/truescan.jpg"; timerDisplay.innerText = "---";
       }
     }
