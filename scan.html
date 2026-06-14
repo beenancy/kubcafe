@@ -22,7 +22,6 @@
     .sub-text { font-size: 13px; color: #B0A69D; }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     
-    /* 🎨 Custom SweetAlert2 Style - Theme Integrated */
     .custom-swal-popup { 
       width: 85% !important; max-width: 310px !important; 
       padding: 2em 1.5em !important; border-radius: 24px !important; 
@@ -32,14 +31,12 @@
     .custom-swal-title { font-size: 20px !important; font-weight: 700 !important; color: #4A3F35 !important; margin-bottom: 10px !important; }
     .custom-swal-html { font-size: 15px !important; color: #6B705C !important; line-height: 1.5 !important; }
     
-    /* ปุ่มธีมมัทฉะหลัก */
     .matcha-btn { 
       font-size: 16px !important; padding: 12px 30px !important; min-width: 140px !important; 
       border-radius: 14px !important; font-weight: 600 !important; 
       background-color: #A3B18A !important; color: #ffffff !important; border: none !important;
       box-shadow: 0 4px 10px rgba(163, 177, 138, 0.4) !important; cursor: pointer;
     }
-    /* ปุ่มสำหรับเตือนเวลา */
     .warning-btn { 
       background-color: #C57B57 !important; box-shadow: 0 4px 10px rgba(197, 123, 87, 0.4) !important;
     }
@@ -71,19 +68,26 @@
       });
     }
 
-    async function showCooldownCountdown(remainSec) {
+    async function showCooldownCountdown(remainSec, lang) {
       document.getElementById('loading-ui').style.display = 'none';
       let currentRemain = remainSec;
       let countdownInterval;
       
+      const isEN = lang === "EN";
+      const titleText = isEN ? 'You just scanned ⏱️' : 'คุณเพิ่งรับแต้มไป ⏱️';
+      const htmlText = isEN 
+        ? `Please wait for the next scan in<br><span style="font-size:36px; font-weight:900; color:#A3B18A;" id="cd-timer">${currentRemain}</span> seconds`
+        : `กรุณารอสแกนรอบถัดไปในอีก<br><span style="font-size:36px; font-weight:900; color:#A3B18A;" id="cd-timer">${currentRemain}</span> วินาที`;
+      const btnText = isEN ? 'OK' : 'ตกลง (OK)';
+      
       await Swal.fire({
-        title: 'คุณเพิ่งรับแต้มไป ⏱️',
-        html: `กรุณารอสแกนรอบถัดไปในอีก<br><span style="font-size:36px; font-weight:900; color:#A3B18A;" id="cd-timer">${currentRemain}</span> วินาที`,
+        title: titleText,
+        html: htmlText,
         icon: 'warning',
         customClass: { popup: 'custom-swal-popup', title: 'custom-swal-title', htmlContainer: 'custom-swal-html', confirmButton: 'matcha-btn warning-btn' },
         allowOutsideClick: false,
         showConfirmButton: true,
-        confirmButtonText: 'ตกลง (OK)',
+        confirmButtonText: btnText,
         buttonsStyling: false,
         didOpen: () => {
           const timerSpan = document.getElementById('cd-timer');
@@ -106,29 +110,52 @@
       isProcessing = true;
       try {
         if (!navigator.onLine) { await showAlert('ไม่มีสัญญาณเน็ต', 'กรุณาตรวจสอบอินเทอร์เน็ตค่ะ', 'error', 'ตกลง (OK)'); redirectToLINE(); return; }
+        
         await liff.init({ liffId: LIFF_ID });
         if (!liff.isLoggedIn()) { liff.login({ redirectUri: window.location.href }); return; }
+        
         const urlParams = new URLSearchParams(window.location.search);
         const shopCode = urlParams.get('code');
         if (!shopCode) { await showAlert('ไม่พบข้อมูลแต้ม', '❌ ข้อมูลแต้มไม่ถูกต้อง หรือสแกนผิดวิธีค่ะ', 'error', 'ตกลง (OK)'); redirectToLINE(); return; }
+        
         const profile = await liff.getProfile();
         const cleanedName = encodeURIComponent((profile.displayName || '').replace(/[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF]/g, ''));
         const response = await fetch(`${API_URL}?action=scanAddPoint&userId=${profile.userId}&name=${cleanedName}&shopCode=${encodeURIComponent(shopCode)}`);
         const data = await response.json();
         
+        // กฎ: อิงภาษาจากฐานข้อมูลผู้ใช้เป็นหลัก
+        const isEN = data.lang === "EN";
+        
         if (data.status === "success") {
-          const ptsText = `<div style="font-size:32px; font-weight:900; color:#A3B18A; margin:10px 0;">+${data.ptsAdded} แต้ม ☕</div>`;
-          const totalText = `<div style="font-size:16px; color:#4A3F35; font-weight:bold;">แต้มสะสมทั้งหมด: <span style="color:#E65100; font-size:22px;">${data.totalPts}</span> แต้ม</div>`;
-          await showAlert('สะสมแต้มสำเร็จ! 🎉', ptsText + totalText, 'success', 'ตกลง (OK)');
+          const titleText = isEN ? 'Points Added! 🎉' : 'สะสมแต้มสำเร็จ! 🎉';
+          const btnText = isEN ? 'OK' : 'ตกลง (OK)';
+          
+          const ptsText = `<div style="font-size:32px; font-weight:900; color:#A3B18A; margin:10px 0; line-height: 1;">+${data.ptsAdded} ${isEN ? 'PTS' : 'แต้ม'} ☕</div>`;
+          const totalLabel = isEN ? 'Total Balance:' : 'แต้มสะสมทั้งหมด:';
+          const totalText = `<div style="font-size:16px; color:#4A3F35; font-weight:bold; margin-bottom:20px;">${totalLabel} <span style="color:#E65100; font-size:22px; font-weight:900;">${data.totalPts}</span> ${isEN ? 'PTS' : 'แต้ม'}</div>`;
+          const remarkLabel = isEN ? '(Check history and redeem rewards via the menu below)' : '(เช็กแต้มย้อนหลังและแลกรางวัล ได้ที่เมนูด้านล่างในแชท)';
+          const remark = `<div style="font-size:12px; color:#B0A69D; border-top: 1px dashed #E8E2D9; padding-top: 15px;">${remarkLabel}</div>`;
+          
+          await showAlert(titleText, ptsText + totalText + remark, 'success', btnText);
           redirectToLINE(); 
+          
         } else if (data.status === "cooldown") {
-          await showCooldownCountdown(data.remain || 30);
+          // โยนตัวแปรภาษาไปให้กล่องนับถอยหลัง
+          await showCooldownCountdown(data.remain || 30, data.lang);
+          
         } else {
-          await showAlert('สะสมแต้มไม่สำเร็จ', `${data.message}`, 'error', 'ตกลง (OK)');
+          // กรณีสแกนผิดพลาด รหัสปลอม หมดอายุ
+          const errTitle = isEN ? 'Scan Failed' : 'สะสมแต้มไม่สำเร็จ';
+          const errBtn = isEN ? 'OK' : 'ตกลง (OK)';
+          await showAlert(errTitle, `${data.message}`, 'error', errBtn);
           redirectToLINE(); 
         }
-      } catch (err) { redirectToLINE(); }
+      } catch (err) { 
+        await showAlert('ระบบขัดข้อง', 'กรุณาสแกนใหม่อีกครั้งค่ะ / Please try again', 'error', 'ตกลง (OK)');
+        redirectToLINE(); 
+      }
     }
+    
     document.addEventListener("DOMContentLoaded", processPoints);
   </script>
 </body>
