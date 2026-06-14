@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>KUB CAFE MANAGER v5.5</title>
+  <title>KUB CAFE MANAGER v5.6</title>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <style>
     :root { --bg-color: #FDFCF0; --card-bg: #FFFFFF; --text-main: #4A3F35; --text-muted: #B0A69D; --primary-matcha: #A3B18A; --matcha-dark: #7A8B62; --accent-brick: #C57B57; --border-color: #E8E2D9; }
@@ -107,7 +107,6 @@
   </div>
 
   <script>
-    // 🌐 [ สำคัญมาก 🌟 ] ลิงก์ Cloudflare Worker
     const CLOUDFLARE_WORKER_URL = "https://kub-backend.nan23082526.workers.dev";
 
     if(localStorage.getItem("kub_manager_unlocked") === "true") {
@@ -158,10 +157,16 @@
         window.todayEarnCounts = {};
         const todayStart = new Date(); todayStart.setHours(0,0,0,0); 
 
-        const txRes = await fetch(`${CLOUDFLARE_WORKER_URL}/api/manager-today-tx`, {
-          method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Admin-PIN': activePin },
-          body: JSON.stringify({ structuredQuery: { from: [{ collectionId: "transactions" }], where: { fieldFilter: { field: { fieldPath: "timestamp" }, op: "GREATER_THAN_OR_EQUAL", value: { timestampValue: todayStart.toISOString() } } }, limit: 500 } })
-        }).then(r => r.json());
+        // ⚡ Parallel: ยิงดึงข้อมูล 2 เส้น (ประวัติรายวัน + รายชื่อ) พร้อมกันในรอบเดียว
+        const [txRes, uRes] = await Promise.all([
+          fetch(`${CLOUDFLARE_WORKER_URL}/api/manager-today-tx`, {
+            method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Admin-PIN': activePin },
+            body: JSON.stringify({ structuredQuery: { from: [{ collectionId: "transactions" }], where: { fieldFilter: { field: { fieldPath: "timestamp" }, op: "GREATER_THAN_OR_EQUAL", value: { timestampValue: todayStart.toISOString() } } }, limit: 500 } })
+          }).then(r => r.json()),
+          fetch(`${CLOUDFLARE_WORKER_URL}/api/manager-users`, {
+            method: 'GET', headers: { 'X-Admin-PIN': activePin }
+          }).then(r => r.json())
+        ]);
         
         if (Array.isArray(txRes)) {
           txRes.forEach(item => {
@@ -175,10 +180,6 @@
           });
         }
 
-        const uRes = await fetch(`${CLOUDFLARE_WORKER_URL}/api/manager-users`, {
-          method: 'GET', headers: { 'X-Admin-PIN': activePin }
-        }).then(r => r.json());
-        
         if (!uRes.documents) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:40px;">ยังไม่มีสมาชิก</td></tr>'; return; }
 
         let totalPts = 0;
@@ -234,7 +235,7 @@
         try {
           await fetch(`${CLOUDFLARE_WORKER_URL}/api/manager-edit?userId=${userId}`, {
             method: 'PATCH', headers: { 'Content-Type': 'application/json', 'X-Admin-PIN': activePin },
-            body: JSON.stringify({ newPts: val, oldPts: current }) // 🚀 ส่งแต้มเก่าและใหม่ ไปประมวลผลเป็น Edit Transaction
+            body: JSON.stringify({ newPts: val, oldPts: current }) 
           });
           Swal.fire('สำเร็จ!', 'อัปเดตแต้มเรียบร้อย', 'success').then(fetchData);
         } catch (e) { Swal.fire('Error', 'บันทึกไม่สำเร็จ', 'error'); }
