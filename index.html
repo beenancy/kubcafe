@@ -4,9 +4,11 @@
   <meta charset="UTF-8">
   <title>KUB Cafe - Customer Display</title>
   
+  <link rel="manifest" href="manifest-display.json">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="KUB Display">
   <meta name="theme-color" content="#FDFCF0">
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
@@ -102,6 +104,13 @@
   <div class="display-card" id="main-display"></div>
 
   <script>
+    // 📱 Service Worker ลงทะเบียนให้รองรับ PWA
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW Failed!', err));
+      });
+    }
+
     const SCAN_LIFF_ID = "2010206186-u1XRJldq"; 
     const SECRET_SALT = 'KUB_SECRET_TOKEN_2026'; 
     const STORE_LINE_OA_LINK = "https://line.me/R/ti/p/@848dmzja"; 
