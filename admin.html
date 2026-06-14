@@ -12,15 +12,24 @@
   <style>
     :root { --bg-cream: #FDFCF0; --card-white: #FFFFFF; --text-brown: #4A3F35; --text-light: #B0A69D; --matcha-green: #A3B18A; --matcha-dark: #7A8B62; --line-green: #06C755; --true-orange: #FF6600; --bank-blue: #1565C0; --border-color: #E8E2D9; }
     body, html { margin: 0; padding: 0; width: 100%; height: 100dvh; background-color: var(--bg-cream); font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; overflow: hidden; -webkit-user-select: none; }
+    
     #pin-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--matcha-green); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; transition: opacity 0.3s; }
     #pin-overlay h2 { margin-bottom: 20px; font-size: 24px; letter-spacing: 2px; }
     #pin-input { width: 150px; text-align: center; font-size: 28px; padding: 10px; border: 3px solid white; border-radius: 15px; background: rgba(255,255,255,0.2); color: white; font-weight: bold; margin-bottom: 20px; outline: none; }
     #btn-unlock { background: white; color: var(--matcha-dark); border: none; padding: 12px 40px; border-radius: 20px; font-size: 18px; font-weight: bold; box-shadow: 0 4px 10px rgba(0,0,0,0.1); cursor: pointer; }
-    #main-app { display: none; flex-direction: column; height: 100%; }
+    
+    #main-app { display: none; flex-direction: column; height: 100%; position: relative; }
+    
+    /* 🏠 ปุ่มกลับหน้าหลัก (PWA App Navigation) */
+    .top-nav { position: absolute; top: clamp(10px, 2vh, 20px); left: clamp(10px, 2vh, 20px); z-index: 100; }
+    .btn-home { background: rgba(255, 255, 255, 0.9); border: 2px solid var(--border-color); color: var(--text-brown); padding: 8px 15px; border-radius: 20px; font-weight: bold; font-size: 14px; cursor: pointer; box-shadow: 0 4px 10px rgba(140, 122, 107, 0.1); display: flex; align-items: center; gap: 5px; text-decoration: none; backdrop-filter: blur(5px); transition: transform 0.2s; }
+    .btn-home:active { transform: scale(0.95); }
+
     .preview-section { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: clamp(10px, 2vh, 15px); min-height: 0; }
     .qr-preview-box { background: white; padding: 10px; border-radius: 16px; border: 2px solid var(--border-color); display: flex; justify-content: center; align-items: center; width: 100%; max-width: 350px; flex: 1; min-height: 0; margin-bottom: 8px; cursor: pointer; transition: transform 0.1s; }
     .qr-preview-box img { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 8px; }
     .refresh-hint { font-size: clamp(11px, 1.5vh, 12px); color: var(--text-light); font-weight: bold; }
+    
     .control-section { background: var(--card-white); padding: clamp(12px, 2vh, 15px) 20px clamp(15px, 3vh, 25px) 20px; border-top-left-radius: 30px; border-top-right-radius: 30px; box-shadow: 0 -10px 30px rgba(140, 122, 107, 0.1); display: flex; flex-direction: column; gap: clamp(10px, 1.5vh, 12px); flex-shrink: 0; }
     .custom-point-row { display: flex; justify-content: space-between; align-items: center; background: var(--bg-cream); padding: clamp(8px, 1vh, 10px) 15px; border-radius: 16px; }
     .input-group { display: flex; align-items: center; gap: 8px; }
@@ -28,12 +37,14 @@
     .custom-input { width: 55px; text-align: center; font-size: clamp(18px, 2.5vh, 22px); font-weight: bold; color: var(--matcha-dark); border: 1px solid var(--border-color); border-radius: 10px; padding: clamp(4px, 0.5vh, 6px); background: white; }
     .custom-input:focus { outline: 2px solid var(--matcha-green); border-color: transparent; }
     .timer-text { font-size: clamp(12px, 2vh, 14px); font-weight: bold; color: #C57B57; }
+    
     .keypad-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: clamp(8px, 1.2vh, 10px); }
     .btn-key { background: #EAF0E4; color: var(--matcha-dark); border: none; border-radius: 14px; padding: clamp(12px, 2.2vh, 18px) 0; font-size: clamp(20px, 3vh, 24px); font-weight: 900; box-shadow: 0 4px 0 #D5E0CB; transition: all 0.1s; }
     .btn-key:active { transform: translateY(4px); box-shadow: 0 0 0 transparent; }
     .btn-line { background: var(--line-green); color: white; font-size: clamp(13px, 2vh, 15px); box-shadow: 0 4px 0 #04A044; }
     .btn-true { background: var(--true-orange); color: white; font-size: clamp(13px, 2vh, 15px); box-shadow: 0 4px 0 #CC5200; }
     .btn-bank { background: var(--bank-blue); color: white; font-size: clamp(13px, 2vh, 15px); box-shadow: 0 4px 0 #0E4788; }
+    
     .btn-action-group { display: flex; gap: 10px; margin-top: 2px; }
     .btn-copy { background: #F4EEFF; color: #8A56E2; border: 1px dashed #B89AEB; width: 100%; padding: clamp(10px, 1.5vh, 14px); border-radius: 14px; font-size: clamp(13px, 2vh, 15px); font-weight: bold; flex: 2; cursor: pointer; }
     .btn-lock { background: #FFEBEE; color: #D32F2F; border: 1px dashed #EF9A9A; width: 100%; padding: clamp(10px, 1.5vh, 14px); border-radius: 14px; font-size: clamp(13px, 2vh, 15px); font-weight: bold; flex: 1; cursor: pointer; }
@@ -48,6 +59,10 @@
   </div>
 
   <div id="main-app">
+    <div class="top-nav">
+      <a href="portal.html" class="btn-home">🏠 หน้าหลัก</a>
+    </div>
+
     <div class="preview-section">
       <div class="qr-preview-box" onclick="refreshCurrentPoint()">
         <img id="qr-preview-img" src="https://via.placeholder.com/300x300.png?text=STANDBY" alt="QR Preview">
@@ -156,10 +171,9 @@
         timerDisplay.innerText = "---"; window.currentLiffUrl = "";
       } 
       else if (data.mode === "points") {
-        // 🚀 อัปเดตตัวเลขแต้มให้ใหญ่สะใจและเป็นสีแดง
         label.innerHTML = `☕ <b style="font-size: 26px; color: #D32F2F; line-height: 1;">${data.points}</b> <span style="color: #D32F2F;">แต้ม</span>`; 
         label.style.color = "#D32F2F";
-        label.style.backgroundColor = "#FFEBEE"; // พื้นหลังแดงอ่อนๆ ให้โดดเด่น
+        label.style.backgroundColor = "#FFEBEE"; 
         label.style.borderColor = "#EF9A9A";
         
         previewImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(window.currentLiffUrl)}`;
