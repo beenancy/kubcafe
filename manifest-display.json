@@ -1,0 +1,20 @@
+{
+  "name": "KUB Cafe Customer Display",
+  "short_name": "KUB Display",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#FDFCF0",
+  "theme_color": "#A3B18A",
+  "icons": [
+    {
+      "src": "logo.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
