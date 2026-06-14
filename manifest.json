@@ -1,0 +1,20 @@
+{
+  "name": "KUB Cafe Enterprise",
+  "short_name": "KUB Cafe",
+  "start_url": "./portal.html",
+  "display": "standalone",
+  "background_color": "#FDFCF0",
+  "theme_color": "#A3B18A",
+  "icons": [
+    {
+      "src": "https://via.placeholder.com/192x192.png?text=KUB",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://via.placeholder.com/512x512.png?text=KUB",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
