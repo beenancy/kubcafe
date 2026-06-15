@@ -11,7 +11,9 @@
   
   <style>
     :root { --bg-cream: #FDFCF0; --card-white: #FFFFFF; --text-brown: #4A3F35; --text-light: #B0A69D; --matcha-green: #A3B18A; --matcha-dark: #7A8B62; --line-green: #06C755; --true-orange: #FF6600; --bank-blue: #1565C0; --border-color: #E8E2D9; }
-    body, html { margin: 0; padding: 0; width: 100%; height: 100dvh; background-color: var(--bg-cream); font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; overflow: hidden; -webkit-user-select: none; }
+    
+    /* 📱 เปลี่ยนจาก 100dvh เป็น 100vh เพื่อรองรับ iOS 12 */
+    body, html { margin: 0; padding: 0; width: 100%; height: 100vh; background-color: var(--bg-cream); font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; overflow: hidden; -webkit-user-select: none; }
     
     #pin-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--matcha-green); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; transition: opacity 0.3s; }
     #pin-overlay h2 { margin-bottom: 20px; font-size: 24px; letter-spacing: 2px; }
@@ -20,34 +22,33 @@
     
     #main-app { display: none; flex-direction: column; height: 100%; position: relative; }
     
-    /* 🏠 ปุ่มกลับหน้าหลัก (PWA App Navigation) */
-    .top-nav { position: absolute; top: clamp(10px, 2vh, 20px); left: clamp(10px, 2vh, 20px); z-index: 100; }
-    .btn-home { background: rgba(255, 255, 255, 0.9); border: 2px solid var(--border-color); color: var(--text-brown); padding: 8px 15px; border-radius: 20px; font-weight: bold; font-size: 14px; cursor: pointer; box-shadow: 0 4px 10px rgba(140, 122, 107, 0.1); display: flex; align-items: center; gap: 5px; text-decoration: none; backdrop-filter: blur(5px); transition: transform 0.2s; }
-    .btn-home:active { transform: scale(0.95); }
+    /* 🏠 ปุ่มกลับหน้าหลัก */
+    .top-nav { position: absolute; top: 15px; left: 15px; z-index: 100; }
+    .btn-home { background: rgba(255, 255, 255, 0.9); border: 2px solid var(--border-color); color: var(--text-brown); padding: 6px 12px; border-radius: 20px; font-weight: bold; font-size: 12px; cursor: pointer; box-shadow: 0 4px 10px rgba(140, 122, 107, 0.1); display: flex; align-items: center; gap: 5px; text-decoration: none; backdrop-filter: blur(5px); }
 
-    .preview-section { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: clamp(10px, 2vh, 15px); min-height: 0; }
-    .qr-preview-box { background: white; padding: 10px; border-radius: 16px; border: 2px solid var(--border-color); display: flex; justify-content: center; align-items: center; width: 100%; max-width: 350px; flex: 1; min-height: 0; margin-bottom: 8px; cursor: pointer; transition: transform 0.1s; }
+    /* 📦 ถอดคำสั่ง clamp() ออกทั้งหมด และใช้ขนาดคงที่ที่เหมาะกับจอ 4 นิ้ว */
+    .preview-section { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 10px; min-height: 0; }
+    .qr-preview-box { background: white; padding: 8px; border-radius: 16px; border: 2px solid var(--border-color); display: flex; justify-content: center; align-items: center; width: 100%; max-width: 250px; flex: 1; min-height: 0; margin-bottom: 8px; cursor: pointer; }
     .qr-preview-box img { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 8px; }
-    .refresh-hint { font-size: clamp(11px, 1.5vh, 12px); color: var(--text-light); font-weight: bold; }
+    .refresh-hint { font-size: 11px; color: var(--text-light); font-weight: bold; }
     
-    .control-section { background: var(--card-white); padding: clamp(12px, 2vh, 15px) 20px clamp(15px, 3vh, 25px) 20px; border-top-left-radius: 30px; border-top-right-radius: 30px; box-shadow: 0 -10px 30px rgba(140, 122, 107, 0.1); display: flex; flex-direction: column; gap: clamp(10px, 1.5vh, 12px); flex-shrink: 0; }
-    .custom-point-row { display: flex; justify-content: space-between; align-items: center; background: var(--bg-cream); padding: clamp(8px, 1vh, 10px) 15px; border-radius: 16px; }
-    .input-group { display: flex; align-items: center; gap: 8px; }
-    #sync-status-label { display: inline-flex; align-items: center; gap: 4px; font-size: clamp(12px, 2vh, 15px); font-weight: 800; color: var(--text-brown); background: white; padding: 5px 12px; border-radius: 10px; border: 1px solid var(--border-color); transition: all 0.2s; }
-    .custom-input { width: 55px; text-align: center; font-size: clamp(18px, 2.5vh, 22px); font-weight: bold; color: var(--matcha-dark); border: 1px solid var(--border-color); border-radius: 10px; padding: clamp(4px, 0.5vh, 6px); background: white; }
-    .custom-input:focus { outline: 2px solid var(--matcha-green); border-color: transparent; }
-    .timer-text { font-size: clamp(12px, 2vh, 14px); font-weight: bold; color: #C57B57; }
+    .control-section { background: var(--card-white); padding: 12px 15px 15px 15px; border-top-left-radius: 25px; border-top-right-radius: 25px; box-shadow: 0 -10px 20px rgba(140, 122, 107, 0.08); display: flex; flex-direction: column; gap: 10px; flex-shrink: 0; }
+    .custom-point-row { display: flex; justify-content: space-between; align-items: center; background: var(--bg-cream); padding: 8px 12px; border-radius: 14px; }
+    .input-group { display: flex; align-items: center; gap: 6px; }
+    #sync-status-label { display: inline-flex; align-items: center; gap: 4px; font-size: 13px; font-weight: 800; color: var(--text-brown); background: white; padding: 5px 10px; border-radius: 10px; border: 1px solid var(--border-color); }
+    .custom-input { width: 50px; text-align: center; font-size: 18px; font-weight: bold; color: var(--matcha-dark); border: 1px solid var(--border-color); border-radius: 10px; padding: 4px; background: white; }
+    .timer-text { font-size: 12px; font-weight: bold; color: #C57B57; }
     
-    .keypad-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: clamp(8px, 1.2vh, 10px); }
-    .btn-key { background: #EAF0E4; color: var(--matcha-dark); border: none; border-radius: 14px; padding: clamp(12px, 2.2vh, 18px) 0; font-size: clamp(20px, 3vh, 24px); font-weight: 900; box-shadow: 0 4px 0 #D5E0CB; transition: all 0.1s; }
+    .keypad-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+    .btn-key { background: #EAF0E4; color: var(--matcha-dark); border: none; border-radius: 12px; padding: 12px 0; font-size: 20px; font-weight: 900; box-shadow: 0 4px 0 #D5E0CB; transition: transform 0.1s; }
     .btn-key:active { transform: translateY(4px); box-shadow: 0 0 0 transparent; }
-    .btn-line { background: var(--line-green); color: white; font-size: clamp(13px, 2vh, 15px); box-shadow: 0 4px 0 #04A044; }
-    .btn-true { background: var(--true-orange); color: white; font-size: clamp(13px, 2vh, 15px); box-shadow: 0 4px 0 #CC5200; }
-    .btn-bank { background: var(--bank-blue); color: white; font-size: clamp(13px, 2vh, 15px); box-shadow: 0 4px 0 #0E4788; }
+    .btn-line { background: var(--line-green); color: white; font-size: 12px; box-shadow: 0 4px 0 #04A044; }
+    .btn-true { background: var(--true-orange); color: white; font-size: 12px; box-shadow: 0 4px 0 #CC5200; }
+    .btn-bank { background: var(--bank-blue); color: white; font-size: 12px; box-shadow: 0 4px 0 #0E4788; }
     
-    .btn-action-group { display: flex; gap: 10px; margin-top: 2px; }
-    .btn-copy { background: #F4EEFF; color: #8A56E2; border: 1px dashed #B89AEB; width: 100%; padding: clamp(10px, 1.5vh, 14px); border-radius: 14px; font-size: clamp(13px, 2vh, 15px); font-weight: bold; flex: 2; cursor: pointer; }
-    .btn-lock { background: #FFEBEE; color: #D32F2F; border: 1px dashed #EF9A9A; width: 100%; padding: clamp(10px, 1.5vh, 14px); border-radius: 14px; font-size: clamp(13px, 2vh, 15px); font-weight: bold; flex: 1; cursor: pointer; }
+    .btn-action-group { display: flex; gap: 8px; margin-top: 2px; }
+    .btn-copy { background: #F4EEFF; color: #8A56E2; border: 1px dashed #B89AEB; width: 100%; padding: 10px; border-radius: 12px; font-size: 12px; font-weight: bold; flex: 2; cursor: pointer; }
+    .btn-lock { background: #FFEBEE; color: #D32F2F; border: 1px dashed #EF9A9A; width: 100%; padding: 10px; border-radius: 12px; font-size: 12px; font-weight: bold; flex: 1; cursor: pointer; }
   </style>
 </head>
 <body>
@@ -97,8 +98,8 @@
       </div>
 
       <div class="btn-action-group">
-        <button class="btn-copy" onclick="copyCurrentLink()">📋 คัดลอกลิงก์ส่งให้ลูกค้า</button>
-        <button class="btn-lock" onclick="lockSystem()">🔒 ล็อกหน้าจอ</button>
+        <button class="btn-copy" onclick="copyCurrentLink()">📋 คัดลอกลิงก์</button>
+        <button class="btn-lock" onclick="lockSystem()">🔒 ล็อกจอ</button>
       </div>
     </div>
   </div>
@@ -163,42 +164,26 @@
       const timerDisplay = document.getElementById('timer-display');
 
       if (data.mode === "idle") {
-        label.innerHTML = "⚪ ว่าง"; 
-        label.style.color = "#B0A69D";
-        label.style.backgroundColor = "white";
-        label.style.borderColor = "var(--border-color)";
+        label.innerHTML = "⚪ ว่าง"; label.style.color = "#B0A69D"; label.style.backgroundColor = "white"; label.style.borderColor = "var(--border-color)";
         previewImg.src = "https://via.placeholder.com/300x300.png?text=STANDBY";
         timerDisplay.innerText = "---"; window.currentLiffUrl = "";
       } 
       else if (data.mode === "points") {
-        label.innerHTML = `☕ <b style="font-size: 26px; color: #D32F2F; line-height: 1;">${data.points}</b> <span style="color: #D32F2F;">แต้ม</span>`; 
-        label.style.color = "#D32F2F";
-        label.style.backgroundColor = "#FFEBEE"; 
-        label.style.borderColor = "#EF9A9A";
-        
+        label.innerHTML = `☕ <b style="font-size: 18px; color: #D32F2F;">${data.points}</b> <span style="color: #D32F2F;">แต้ม</span>`; 
+        label.style.color = "#D32F2F"; label.style.backgroundColor = "#FFEBEE"; label.style.borderColor = "#EF9A9A";
         previewImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(window.currentLiffUrl)}`;
         startGlobalTimer(data.timestamp);
       } 
       else if (data.mode === "store_line") {
-        label.innerHTML = `💬 LINE OA`; 
-        label.style.color = "#06C755";
-        label.style.backgroundColor = "white";
-        label.style.borderColor = "var(--border-color)";
-        previewImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent("https://line.me/R/ti/p/@848dmzja")}`;
-        timerDisplay.innerText = "---";
+        label.innerHTML = `💬 LINE OA`; label.style.color = "#06C755"; label.style.backgroundColor = "white"; label.style.borderColor = "var(--border-color)";
+        previewImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent("https://line.me/R/ti/p/@848dmzja")}`; timerDisplay.innerText = "---";
       } 
       else if (data.mode === "payment") {
-        label.innerHTML = `🏦 ธนาคาร`; 
-        label.style.color = "#1565C0";
-        label.style.backgroundColor = "white";
-        label.style.borderColor = "var(--border-color)";
+        label.innerHTML = `🏦 ธนาคาร`; label.style.color = "#1565C0"; label.style.backgroundColor = "white"; label.style.borderColor = "var(--border-color)";
         previewImg.src = "https://raw.githubusercontent.com/beenancy/kubcafe/eccfab9beafd7e3dbab13523292cd3cb15dbff74/qr%20kshop.jpg"; timerDisplay.innerText = "---";
       } 
       else if (data.mode === "true_payment") {
-        label.innerHTML = `🧡 TrueMoney`; 
-        label.style.color = "#FF6600";
-        label.style.backgroundColor = "white";
-        label.style.borderColor = "var(--border-color)";
+        label.innerHTML = `🧡 TrueMoney`; label.style.color = "#FF6600"; label.style.backgroundColor = "white"; label.style.borderColor = "var(--border-color)";
         previewImg.src = "https://raw.githubusercontent.com/beenancy/kubcafe/914d5947e4c635a2bf03f3f123dd837c2b0b29a2/truescan.jpg"; timerDisplay.innerText = "---";
       }
     }
@@ -222,20 +207,22 @@
 
     function handleCustomInput(val) {
       clearTimeout(window.inputDebounce);
-      window.inputDebounce = setTimeout(() => {
-        const pts = parseInt(val);
-        if (pts > 0) fireAction('points', pts);
-      }, 400); 
+      window.inputDebounce = setTimeout(() => { const pts = parseInt(val); if (pts > 0) fireAction('points', pts); }, 400); 
     }
 
     function refreshCurrentPoint() {
-      if (window.syncedState.mode === 'points' && window.syncedState.points > 0) { fireAction('points', window.syncedState.points); } 
-      else { fireAction('idle'); }
+      if (window.syncedState.mode === 'points' && window.syncedState.points > 0) { fireAction('points', window.syncedState.points); } else { fireAction('idle'); }
     }
 
     function copyCurrentLink() {
       if (!window.currentLiffUrl || window.syncedState.mode !== 'points') { alert("หน้าจอปัจจุบันไม่ใช่โหมดแจกแต้มครับ"); return; }
-      navigator.clipboard.writeText(window.currentLiffUrl).then(() => { alert(`คัดลอกลิงก์สำเร็จ!`); });
+      const tmpInput = document.createElement("input");
+      tmpInput.value = window.currentLiffUrl;
+      document.body.appendChild(tmpInput);
+      tmpInput.select();
+      document.execCommand("copy"); // คำสั่งก๊อปปี้แบบเก่าสำหรับ iOS 12
+      document.body.removeChild(tmpInput);
+      alert("คัดลอกลิงก์สำเร็จ!");
     }
   </script>
 </body>
