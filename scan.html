@@ -4,46 +4,23 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>ระบบประมวลผลแต้ม KUB Cafe</title>
-  
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  
   <style>
-    body { 
-      background-color: #FDFCF0; 
-      display: flex; flex-direction: column; justify-content: center; align-items: center; 
-      height: 100vh; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; 
-      margin: 0; padding: 0 20px; text-align: center; 
-    }
-    
+    body { background-color: #FDFCF0; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; margin: 0; padding: 0 20px; text-align: center; }
     #loading-ui { display: flex; flex-direction: column; align-items: center; }
     .loader { border: 5px solid #E8E2D9; border-top: 5px solid #A3B18A; border-radius: 50%; width: 45px; height: 45px; animation: spin 1s linear infinite; margin-bottom: 20px; }
     h2 { color: #4A3F35; font-size: 18px; margin: 0 0 10px 0; }
     .sub-text { font-size: 13px; color: #B0A69D; }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-    
-    .custom-swal-popup { 
-      width: 85% !important; max-width: 310px !important; 
-      padding: 2em 1.5em !important; border-radius: 24px !important; 
-      background-color: #FFFFFF !important; 
-      box-shadow: 0 15px 35px rgba(140, 122, 107, 0.15) !important;
-    }
+    .custom-swal-popup { width: 85% !important; max-width: 310px !important; padding: 2em 1.5em !important; border-radius: 24px !important; background-color: #FFFFFF !important; box-shadow: 0 15px 35px rgba(140, 122, 107, 0.15) !important; }
     .custom-swal-title { font-size: 20px !important; font-weight: 700 !important; color: #4A3F35 !important; margin-bottom: 10px !important; }
     .custom-swal-html { font-size: 15px !important; color: #6B705C !important; line-height: 1.5 !important; }
-    
-    .matcha-btn { 
-      font-size: 16px !important; padding: 12px 30px !important; min-width: 140px !important; 
-      border-radius: 14px !important; font-weight: 600 !important; 
-      background-color: #A3B18A !important; color: #ffffff !important; border: none !important;
-      box-shadow: 0 4px 10px rgba(163, 177, 138, 0.4) !important; cursor: pointer;
-    }
-    .warning-btn { 
-      background-color: #C57B57 !important; box-shadow: 0 4px 10px rgba(197, 123, 87, 0.4) !important;
-    }
+    .matcha-btn { font-size: 16px !important; padding: 12px 30px !important; min-width: 140px !important; border-radius: 14px !important; font-weight: 600 !important; background-color: #A3B18A !important; color: #ffffff !important; border: none !important; box-shadow: 0 4px 10px rgba(163, 177, 138, 0.4) !important; cursor: pointer; }
+    .warning-btn { background-color: #C57B57 !important; box-shadow: 0 4px 10px rgba(197, 123, 87, 0.4) !important; }
   </style>
 </head>
 <body>
-  
   <div id="loading-ui">
     <div class="loader"></div>
     <h2 id="status-text">กำลังประมวลผลแต้ม...</h2>
@@ -54,16 +31,11 @@
     const LIFF_ID = "2010206186-u1XRJldq"; 
     const API_URL = "https://kub-backend.nan23082526.workers.dev/"; 
     const lineOA_ID = "@848dmzja"; 
-    
     let isProcessing = false; 
 
-    // ฟังก์ชันปิดหน้าต่าง LIFF เพื่อกลับเข้าห้องแชททันที
-    function closeLiffOrRedirect() {
-      if (liff.isInClient()) {
-        liff.closeWindow(); // ปิดหน้าเว็บร่วงลงห้องแชททันที
-      } else {
-        window.location.href = "https://line.me/R/ti/p/" + lineOA_ID;
-      }
+    // 🚀 ฟังก์ชันกระชากเข้าหน้าต่างแชท (Chat Room) ของร้านโดยตรง
+    function redirectToChatRoom() {
+      window.location.href = "https://line.me/R/oaMessage/" + lineOA_ID + "/";
     }
 
     async function showAlert(title, text, icon, btnText, isWarning = false) {
@@ -79,51 +51,38 @@
       document.getElementById('loading-ui').style.display = 'none';
       let currentRemain = remainSec;
       let countdownInterval;
-      
       const isEN = lang === "EN";
-      const titleText = isEN ? 'You just scanned ⏱️' : 'คุณเพิ่งรับแต้มไป ⏱️';
-      const htmlText = isEN 
-        ? `Please wait for the next scan in<br><span style="font-size:36px; font-weight:900; color:#A3B18A;" id="cd-timer">${currentRemain}</span> seconds`
-        : `กรุณารอสแกนรอบถัดไปในอีก<br><span style="font-size:36px; font-weight:900; color:#A3B18A;" id="cd-timer">${currentRemain}</span> วินาที`;
-      const btnText = isEN ? 'OK' : 'ตกลง (OK)';
       
       await Swal.fire({
-        title: titleText,
-        html: htmlText,
+        title: isEN ? 'You just scanned ⏱️' : 'คุณเพิ่งรับแต้มไป ⏱️',
+        html: isEN ? `Please wait for the next scan in<br><span style="font-size:36px; font-weight:900; color:#A3B18A;" id="cd-timer">${currentRemain}</span> seconds` : `กรุณารอสแกนรอบถัดไปในอีก<br><span style="font-size:36px; font-weight:900; color:#A3B18A;" id="cd-timer">${currentRemain}</span> วินาที`,
         icon: 'warning',
         customClass: { popup: 'custom-swal-popup', title: 'custom-swal-title', htmlContainer: 'custom-swal-html', confirmButton: 'matcha-btn warning-btn' },
-        allowOutsideClick: false,
-        showConfirmButton: true,
-        confirmButtonText: btnText,
-        buttonsStyling: false,
+        allowOutsideClick: false, showConfirmButton: true, confirmButtonText: isEN ? 'OK' : 'ตกลง (OK)', buttonsStyling: false,
         didOpen: () => {
           const timerSpan = document.getElementById('cd-timer');
           countdownInterval = setInterval(() => {
             currentRemain--;
             if (timerSpan) timerSpan.innerText = currentRemain;
-            if (currentRemain <= 0) {
-              clearInterval(countdownInterval);
-              if (timerSpan) timerSpan.innerText = "0";
-            }
+            if (currentRemain <= 0) { clearInterval(countdownInterval); if (timerSpan) timerSpan.innerText = "0"; }
           }, 1000);
         },
         willClose: () => { clearInterval(countdownInterval); }
       });
-      closeLiffOrRedirect();
+      redirectToChatRoom();
     }
 
     async function processPoints() {
       if (isProcessing) return;
       isProcessing = true;
       try {
-        if (!navigator.onLine) { await showAlert('ไม่มีสัญญาณเน็ต', 'กรุณาตรวจสอบอินเทอร์เน็ตค่ะ', 'error', 'ตกลง (OK)'); closeLiffOrRedirect(); return; }
-        
+        if (!navigator.onLine) { await showAlert('ไม่มีสัญญาณเน็ต', 'กรุณาตรวจสอบอินเทอร์เน็ตค่ะ', 'error', 'ตกลง (OK)'); redirectToChatRoom(); return; }
         await liff.init({ liffId: LIFF_ID });
         if (!liff.isLoggedIn()) { liff.login({ redirectUri: window.location.href }); return; }
         
         const urlParams = new URLSearchParams(window.location.search);
         const shopCode = urlParams.get('code');
-        if (!shopCode) { await showAlert('ไม่พบข้อมูลแต้ม', '❌ ข้อมูลแต้มไม่ถูกต้อง หรือสแกนผิดวิธีค่ะ', 'error', 'ตกลง (OK)'); closeLiffOrRedirect(); return; }
+        if (!shopCode) { await showAlert('ไม่พบข้อมูลแต้ม', '❌ ข้อมูลแต้มไม่ถูกต้อง หรือสแกนผิดวิธีค่ะ', 'error', 'ตกลง (OK)'); redirectToChatRoom(); return; }
         
         const profile = await liff.getProfile();
         const cleanedName = encodeURIComponent((profile.displayName || '').replace(/[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF]/g, ''));
@@ -133,44 +92,21 @@
         const isEN = data.lang === "EN";
         
         if (data.status === "success") {
-          // ⚡ ใช้ทริคเซฟเงิน: สั่งให้ไลน์ลูกค้าแอบส่งข้อความรหัสลับเข้าแชทร้าน เพื่อให้บอทสวน Reply กลับฟรีๆ
-          if (liff.isInClient()) {
-            try {
-              await liff.sendMessages([
-                {
-                  type: 'text',
-                  text: `[KUB_EARN_SUCCESS:${data.ptsAdded}:${data.totalPts}]` // ส่งคำสั่งลับพร้อมแนบจำนวนแต้มไปหลังบ้าน
-                }
-              ]);
-            } catch (err) {
-              console.log("Failed to send automatic chat message:", err);
-            }
-          }
-
-          const titleText = isEN ? 'Points Added! 🎉' : 'สะสมแต้มสำเร็จ! 🎉';
-          const btnText = isEN ? 'OK' : 'ตกลง (OK)';
-          
           const ptsText = `<div style="font-size:32px; font-weight:900; color:#A3B18A; margin:10px 0; line-height: 1;">+${data.ptsAdded} ${isEN ? 'PTS' : 'แต้ม'} ☕</div>`;
-          const totalLabel = isEN ? 'Total Balance:' : 'แต้มสะสมทั้งหมด:';
-          const totalText = `<div style="font-size:16px; color:#4A3F35; font-weight:bold; margin-bottom:20px;">${totalLabel} <span style="color:#E65100; font-size:22px; font-weight:900;">${data.totalPts}</span> ${isEN ? 'PTS' : 'แต้ม'}</div>`;
-          const remarkLabel = isEN ? '(Check history and redeem rewards via the menu below)' : '(เช็กแต้มย้อนหลังและแลกรางวัล ได้ที่เมนูด้านล่างในแชท)';
-          const remark = `<div style="font-size:12px; color:#B0A69D; border-top: 1px dashed #E8E2D9; padding-top: 15px;">${remarkLabel}</div>`;
+          const totalText = `<div style="font-size:16px; color:#4A3F35; font-weight:bold; margin-bottom:20px;">${isEN ? 'Total Balance:' : 'แต้มสะสมทั้งหมด:'} <span style="color:#E65100; font-size:22px; font-weight:900;">${data.totalPts}</span> ${isEN ? 'PTS' : 'แต้ม'}</div>`;
+          const remark = `<div style="font-size:12px; color:#B0A69D; border-top: 1px dashed #E8E2D9; padding-top: 15px;">${isEN ? '(Check history and redeem rewards via the menu below)' : '(เช็กแต้มย้อนหลังและแลกรางวัล ได้ที่เมนูด้านล่างในแชท)'}</div>`;
           
-          await showAlert(titleText, ptsText + totalText + remark, 'success', btnText);
-          closeLiffOrRedirect(); 
-          
+          await showAlert(isEN ? 'Points Added! 🎉' : 'สะสมแต้มสำเร็จ! 🎉', ptsText + totalText + remark, 'success', isEN ? 'OK' : 'ตกลง (OK)');
+          redirectToChatRoom(); 
         } else if (data.status === "cooldown") {
           await showCooldownCountdown(data.remain || 30, data.lang);
-          
         } else {
-          const errTitle = isEN ? 'Scan Failed' : 'สะสมแต้มไม่สำเร็จ';
-          const errBtn = isEN ? 'OK' : 'ตกลง (OK)';
-          await showAlert(errTitle, `${data.message}`, 'error', errBtn);
-          closeLiffOrRedirect(); 
+          await showAlert(isEN ? 'Scan Failed' : 'สะสมแต้มไม่สำเร็จ', `${data.message}`, 'error', isEN ? 'OK' : 'ตกลง (OK)');
+          redirectToChatRoom(); 
         }
       } catch (err) { 
-        await showAlert('ระบบขัดข้อง', 'กรุณาสแกนใหม่อีกครั้งค่ะ / Please try again', 'error', 'ตกลง (OK)');
-        closeLiffOrRedirect(); 
+        await showAlert('ระบบขัดข้องชั่วคราว', 'กรุณาสแกนใหม่อีกครั้งค่ะ', 'error', 'ตกลง (OK)');
+        redirectToChatRoom(); 
       }
     }
     
