@@ -57,7 +57,14 @@
     
     let isProcessing = false; 
 
-    function redirectToLINE() { window.location.href = "https://line.me/R/ti/p/" + lineOA_ID; }
+    // ฟังก์ชันปิดหน้าต่าง LIFF เพื่อกลับเข้าห้องแชททันที
+    function closeLiffOrRedirect() {
+      if (liff.isInClient()) {
+        liff.closeWindow(); // ปิดหน้าเว็บร่วงลงห้องแชททันที
+      } else {
+        window.location.href = "https://line.me/R/ti/p/" + lineOA_ID;
+      }
+    }
 
     async function showAlert(title, text, icon, btnText, isWarning = false) {
       document.getElementById('loading-ui').style.display = 'none';
@@ -102,31 +109,44 @@
         },
         willClose: () => { clearInterval(countdownInterval); }
       });
-      redirectToLINE();
+      closeLiffOrRedirect();
     }
 
     async function processPoints() {
       if (isProcessing) return;
       isProcessing = true;
       try {
-        if (!navigator.onLine) { await showAlert('ไม่มีสัญญาณเน็ต', 'กรุณาตรวจสอบอินเทอร์เน็ตค่ะ', 'error', 'ตกลง (OK)'); redirectToLINE(); return; }
+        if (!navigator.onLine) { await showAlert('ไม่มีสัญญาณเน็ต', 'กรุณาตรวจสอบอินเทอร์เน็ตค่ะ', 'error', 'ตกลง (OK)'); closeLiffOrRedirect(); return; }
         
         await liff.init({ liffId: LIFF_ID });
         if (!liff.isLoggedIn()) { liff.login({ redirectUri: window.location.href }); return; }
         
         const urlParams = new URLSearchParams(window.location.search);
         const shopCode = urlParams.get('code');
-        if (!shopCode) { await showAlert('ไม่พบข้อมูลแต้ม', '❌ ข้อมูลแต้มไม่ถูกต้อง หรือสแกนผิดวิธีค่ะ', 'error', 'ตกลง (OK)'); redirectToLINE(); return; }
+        if (!shopCode) { await showAlert('ไม่พบข้อมูลแต้ม', '❌ ข้อมูลแต้มไม่ถูกต้อง หรือสแกนผิดวิธีค่ะ', 'error', 'ตกลง (OK)'); closeLiffOrRedirect(); return; }
         
         const profile = await liff.getProfile();
         const cleanedName = encodeURIComponent((profile.displayName || '').replace(/[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF]/g, ''));
         const response = await fetch(`${API_URL}?action=scanAddPoint&userId=${profile.userId}&name=${cleanedName}&shopCode=${encodeURIComponent(shopCode)}`);
         const data = await response.json();
         
-        // กฎ: อิงภาษาจากฐานข้อมูลผู้ใช้เป็นหลัก
         const isEN = data.lang === "EN";
         
         if (data.status === "success") {
+          // ⚡ ใช้ทริคเซฟเงิน: สั่งให้ไลน์ลูกค้าแอบส่งข้อความรหัสลับเข้าแชทร้าน เพื่อให้บอทสวน Reply กลับฟรีๆ
+          if (liff.isInClient()) {
+            try {
+              await liff.sendMessages([
+                {
+                  type: 'text',
+                  text: `[KUB_EARN_SUCCESS:${data.ptsAdded}:${data.totalPts}]` // ส่งคำสั่งลับพร้อมแนบจำนวนแต้มไปหลังบ้าน
+                }
+              ]);
+            } catch (err) {
+              console.log("Failed to send automatic chat message:", err);
+            }
+          }
+
           const titleText = isEN ? 'Points Added! 🎉' : 'สะสมแต้มสำเร็จ! 🎉';
           const btnText = isEN ? 'OK' : 'ตกลง (OK)';
           
@@ -137,22 +157,20 @@
           const remark = `<div style="font-size:12px; color:#B0A69D; border-top: 1px dashed #E8E2D9; padding-top: 15px;">${remarkLabel}</div>`;
           
           await showAlert(titleText, ptsText + totalText + remark, 'success', btnText);
-          redirectToLINE(); 
+          closeLiffOrRedirect(); 
           
         } else if (data.status === "cooldown") {
-          // โยนตัวแปรภาษาไปให้กล่องนับถอยหลัง
           await showCooldownCountdown(data.remain || 30, data.lang);
           
         } else {
-          // กรณีสแกนผิดพลาด รหัสปลอม หมดอายุ
           const errTitle = isEN ? 'Scan Failed' : 'สะสมแต้มไม่สำเร็จ';
           const errBtn = isEN ? 'OK' : 'ตกลง (OK)';
           await showAlert(errTitle, `${data.message}`, 'error', errBtn);
-          redirectToLINE(); 
+          closeLiffOrRedirect(); 
         }
       } catch (err) { 
         await showAlert('ระบบขัดข้อง', 'กรุณาสแกนใหม่อีกครั้งค่ะ / Please try again', 'error', 'ตกลง (OK)');
-        redirectToLINE(); 
+        closeLiffOrRedirect(); 
       }
     }
     
