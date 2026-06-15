@@ -4,8 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>ระบบประมวลผลแต้ม KUB Cafe</title>
+  
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  
   <style>
     body { background-color: #FDFCF0; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; margin: 0; padding: 0 20px; text-align: center; }
     #loading-ui { display: flex; flex-direction: column; align-items: center; }
@@ -13,10 +16,11 @@
     h2 { color: #4A3F35; font-size: 18px; margin: 0 0 10px 0; }
     .sub-text { font-size: 13px; color: #B0A69D; }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-    .custom-swal-popup { width: 85% !important; max-width: 310px !important; padding: 2em 1.5em !important; border-radius: 24px !important; background-color: #FFFFFF !important; box-shadow: 0 15px 35px rgba(140, 122, 107, 0.15) !important; }
-    .custom-swal-title { font-size: 20px !important; font-weight: 700 !important; color: #4A3F35 !important; margin-bottom: 10px !important; }
+    .custom-swal-popup { width: 85% !important; max-width: 310px !important; padding: 2em 1.5em !important; border-radius: 24px !important; background-color: #FFFFFF !important; box-shadow: 0 15px 35px rgba(140, 122, 107, 0.15) !important; overflow: hidden; }
+    .custom-swal-title { font-size: 20px !important; font-weight: 900 !important; color: #4A3F35 !important; margin-bottom: 10px !important; letter-spacing: 0.5px; }
     .custom-swal-html { font-size: 15px !important; color: #6B705C !important; line-height: 1.5 !important; }
-    .matcha-btn { font-size: 16px !important; padding: 12px 30px !important; min-width: 140px !important; border-radius: 14px !important; font-weight: 600 !important; background-color: #A3B18A !important; color: #ffffff !important; border: none !important; box-shadow: 0 4px 10px rgba(163, 177, 138, 0.4) !important; cursor: pointer; }
+    .matcha-btn { font-size: 16px !important; padding: 12px 30px !important; min-width: 140px !important; border-radius: 14px !important; font-weight: 600 !important; background-color: #A3B18A !important; color: #ffffff !important; border: none !important; box-shadow: 0 4px 10px rgba(163, 177, 138, 0.4) !important; cursor: pointer; transition: transform 0.1s; }
+    .matcha-btn:active { transform: scale(0.95); }
     .warning-btn { background-color: #C57B57 !important; box-shadow: 0 4px 10px rgba(197, 123, 87, 0.4) !important; }
   </style>
 </head>
@@ -31,9 +35,12 @@
     const LIFF_ID = "2010206186-u1XRJldq"; 
     const API_URL = "https://kub-backend.nan23082526.workers.dev/"; 
     const lineOA_ID = "@848dmzja"; 
+    
+    // 🎵 ลิงก์ไฟล์เสียง (ผมเลือกเสียงกระดิ่งใสๆ สไตล์คาเฟ่มาให้ชั่วคราวครับ)
+    const SUCCESS_SOUND_URL = "https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3";
+    
     let isProcessing = false; 
 
-    // 🚀 เปลี่ยนมาใช้ลิงก์โปรไฟล์ (ti/p) เพื่อไม่ให้คีย์บอร์ดเด้งบัง Rich Menu
     function redirectToChatRoom() {
       window.location.href = "https://line.me/R/ti/p/" + lineOA_ID;
     }
@@ -72,6 +79,17 @@
       redirectToChatRoom();
     }
 
+    // 🎉 ฟังก์ชันยิงพลุกระดาษ
+    function shootConfetti() {
+      const duration = 2000;
+      const end = Date.now() + duration;
+      (function frame() {
+        confetti({ particleCount: 4, angle: 60, spread: 55, origin: { x: 0 }, colors: ['#A3B18A', '#ff4d4d', '#FDFCF0'] });
+        confetti({ particleCount: 4, angle: 120, spread: 55, origin: { x: 1 }, colors: ['#A3B18A', '#ff4d4d', '#FDFCF0'] });
+        if (Date.now() < end) { requestAnimationFrame(frame); }
+      }());
+    }
+
     async function processPoints() {
       if (isProcessing) return;
       isProcessing = true;
@@ -92,11 +110,21 @@
         const isEN = data.lang === "EN";
         
         if (data.status === "success") {
+          
+          // 🎵 เล่นเสียง (ใส่ Try/Catch ไว้กันเบราว์เซอร์ลูกค้าบางคนปิดออโต้เพลย์)
+          try {
+            const audio = new Audio(SUCCESS_SOUND_URL);
+            audio.play();
+          } catch(e) { console.log("Audio blocked by browser policy"); }
+
+          // 🎉 ยิงพลุกระดาษ
+          shootConfetti();
+
           const ptsText = `<div style="font-size:32px; font-weight:900; color:#A3B18A; margin:10px 0; line-height: 1;">+${data.ptsAdded} ${isEN ? 'PTS' : 'แต้ม'} ☕</div>`;
           const totalText = `<div style="font-size:16px; color:#4A3F35; font-weight:bold; margin-bottom:20px;">${isEN ? 'Total Balance:' : 'แต้มสะสมทั้งหมด:'} <span style="color:#E65100; font-size:22px; font-weight:900;">${data.totalPts}</span> ${isEN ? 'PTS' : 'แต้ม'}</div>`;
           const remark = `<div style="font-size:12px; color:#B0A69D; border-top: 1px dashed #E8E2D9; padding-top: 15px;">${isEN ? '(Check history and redeem rewards via the menu below)' : '(เช็กแต้มย้อนหลังและแลกรางวัล ได้ที่เมนูด้านล่างในแชท)'}</div>`;
           
-          await showAlert(isEN ? 'Points Added! 🎉' : 'สะสมแต้มสำเร็จ! 🎉', ptsText + totalText + remark, 'success', isEN ? 'OK' : 'ตกลง (OK)');
+          await showAlert(isEN ? 'CONGRATULATIONS! 🎉' : 'ยินดีด้วย! รับแต้มสำเร็จ 🎉', ptsText + totalText + remark, 'success', isEN ? 'OK' : 'เยี่ยมเลย (OK)');
           redirectToChatRoom(); 
         } else if (data.status === "cooldown") {
           await showCooldownCountdown(data.remain || 30, data.lang);
