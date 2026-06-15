@@ -33,9 +33,9 @@
     const lineOA_ID = "@848dmzja"; 
     let isProcessing = false; 
 
-    // 🚀 ฟังก์ชันกระชากเข้าหน้าต่างแชท (Chat Room) ของร้านโดยตรง
+    // 🚀 เปลี่ยนมาใช้ลิงก์โปรไฟล์ (ti/p) เพื่อไม่ให้คีย์บอร์ดเด้งบัง Rich Menu
     function redirectToChatRoom() {
-      window.location.href = "https://line.me/R/oaMessage/" + lineOA_ID + "/";
+      window.location.href = "https://line.me/R/ti/p/" + lineOA_ID;
     }
 
     async function showAlert(title, text, icon, btnText, isWarning = false) {
