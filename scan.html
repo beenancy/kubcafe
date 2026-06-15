@@ -36,7 +36,7 @@
     const API_URL = "https://kub-backend.nan23082526.workers.dev/"; 
     const lineOA_ID = "@848dmzja"; 
     
-    // 🎵 ลิงก์ไฟล์เสียง (ผมเลือกเสียงกระดิ่งใสๆ สไตล์คาเฟ่มาให้ชั่วคราวครับ)
+    // 🎵 ลิงก์ไฟล์เสียง
     const SUCCESS_SOUND_URL = "https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3";
     
     let isProcessing = false; 
@@ -122,7 +122,12 @@
 
           const ptsText = `<div style="font-size:32px; font-weight:900; color:#A3B18A; margin:10px 0; line-height: 1;">+${data.ptsAdded} ${isEN ? 'PTS' : 'แต้ม'} ☕</div>`;
           const totalText = `<div style="font-size:16px; color:#4A3F35; font-weight:bold; margin-bottom:20px;">${isEN ? 'Total Balance:' : 'แต้มสะสมทั้งหมด:'} <span style="color:#E65100; font-size:22px; font-weight:900;">${data.totalPts}</span> ${isEN ? 'PTS' : 'แต้ม'}</div>`;
-          const remark = `<div style="font-size:12px; color:#B0A69D; border-top: 1px dashed #E8E2D9; padding-top: 15px;">${isEN ? '(Check history and redeem rewards via the menu below)' : '(เช็กแต้มย้อนหลังและแลกรางวัล ได้ที่เมนูด้านล่างในแชท)'}</div>`;
+          
+          // 🚨 ปรับแต่งข้อความแจ้งเตือนให้เป็นสีแดง ตัวหนา และใหญ่ขึ้นตามที่ต้องการ
+          const remarkLabel = isEN 
+            ? '🚨 Please check your points and redeem rewards<br>in the chat menu below!' 
+            : '🚨 อย่าลืม! เช็กแต้มและแลกรางวัล<br>ได้ที่เมนูด้านล่างในห้องแชทนะคะ';
+          const remark = `<div style="font-size:15px; font-weight:800; color:#D32F2F; border-top: 2px dashed #E8E2D9; padding-top: 15px; margin-top: 5px;">${remarkLabel}</div>`;
           
           await showAlert(isEN ? 'CONGRATULATIONS! 🎉' : 'ยินดีด้วย! รับแต้มสำเร็จ 🎉', ptsText + totalText + remark, 'success', isEN ? 'OK' : 'เยี่ยมเลย (OK)');
           redirectToChatRoom(); 
