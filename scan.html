@@ -12,16 +12,20 @@
   <style>
     body { background-color: #FDFCF0; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; margin: 0; padding: 0 20px; text-align: center; }
     #loading-ui { display: flex; flex-direction: column; align-items: center; }
-    .loader { border: 5px solid #E8E2D9; border-top: 5px solid #A3B18A; border-radius: 50%; width: 45px; height: 45px; animation: spin 1s linear infinite; margin-bottom: 20px; }
-    h2 { color: #4A3F35; font-size: 18px; margin: 0 0 10px 0; }
-    .sub-text { font-size: 13px; color: #B0A69D; }
+    .loader { border: 4px solid #E8E2D9; border-top: 4px solid #A3B18A; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-bottom: 15px; }
+    h2 { color: #4A3F35; font-size: 16px; margin: 0 0 8px 0; }
+    .sub-text { font-size: 12px; color: #B0A69D; }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-    .custom-swal-popup { width: 85% !important; max-width: 310px !important; padding: 2em 1.5em !important; border-radius: 24px !important; background-color: #FFFFFF !important; box-shadow: 0 15px 35px rgba(140, 122, 107, 0.15) !important; overflow: hidden; }
-    .custom-swal-title { font-size: 20px !important; font-weight: 900 !important; color: #4A3F35 !important; margin-bottom: 10px !important; letter-spacing: 0.5px; }
-    .custom-swal-html { font-size: 15px !important; color: #6B705C !important; line-height: 1.5 !important; }
-    .matcha-btn { font-size: 16px !important; padding: 12px 30px !important; min-width: 140px !important; border-radius: 14px !important; font-weight: 600 !important; background-color: #A3B18A !important; color: #ffffff !important; border: none !important; box-shadow: 0 4px 10px rgba(163, 177, 138, 0.4) !important; cursor: pointer; transition: transform 0.1s; }
+    
+    /* 🍃 ปรับแต่งสไตล์ให้ Minimalist & Compact ขึ้น */
+    .custom-swal-popup { width: 75% !important; max-width: 260px !important; padding: 1.5em 1.2em 1.2em !important; border-radius: 20px !important; background-color: #FFFFFF !important; box-shadow: 0 10px 25px rgba(140, 122, 107, 0.15) !important; overflow: hidden; }
+    .custom-swal-title { font-size: 18px !important; font-weight: 800 !important; color: #4A3F35 !important; margin-bottom: 5px !important; }
+    .custom-swal-html { font-size: 14px !important; color: #6B705C !important; line-height: 1.4 !important; }
+    
+    /* 🍃 ปรับปุ่มให้เล็กลง น่ารักขึ้น */
+    .matcha-btn { font-size: 14px !important; padding: 10px 24px !important; min-width: 120px !important; border-radius: 12px !important; font-weight: 600 !important; background-color: #A3B18A !important; color: #ffffff !important; border: none !important; box-shadow: 0 4px 10px rgba(163, 177, 138, 0.3) !important; cursor: pointer; transition: transform 0.1s; margin-top: 5px !important;}
     .matcha-btn:active { transform: scale(0.95); }
-    .warning-btn { background-color: #C57B57 !important; box-shadow: 0 4px 10px rgba(197, 123, 87, 0.4) !important; }
+    .warning-btn { background-color: #C57B57 !important; box-shadow: 0 4px 10px rgba(197, 123, 87, 0.3) !important; }
   </style>
 </head>
 <body>
@@ -41,8 +45,10 @@
     
     let isProcessing = false; 
 
+    // 🚀 ใช้ oaMessage Scheme พิมพ์ข้อความ "เช็คแต้ม" รอไว้ให้ลูกค้ากดส่ง
     function redirectToChatRoom() {
-      window.location.href = "https://line.me/R/ti/p/" + lineOA_ID;
+      const autoText = encodeURIComponent("เช็คแต้ม");
+      window.location.href = "https://line.me/R/oaMessage/" + lineOA_ID + "/?text=" + autoText;
     }
 
     async function showAlert(title, text, icon, btnText, isWarning = false) {
@@ -61,11 +67,11 @@
       const isEN = lang === "EN";
       
       await Swal.fire({
-        title: isEN ? 'You just scanned ⏱️' : 'คุณเพิ่งรับแต้มไป ⏱️',
-        html: isEN ? `Please wait for the next scan in<br><span style="font-size:36px; font-weight:900; color:#A3B18A;" id="cd-timer">${currentRemain}</span> seconds` : `กรุณารอสแกนรอบถัดไปในอีก<br><span style="font-size:36px; font-weight:900; color:#A3B18A;" id="cd-timer">${currentRemain}</span> วินาที`,
+        title: isEN ? 'Wait a moment ⏱️' : 'ใจเย็นๆ น้า ⏱️',
+        html: isEN ? `Next scan available in<br><span style="font-size:30px; font-weight:900; color:#A3B18A;" id="cd-timer">${currentRemain}</span> sec` : `สแกนรอบถัดไปได้ในอีก<br><span style="font-size:30px; font-weight:900; color:#A3B18A;" id="cd-timer">${currentRemain}</span> วิ`,
         icon: 'warning',
         customClass: { popup: 'custom-swal-popup', title: 'custom-swal-title', htmlContainer: 'custom-swal-html', confirmButton: 'matcha-btn warning-btn' },
-        allowOutsideClick: false, showConfirmButton: true, confirmButtonText: isEN ? 'OK' : 'ตกลง (OK)', buttonsStyling: false,
+        allowOutsideClick: false, showConfirmButton: true, confirmButtonText: isEN ? 'OK' : 'ตกลง', buttonsStyling: false,
         didOpen: () => {
           const timerSpan = document.getElementById('cd-timer');
           countdownInterval = setInterval(() => {
@@ -84,8 +90,8 @@
       const duration = 2000;
       const end = Date.now() + duration;
       (function frame() {
-        confetti({ particleCount: 4, angle: 60, spread: 55, origin: { x: 0 }, colors: ['#A3B18A', '#ff4d4d', '#FDFCF0'] });
-        confetti({ particleCount: 4, angle: 120, spread: 55, origin: { x: 1 }, colors: ['#A3B18A', '#ff4d4d', '#FDFCF0'] });
+        confetti({ particleCount: 3, angle: 60, spread: 40, origin: { x: 0 }, colors: ['#A3B18A', '#ff4d4d', '#FDFCF0'] });
+        confetti({ particleCount: 3, angle: 120, spread: 40, origin: { x: 1 }, colors: ['#A3B18A', '#ff4d4d', '#FDFCF0'] });
         if (Date.now() < end) { requestAnimationFrame(frame); }
       }());
     }
@@ -94,13 +100,13 @@
       if (isProcessing) return;
       isProcessing = true;
       try {
-        if (!navigator.onLine) { await showAlert('ไม่มีสัญญาณเน็ต', 'กรุณาตรวจสอบอินเทอร์เน็ตค่ะ', 'error', 'ตกลง (OK)'); redirectToChatRoom(); return; }
+        if (!navigator.onLine) { await showAlert('ไม่มีเน็ต', 'กรุณาเช็กอินเทอร์เน็ตค่ะ', 'error', 'ตกลง'); redirectToChatRoom(); return; }
         await liff.init({ liffId: LIFF_ID });
         if (!liff.isLoggedIn()) { liff.login({ redirectUri: window.location.href }); return; }
         
         const urlParams = new URLSearchParams(window.location.search);
         const shopCode = urlParams.get('code');
-        if (!shopCode) { await showAlert('ไม่พบข้อมูลแต้ม', '❌ ข้อมูลแต้มไม่ถูกต้อง หรือสแกนผิดวิธีค่ะ', 'error', 'ตกลง (OK)'); redirectToChatRoom(); return; }
+        if (!shopCode) { await showAlert('ไม่พบข้อมูล', '❌ สแกนผิดวิธีค่ะ', 'error', 'ตกลง'); redirectToChatRoom(); return; }
         
         const profile = await liff.getProfile();
         const cleanedName = encodeURIComponent((profile.displayName || '').replace(/[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF]/g, ''));
@@ -111,34 +117,32 @@
         
         if (data.status === "success") {
           
-          // 🎵 เล่นเสียง (ใส่ Try/Catch ไว้กันเบราว์เซอร์ลูกค้าบางคนปิดออโต้เพลย์)
           try {
             const audio = new Audio(SUCCESS_SOUND_URL);
             audio.play();
-          } catch(e) { console.log("Audio blocked by browser policy"); }
+          } catch(e) { console.log("Audio blocked"); }
 
-          // 🎉 ยิงพลุกระดาษ
           shootConfetti();
 
-          const ptsText = `<div style="font-size:32px; font-weight:900; color:#A3B18A; margin:10px 0; line-height: 1;">+${data.ptsAdded} ${isEN ? 'PTS' : 'แต้ม'} ☕</div>`;
-          const totalText = `<div style="font-size:16px; color:#4A3F35; font-weight:bold; margin-bottom:20px;">${isEN ? 'Total Balance:' : 'แต้มสะสมทั้งหมด:'} <span style="color:#E65100; font-size:22px; font-weight:900;">${data.totalPts}</span> ${isEN ? 'PTS' : 'แต้ม'}</div>`;
+          // 🍃 ปรับขนาดตัวอักษรด้านในให้มินิมอลขึ้น
+          const ptsText = `<div style="font-size:26px; font-weight:900; color:#A3B18A; margin:8px 0; line-height: 1;">+${data.ptsAdded} ${isEN ? 'PTS' : 'แต้ม'} ☕</div>`;
+          const totalText = `<div style="font-size:14px; color:#4A3F35; font-weight:bold; margin-bottom:12px;">${isEN ? 'Total:' : 'สะสมรวม:'} <span style="color:#E65100; font-size:20px; font-weight:900;">${data.totalPts}</span> ${isEN ? 'PTS' : 'แต้ม'}</div>`;
           
-          // 🚨 ปรับแต่งข้อความแจ้งเตือนให้เป็นสีแดง ตัวหนา และใหญ่ขึ้นตามที่ต้องการ
           const remarkLabel = isEN 
-            ? '🚨 Please check your points and redeem rewards<br>in the chat menu below!' 
-            : '🚨 อย่าลืม! เช็กแต้มและแลกรางวัล<br>ได้ที่เมนูด้านล่างในห้องแชทนะคะ';
-          const remark = `<div style="font-size:15px; font-weight:800; color:#D32F2F; border-top: 2px dashed #E8E2D9; padding-top: 15px; margin-top: 5px;">${remarkLabel}</div>`;
+            ? '🚨 Press SEND to check points!' 
+            : '🚨 เข้าแชทแล้ว "กดส่งข้อความ"<br>เพื่อรับสลิปแจ้งเตือนนะคะ';
+          const remark = `<div style="font-size:13px; font-weight:800; color:#D32F2F; border-top: 1px dashed #E8E2D9; padding-top: 12px; margin-top: 5px;">${remarkLabel}</div>`;
           
-          await showAlert(isEN ? 'CONGRATULATIONS! 🎉' : 'ยินดีด้วย! รับแต้มสำเร็จ 🎉', ptsText + totalText + remark, 'success', isEN ? 'OK' : 'เยี่ยมเลย (OK)');
+          await showAlert(isEN ? 'SUCCESS! 🎉' : 'รับแต้มสำเร็จ 🎉', ptsText + totalText + remark, 'success', isEN ? 'OK' : 'เยี่ยมเลย');
           redirectToChatRoom(); 
         } else if (data.status === "cooldown") {
           await showCooldownCountdown(data.remain || 30, data.lang);
         } else {
-          await showAlert(isEN ? 'Scan Failed' : 'สะสมแต้มไม่สำเร็จ', `${data.message}`, 'error', isEN ? 'OK' : 'ตกลง (OK)');
+          await showAlert(isEN ? 'Failed' : 'ไม่สำเร็จ', `${data.message}`, 'error', isEN ? 'OK' : 'ตกลง');
           redirectToChatRoom(); 
         }
       } catch (err) { 
-        await showAlert('ระบบขัดข้องชั่วคราว', 'กรุณาสแกนใหม่อีกครั้งค่ะ', 'error', 'ตกลง (OK)');
+        await showAlert('ระบบขัดข้อง', 'กรุณาสแกนใหม่ค่ะ', 'error', 'ตกลง');
         redirectToChatRoom(); 
       }
     }
