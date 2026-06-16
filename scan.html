@@ -1,3 +1,8 @@
+<!-- =======================================================
+KUB Cafe - QR Scanner Module (V.7.14 URL Scheme Fix Edition)
+Includes: Audio Playback, Confetti, Compact UI,
+and Corrected oaMessage Scheme (/?เช็กแต้ม)
+======================================================== -->
 <!DOCTYPE html>
 <html lang="th">
 <head>
@@ -17,12 +22,10 @@
     .sub-text { font-size: 12px; color: #B0A69D; }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     
-    /* 🍃 ปรับแต่งสไตล์ให้ Minimalist & Compact ขึ้น */
     .custom-swal-popup { width: 75% !important; max-width: 260px !important; padding: 1.5em 1.2em 1.2em !important; border-radius: 20px !important; background-color: #FFFFFF !important; box-shadow: 0 10px 25px rgba(140, 122, 107, 0.15) !important; overflow: hidden; }
     .custom-swal-title { font-size: 18px !important; font-weight: 800 !important; color: #4A3F35 !important; margin-bottom: 5px !important; }
     .custom-swal-html { font-size: 14px !important; color: #6B705C !important; line-height: 1.4 !important; }
     
-    /* 🍃 ปรับปุ่มให้เล็กลง น่ารักขึ้น */
     .matcha-btn { font-size: 14px !important; padding: 10px 24px !important; min-width: 120px !important; border-radius: 12px !important; font-weight: 600 !important; background-color: #A3B18A !important; color: #ffffff !important; border: none !important; box-shadow: 0 4px 10px rgba(163, 177, 138, 0.3) !important; cursor: pointer; transition: transform 0.1s; margin-top: 5px !important;}
     .matcha-btn:active { transform: scale(0.95); }
     .warning-btn { background-color: #C57B57 !important; box-shadow: 0 4px 10px rgba(197, 123, 87, 0.3) !important; }
@@ -40,15 +43,14 @@
     const API_URL = "https://kub-backend.nan23082526.workers.dev/"; 
     const lineOA_ID = "@848dmzja"; 
     
-    // 🎵 ลิงก์ไฟล์เสียง
     const SUCCESS_SOUND_URL = "https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3";
-    
     let isProcessing = false; 
 
-    // 🚀 ใช้ oaMessage Scheme พิมพ์ข้อความ "เช็คแต้ม" รอไว้ให้ลูกค้ากดส่ง
+    // 🚀 อัปเดตฟังก์ชัน: แก้ไข Syntax ของ oaMessage โดยลบ text= ออก
     function redirectToChatRoom() {
-      const autoText = encodeURIComponent("เช็คแต้ม");
-      window.location.href = "https://line.me/R/oaMessage/" + lineOA_ID + "/?text=" + autoText;
+      const autoText = encodeURIComponent("เช็กแต้ม");
+      // โครงสร้างที่ถูกต้องของ LINE คือ /?ตามด้วยข้อความที่เข้ารหัสเลย
+      window.location.href = "https://line.me/R/oaMessage/" + lineOA_ID + "/?" + autoText;
     }
 
     async function showAlert(title, text, icon, btnText, isWarning = false) {
@@ -85,7 +87,6 @@
       redirectToChatRoom();
     }
 
-    // 🎉 ฟังก์ชันยิงพลุกระดาษ
     function shootConfetti() {
       const duration = 2000;
       const end = Date.now() + duration;
@@ -116,7 +117,6 @@
         const isEN = data.lang === "EN";
         
         if (data.status === "success") {
-          
           try {
             const audio = new Audio(SUCCESS_SOUND_URL);
             audio.play();
@@ -124,7 +124,6 @@
 
           shootConfetti();
 
-          // 🍃 ปรับขนาดตัวอักษรด้านในให้มินิมอลขึ้น
           const ptsText = `<div style="font-size:26px; font-weight:900; color:#A3B18A; margin:8px 0; line-height: 1;">+${data.ptsAdded} ${isEN ? 'PTS' : 'แต้ม'} ☕</div>`;
           const totalText = `<div style="font-size:14px; color:#4A3F35; font-weight:bold; margin-bottom:12px;">${isEN ? 'Total:' : 'สะสมรวม:'} <span style="color:#E65100; font-size:20px; font-weight:900;">${data.totalPts}</span> ${isEN ? 'PTS' : 'แต้ม'}</div>`;
           
