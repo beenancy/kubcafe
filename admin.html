@@ -1,7 +1,6 @@
 <!-- =======================================================
-KUB Cafe - Admin Control Panel (V.9.2 Auto-Refresh & Flow Edition)
-Architected for: Auto-1-Point Refresh (5 min), 20-min Screen Saver,
-and Scrollable Split-Half UI for tall screens (OPPO Reno8 T 5G)
+KUB Cafe - Admin Control Panel (V.9.3 Beautiful Copy Link Edition)
+Architected for: Non-expiring single-use link + Template Message
 ======================================================== -->
 <!DOCTYPE html>
 <html lang="th">
@@ -10,49 +9,36 @@ and Scrollable Split-Half UI for tall screens (OPPO Reno8 T 5G)
   <title>KUB Cafe - Admin POS</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
   
   <style>
     :root { --bg-cream: #FDFCF0; --card-white: #FFFFFF; --text-brown: #4A3F35; --text-light: #B0A69D; --matcha-green: #A3B18A; --matcha-dark: #7A8B62; --line-green: #06C755; --true-orange: #FF6600; --bank-blue: #1565C0; --border-color: #E8E2D9; }
-    
-    /* 📱 ปลดล็อก Overflow เพื่อให้มือถือจอยาว (OPPO) เลื่อนลงได้ */
     body, html { margin: 0; padding: 0; width: 100%; min-height: 100vh; background-color: var(--bg-cream); font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; overflow-x: hidden; overflow-y: auto; -webkit-user-select: none; }
-    
     #pin-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--matcha-green); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; transition: opacity 0.3s; }
     #pin-overlay h2 { margin-bottom: 20px; font-size: 24px; letter-spacing: 2px; }
     #pin-input { width: 150px; text-align: center; font-size: 28px; padding: 10px; border: 3px solid white; border-radius: 15px; background: rgba(255,255,255,0.2); color: white; font-weight: bold; margin-bottom: 20px; outline: none; }
     #btn-unlock { background: white; color: var(--matcha-dark); border: none; padding: 12px 40px; border-radius: 20px; font-size: 18px; font-weight: bold; box-shadow: 0 4px 10px rgba(0,0,0,0.1); cursor: pointer; }
     
-    /* 📐 จัดโครงสร้างแบบ เบ่งครึ่ง (Split-Half) และยืดหยุ่นตามความสูง */
     #main-app { display: none; flex-direction: column; min-height: 100vh; position: relative; }
-    
     .top-nav { position: absolute; top: 15px; left: 15px; z-index: 100; }
     .btn-home { background: rgba(255, 255, 255, 0.9); border: 2px solid var(--border-color); color: var(--text-brown); padding: 6px 12px; border-radius: 20px; font-weight: bold; font-size: 12px; cursor: pointer; box-shadow: 0 4px 10px rgba(140, 122, 107, 0.1); display: flex; align-items: center; gap: 5px; text-decoration: none; backdrop-filter: blur(5px); }
-
-    /* โซนบน: แสดง QR Code ยืดหยุ่นได้ขั้นต่ำ 250px */
     .preview-section { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 15px; min-height: 250px; margin-top: 40px; }
     .qr-preview-box { background: white; padding: 8px; border-radius: 16px; border: 2px solid var(--border-color); display: flex; justify-content: center; align-items: center; width: 100%; max-width: 280px; aspect-ratio: 1/1; margin-bottom: 12px; cursor: pointer; box-shadow: 0 10px 25px rgba(140, 122, 107, 0.1); }
     .qr-preview-box img { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 8px; }
     .refresh-hint { font-size: 12px; color: var(--text-light); font-weight: bold; text-align: center; }
-    
-    /* โซนล่าง: แผงควบคุม ดันตัวเองลงชิดขอบล่างเสมอ */
     .control-section { background: var(--card-white); padding: 15px 15px max(20px, env(safe-area-inset-bottom)) 15px; border-top-left-radius: 25px; border-top-right-radius: 25px; box-shadow: 0 -10px 20px rgba(140, 122, 107, 0.08); display: flex; flex-direction: column; gap: 12px; flex-shrink: 0; }
-    
     .custom-point-row { display: flex; justify-content: space-between; align-items: center; background: var(--bg-cream); padding: 10px 15px; border-radius: 14px; }
     .input-group { display: flex; align-items: center; gap: 8px; }
     #sync-status-label { display: inline-flex; align-items: center; gap: 4px; font-size: 14px; font-weight: 800; color: var(--text-brown); background: white; padding: 6px 12px; border-radius: 10px; border: 1px solid var(--border-color); }
     .custom-input { width: 55px; text-align: center; font-size: 20px; font-weight: bold; color: var(--matcha-dark); border: 1px solid var(--border-color); border-radius: 10px; padding: 6px; background: white; }
     .timer-text { font-size: 13px; font-weight: bold; color: #C57B57; }
-    
     .keypad-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
     .btn-key { background: #EAF0E4; color: var(--matcha-dark); border: none; border-radius: 14px; padding: 15px 0; font-size: 22px; font-weight: 900; box-shadow: 0 4px 0 #D5E0CB; transition: transform 0.1s; cursor: pointer; }
     .btn-key:active { transform: translateY(4px); box-shadow: 0 0 0 transparent; }
     .btn-line { background: var(--line-green); color: white; font-size: 13px; box-shadow: 0 4px 0 #04A044; }
     .btn-true { background: var(--true-orange); color: white; font-size: 13px; box-shadow: 0 4px 0 #CC5200; }
     .btn-bank { background: var(--bank-blue); color: white; font-size: 13px; box-shadow: 0 4px 0 #0E4788; }
-    
     .btn-action-group { display: flex; gap: 10px; margin-top: 5px; }
     .btn-copy { background: #F4EEFF; color: #8A56E2; border: 1px dashed #B89AEB; width: 100%; padding: 12px; border-radius: 14px; font-size: 14px; font-weight: bold; flex: 2; cursor: pointer; }
     .btn-lock { background: #FFEBEE; color: #D32F2F; border: 1px dashed #EF9A9A; width: 100%; padding: 12px; border-radius: 14px; font-size: 14px; font-weight: bold; flex: 1; cursor: pointer; }
@@ -67,10 +53,7 @@ and Scrollable Split-Half UI for tall screens (OPPO Reno8 T 5G)
   </div>
 
   <div id="main-app">
-    <div class="top-nav">
-      <a href="portal.html" class="btn-home">🏠 หน้าหลัก</a>
-    </div>
-
+    <div class="top-nav"><a href="portal.html" class="btn-home">🏠 หน้าหลัก</a></div>
     <div class="preview-section">
       <div class="qr-preview-box" onclick="refreshCurrentPoint()">
         <img id="qr-preview-img" src="https://via.placeholder.com/300x300.png?text=STANDBY" alt="QR Preview">
@@ -105,7 +88,7 @@ and Scrollable Split-Half UI for tall screens (OPPO Reno8 T 5G)
       </div>
 
       <div class="btn-action-group">
-        <button class="btn-copy" onclick="copyCurrentLink()">📋 คัดลอกลิงก์</button>
+        <button class="btn-copy" onclick="copyCurrentLink()">📋 คัดลอกลิงก์ส่งให้ลูกค้า</button>
         <button class="btn-lock" onclick="lockSystem()">🔒 ล็อกจอ</button>
       </div>
     </div>
@@ -113,8 +96,6 @@ and Scrollable Split-Half UI for tall screens (OPPO Reno8 T 5G)
 
   <script>
     const CLOUDFLARE_WORKER_URL = "https://kub-backend.nan23082526.workers.dev";
-    
-    // ⏲️ ตัวแปรเก็บเวลาสำหรับการตัดเข้าโหมด Idle 20 นาที
     let absoluteIdleTimeout = null;
 
     if(localStorage.getItem("kub_admin_unlocked") === "true") {
@@ -145,13 +126,9 @@ and Scrollable Split-Half UI for tall screens (OPPO Reno8 T 5G)
       location.reload();
     }
 
-    // 🚨 ฟังก์ชันคอยดักจับว่ามีการใช้งานจอหรือไม่ ถ้าไม่มี 20 นาทีให้ปิดจอ
     function resetActivityTimer() {
       clearTimeout(absoluteIdleTimeout);
-      // ตั้งเวลา 20 นาที (20 * 60 * 1000 มิลลิวินาที)
-      absoluteIdleTimeout = setTimeout(() => {
-        fireAction('idle');
-      }, 1200000); 
+      absoluteIdleTimeout = setTimeout(() => { fireAction('idle'); }, 1200000); 
     }
 
     function initApp() {
@@ -163,11 +140,10 @@ and Scrollable Split-Half UI for tall screens (OPPO Reno8 T 5G)
       window.globalTimerInterval = null;
       window.inputDebounce = null;
 
-      // เมื่อพนักงานสัมผัส กด หรือพิมพ์อะไรบนหน้าจอ ให้นับเวลา 20 นาทีใหม่
       document.addEventListener('touchstart', resetActivityTimer);
       document.addEventListener('click', resetActivityTimer);
       document.addEventListener('input', resetActivityTimer);
-      resetActivityTimer(); // เริ่มนับตั้งแต่เปิดแอป
+      resetActivityTimer(); 
 
       db.ref('pos_display').on('value', (snapshot) => {
         const data = snapshot.val();
@@ -213,20 +189,15 @@ and Scrollable Split-Half UI for tall screens (OPPO Reno8 T 5G)
       }
     }
 
-    // ⏱️ ระบบนับเวลา 5 นาที (เมื่อหมดเวลา จะสั่งเปลี่ยนเป็น 1 แต้มทันที)
     function startGlobalTimer(startTimeMs) {
       window.globalTimerInterval = setInterval(() => {
         const remain = (5 * 60) - Math.floor((Date.now() - startTimeMs) / 1000);
-        
         if (remain < 0) {
           clearInterval(window.globalTimerInterval);
           document.getElementById('timer-display').innerText = "กำลังรีเฟรชเป็น 1 แต้ม...";
-          
-          // 🔥 ทริคเด็ด: เมื่อครบ 5 นาที สั่งระบบหลังบ้านยิง 1 แต้มออกมาอัตโนมัติ
           fireAction('points', 1);
           return;
         }
-        
         document.getElementById('timer-display').innerText = `เหลือเวลา: ${Math.floor(remain / 60)}:${String(remain % 60).padStart(2, '0')}`;
       }, 1000);
     }
@@ -249,27 +220,36 @@ and Scrollable Split-Half UI for tall screens (OPPO Reno8 T 5G)
       if (window.syncedState.mode === 'points' && window.syncedState.points > 0) { fireAction('points', window.syncedState.points); } else { fireAction('idle'); }
     }
 
+    // 🚀 ฟังก์ชันคัดลอกลิงก์พร้อมข้อความและแปลงให้อายุใช้งานไม่มีวันหมด
     function copyCurrentLink() {
-      if (!window.currentLiffUrl || window.syncedState.mode !== 'points') { alert("หน้าจอปัจจุบันไม่ใช่โหมดแจกแต้มครับ"); return; }
+      if (!window.currentLiffUrl || window.syncedState.mode !== 'points') { 
+        alert("หน้าจอปัจจุบันไม่ใช่โหมดแจกแต้มครับ"); return; 
+      }
       
-      // ใช้ Navigator Clipboard API สมัยใหม่
+      // แปลง KUBBAR เป็น KUBLINK (รหัสลับบอกเซิร์ฟเวอร์ว่านี่คือลิงก์ส่งตรง ไม่ต้องเช็กเวลาหมดอายุ)
+      const specialLink = window.currentLiffUrl.replace("KUBBAR-", "KUBLINK-");
+      const pts = window.syncedState.points;
+      
+      // ข้อความ Template สวยงาม
+      const textMsg = `☕ รับไปเลย ${pts} แต้ม! 🎉\n\nขอบคุณที่อุดหนุน KUB Cafe นะคะ กดที่ลิงก์ด้านล่างเพื่อสะสมแต้มเข้าบัตรสมาชิกได้เลยค่ะ 👇\n${specialLink}\n\n*หมายเหตุ: ลิงก์นี้ใช้ได้เพียง 1 สิทธิ์เท่านั้น (กดแล้วจะทำลายตัวเองทันทีค่ะ)`;
+
       if (navigator.clipboard) {
-        navigator.clipboard.writeText(window.currentLiffUrl).then(() => {
-          alert("คัดลอกลิงก์สำเร็จ!");
-        }).catch(() => fallbackCopy(window.currentLiffUrl));
+        navigator.clipboard.writeText(textMsg).then(() => {
+          alert("คัดลอกข้อความพร้อมลิงก์สำเร็จ! 🎉 นำไปวางส่งให้ลูกค้าได้เลยครับ");
+        }).catch(() => fallbackCopy(textMsg));
       } else {
-        fallbackCopy(window.currentLiffUrl);
+        fallbackCopy(textMsg);
       }
     }
     
     function fallbackCopy(text) {
-      const tmpInput = document.createElement("input");
+      const tmpInput = document.createElement("textarea");
       tmpInput.value = text;
       document.body.appendChild(tmpInput);
       tmpInput.select();
       document.execCommand("copy");
       document.body.removeChild(tmpInput);
-      alert("คัดลอกลิงก์สำเร็จ!");
+      alert("คัดลอกข้อความพร้อมลิงก์สำเร็จ! 🎉 นำไปวางส่งให้ลูกค้าได้เลยครับ");
     }
   </script>
 </body>
