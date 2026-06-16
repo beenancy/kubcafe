@@ -1,6 +1,6 @@
 <!-- =======================================================
-KUB Cafe - Admin Control Panel (V.9.3 Beautiful Copy Link Edition)
-Architected for: Non-expiring single-use link + Template Message
+KUB Cafe - Admin Control Panel (V.9.4 24H Copy Link Edition)
+Architected for: 24-Hour Expiry single-use link + Template Message
 ======================================================== -->
 <!DOCTYPE html>
 <html lang="th">
@@ -220,18 +220,17 @@ Architected for: Non-expiring single-use link + Template Message
       if (window.syncedState.mode === 'points' && window.syncedState.points > 0) { fireAction('points', window.syncedState.points); } else { fireAction('idle'); }
     }
 
-    // 🚀 ฟังก์ชันคัดลอกลิงก์พร้อมข้อความและแปลงให้อายุใช้งานไม่มีวันหมด
+    // 🚀 ฟังก์ชันคัดลอกลิงก์พร้อมข้อความ (ปรับแจ้งเตือนให้ระบุอายุ 24 ชั่วโมง)
     function copyCurrentLink() {
       if (!window.currentLiffUrl || window.syncedState.mode !== 'points') { 
         alert("หน้าจอปัจจุบันไม่ใช่โหมดแจกแต้มครับ"); return; 
       }
       
-      // แปลง KUBBAR เป็น KUBLINK (รหัสลับบอกเซิร์ฟเวอร์ว่านี่คือลิงก์ส่งตรง ไม่ต้องเช็กเวลาหมดอายุ)
       const specialLink = window.currentLiffUrl.replace("KUBBAR-", "KUBLINK-");
       const pts = window.syncedState.points;
       
-      // ข้อความ Template สวยงาม
-      const textMsg = `☕ รับไปเลย ${pts} แต้ม! 🎉\n\nขอบคุณที่อุดหนุน KUB Cafe นะคะ กดที่ลิงก์ด้านล่างเพื่อสะสมแต้มเข้าบัตรสมาชิกได้เลยค่ะ 👇\n${specialLink}\n\n*หมายเหตุ: ลิงก์นี้ใช้ได้เพียง 1 สิทธิ์เท่านั้น (กดแล้วจะทำลายตัวเองทันทีค่ะ)`;
+      // ข้อความ Template ระบุอายุการใช้งาน 24 ชม.
+      const textMsg = `☕ รับไปเลย ${pts} แต้ม! 🎉\n\nขอบคุณที่อุดหนุน KUB Cafe นะคะ กดที่ลิงก์ด้านล่างเพื่อสะสมแต้มเข้าบัตรสมาชิกได้เลยค่ะ 👇\n${specialLink}\n\n*หมายเหตุ: ลิงก์นี้ใช้ได้เพียง 1 สิทธิ์เท่านั้น และมีอายุการใช้งาน 24 ชั่วโมงค่ะ ⏰`;
 
       if (navigator.clipboard) {
         navigator.clipboard.writeText(textMsg).then(() => {
