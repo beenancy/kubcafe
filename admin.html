@@ -1,6 +1,13 @@
 <!-- =======================================================
-KUB Cafe - Admin Control Panel (V.9.4 24H Copy Link Edition)
-Architected for: 24-Hour Expiry single-use link + Template Message
+อัปเดตเวอร์ชันเป็น V.9.5 Real-time KDS Alert Edition
+
+เพิ่ม <audio id="kds-chime"> และ #kds-toast-container (ซ่อนตัว)
+
+เพิ่มฟังก์ชัน unlockAudioContext() เพื่อปลดล็อกกฎเสียงของเบราว์เซอร์อัตโนมัติ
+
+เพิ่มฟังก์ชัน initKDSListener() เพื่อดักฟังโหนด kds_orders จาก Firebase RTDB ทันทีที่ลูกค้าแลกแต้ม
+
+เพิ่มแอนิเมชัน Pop-up แบบ Toast เมื่อแตะที่การ์ดจะเปลี่ยนสถานะออเดอร์เป็น completed
 ======================================================== -->
 <!DOCTYPE html>
 <html lang="th">
@@ -42,9 +49,20 @@ Architected for: 24-Hour Expiry single-use link + Template Message
     .btn-action-group { display: flex; gap: 10px; margin-top: 5px; }
     .btn-copy { background: #F4EEFF; color: #8A56E2; border: 1px dashed #B89AEB; width: 100%; padding: 12px; border-radius: 14px; font-size: 14px; font-weight: bold; flex: 2; cursor: pointer; }
     .btn-lock { background: #FFEBEE; color: #D32F2F; border: 1px dashed #EF9A9A; width: 100%; padding: 12px; border-radius: 14px; font-size: 14px; font-weight: bold; flex: 1; cursor: pointer; }
+
+    /* 🚀 สไตล์ส่วนที่เพิ่มใหม่: ระบบแจ้งเตือน KDS (ซ่อนไว้จนกว่าจะมีออเดอร์) */
+    #kds-toast-container { position: fixed; top: 15px; left: 50%; transform: translateX(-50%); z-index: 10000; display: flex; flex-direction: column; gap: 10px; width: 90%; max-width: 400px; pointer-events: none; }
+    .kds-toast { background: white; border-left: 8px solid #D84315; border-radius: 14px; padding: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.25); animation: slideDown 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); pointer-events: auto; cursor: pointer; display: flex; flex-direction: column; }
+    .kds-toast-title { margin: 0 0 5px; color: #D84315; font-size: 18px; font-weight: bold; }
+    .kds-toast-desc { margin: 0; color: var(--text-brown); font-size: 14px; font-weight: bold; }
+    @keyframes slideDown { from { opacity: 0; transform: translateY(-50px); } to { opacity: 1; transform: translateY(0); } }
   </style>
 </head>
 <body>
+
+  <audio id="kds-chime" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
+
+  <div id="kds-toast-container"></div>
 
   <div id="pin-overlay">
     <h2>KUB POS SECURE</h2>
@@ -131,7 +149,20 @@ Architected for: 24-Hour Expiry single-use link + Template Message
       absoluteIdleTimeout = setTimeout(() => { fireAction('idle'); }, 1200000); 
     }
 
+    // 🚀 ฟังก์ชันปลดล็อกเสียงล่องหน (ทำงานครั้งแรกที่บาริสต้าแตะจอ)
+    let audioUnlocked = false;
+    function unlockAudioContext() {
+      if(audioUnlocked) return;
+      const chime = document.getElementById('kds-chime');
+      chime.play().then(() => {
+        chime.pause();
+        chime.currentTime = 0;
+        audioUnlocked = true;
+      }).catch(err => console.log("Audio unlock pending..."));
+    }
+
     function initApp() {
+      // ⚠️ Config ของร้าน KUB Cafe
       const firebaseConfig = { databaseURL: "https://kub-cafe-pos-default-rtdb.asia-southeast1.firebasedatabase.app" };
       if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
       const db = firebase.database();
@@ -140,11 +171,16 @@ Architected for: 24-Hour Expiry single-use link + Template Message
       window.globalTimerInterval = null;
       window.inputDebounce = null;
 
+      // ดัก Event การแตะจอครั้งแรกเพื่อปลดล็อกเสียง (Bypass Browser Policy)
+      document.body.addEventListener('click', unlockAudioContext, { once: true });
+      document.body.addEventListener('touchstart', unlockAudioContext, { once: true });
+
       document.addEventListener('touchstart', resetActivityTimer);
       document.addEventListener('click', resetActivityTimer);
       document.addEventListener('input', resetActivityTimer);
       resetActivityTimer(); 
 
+      // ดึงข้อมูลการแสดงหน้าจอปกติ
       db.ref('pos_display').on('value', (snapshot) => {
         const data = snapshot.val();
         if (!data) return;
@@ -156,6 +192,51 @@ Architected for: 24-Hour Expiry single-use link + Template Message
         }
         updateAdminUI(data);
       });
+
+      // 🚀 สั่งรันระบบดักฟัง KDS (แจ้งเตือนแลกแต้ม)
+      initKDSListener(db);
+    }
+
+    // 🚀 ฟังก์ชันดักฟังข้อมูลออเดอร์ใหม่จาก Realtime DB
+    function initKDSListener(db) {
+      db.ref('kds_orders').orderByChild('status').equalTo('pending').on('child_added', (snapshot) => {
+        const order = snapshot.val();
+        if (order && order.id) {
+          // สั่งเล่นเสียงแจ้งเตือน
+          const chime = document.getElementById('kds-chime');
+          chime.currentTime = 0;
+          chime.play().catch(e => console.log("รอการทัชสกรีนเพื่อเล่นเสียง"));
+
+          // โชว์การ์ดออเดอร์ Pop-up (Toast)
+          showKdsToast(order, snapshot.key, db);
+        }
+      });
+    }
+
+    // 🚀 ฟังก์ชันสร้างและลบการ์ดออเดอร์
+    function showKdsToast(order, dbKey, db) {
+      const container = document.getElementById('kds-toast-container');
+      const toast = document.createElement('div');
+      toast.className = 'kds-toast';
+      
+      const timeStr = new Date(order.timestamp).toLocaleTimeString('th-TH');
+      
+      toast.innerHTML = `
+        <div class="kds-toast-title">🎁 ${order.item}</div>
+        <div class="kds-toast-desc">👤 ลูกค้า: ${order.customerName}</div>
+        <div style="font-size: 12px; color: #B0A69D; margin-top: 8px;">
+          ⏱️ ${timeStr} | แตะการ์ดนี้เพื่อรับทราบ (ซ่อน)
+        </div>
+      `;
+      
+      // เมื่อบาริสต้าแตะที่การ์ด แจ้งว่ารับทราบแล้ว ซ่อนการ์ด และอัปเดต DB
+      toast.onclick = () => {
+        toast.style.animation = "slideDown 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) reverse forwards";
+        setTimeout(() => toast.remove(), 300);
+        db.ref('kds_orders').child(dbKey).update({ status: 'completed' });
+      };
+
+      container.prepend(toast);
     }
 
     function updateAdminUI(data) {
