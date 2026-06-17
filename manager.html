@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>KUB CAFE MANAGER v5.7</title>
+  <title>KUB CAFE MANAGER v5.8</title>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <style>
     :root { --bg-color: #FDFCF0; --card-bg: #FFFFFF; --text-main: #4A3F35; --text-muted: #B0A69D; --primary-matcha: #A3B18A; --matcha-dark: #7A8B62; --accent-brick: #C57B57; --border-color: #E8E2D9; }
@@ -18,7 +18,6 @@
     #main-app { display: none; padding: 15px; }
     .container { max-width: 1100px; margin: 0 auto; }
     
-    /* ปรับแต่งส่วน Header เพื่อเพิ่มปุ่มกลับหน้าหลัก */
     .header-container { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
     h1 { font-size: clamp(20px, 5vw, 26px); color: #6B705C; margin: 0; letter-spacing: 1px; display: flex; align-items: center; gap: 15px; }
     .btn-home { background-color: #EAE5D9; color: var(--text-main); text-decoration: none; font-weight: bold; font-size: 14px; border-radius: 12px; padding: 8px 15px; box-shadow: 0 4px 10px rgba(140, 122, 107, 0.1); border: 1px solid var(--border-color); display: flex; align-items: center; gap: 5px; transition: transform 0.2s; }
@@ -168,7 +167,6 @@
         window.todayEarnCounts = {};
         const todayStart = new Date(); todayStart.setHours(0,0,0,0); 
 
-        // ⚡ Parallel: ยิงดึงข้อมูล 2 เส้น พร้อมกันในรอบเดียว
         const [txRes, uRes] = await Promise.all([
           fetch(`${CLOUDFLARE_WORKER_URL}/api/manager-today-tx`, {
             method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Admin-PIN': activePin },
@@ -219,6 +217,10 @@
         const pic = user.pictureUrl ? `<img src="${user.pictureUrl}" class="profile-pic">` : `<div class="no-pic">👤</div>`;
         const todayCount = window.todayEarnCounts[user.id] || 0;
         const alertHtml = todayCount > 1 ? `<div class="alert-badge">🚨 สแกนวันนี้ ${todayCount} ครั้ง</div>` : '';
+        
+        // 🚀 แก้ปัญหาชื่อลูกค้ามีอักขระพิเศษ (เช่น ' หรือ ")
+        const safeName = user.displayName.replace(/'/g, "\\'").replace(/"/g, "&quot;");
+
         const tr = document.createElement('tr');
         tr.innerHTML = `
           <td style="color:#B0A69D; font-size:12px;">${index + 1}</td>
@@ -226,7 +228,7 @@
           <td><span class="pill-pts">${user.totalPoints}</span></td>
           <td style="color:#B0A69D;">${user.legacyPoints}</td>
           <td style="font-size:12px; color:#9A958F;">${formatThaiDate(user.lastUpdated)}</td>
-          <td><div class="action-group"><button class="btn btn-edit" onclick="editPoints('${user.id}', '${user.displayName}', ${user.totalPoints})">✏️ แก้ไข</button><button class="btn btn-history" onclick="viewHistory('${user.id}', '${user.displayName}')">📜 ประวัติ</button></div></td>
+          <td><div class="action-group"><button class="btn btn-edit" onclick="editPoints('${user.id}', '${safeName}', ${user.totalPoints})">✏️ แก้ไข</button><button class="btn btn-history" onclick="viewHistory('${user.id}', '${safeName}')">📜 ประวัติ</button></div></td>
         `;
         tbody.appendChild(tr);
       });
