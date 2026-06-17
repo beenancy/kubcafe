@@ -39,17 +39,19 @@
     .btn-copy { background: #F4EEFF; color: #8A56E2; border: 1px dashed #B89AEB; width: 100%; padding: 12px; border-radius: 14px; font-size: 14px; font-weight: bold; flex: 2; cursor: pointer; }
     .btn-lock { background: #FFEBEE; color: #D32F2F; border: 1px dashed #EF9A9A; width: 100%; padding: 12px; border-radius: 14px; font-size: 14px; font-weight: bold; flex: 1; cursor: pointer; }
 
-    /* 🚀 สไตล์ระบบแจ้งเตือน KDS */
+    /* 🚀 สไตล์ระบบแจ้งเตือน KDS (อัปเดต -webkit- สำหรับ iPhone เก่า) */
     #kds-toast-container { position: fixed; top: 15px; left: 50%; transform: translateX(-50%); z-index: 10000; display: flex; flex-direction: column; gap: 10px; width: 90%; max-width: 400px; pointer-events: none; }
-    .kds-toast { background: white; border-left: 8px solid #D84315; border-radius: 14px; padding: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.25); animation: slideDown 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); pointer-events: auto; cursor: pointer; display: flex; flex-direction: column; }
+    .kds-toast { background: white; border-left: 8px solid #D84315; border-radius: 14px; padding: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.25); -webkit-animation: slideDown 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); animation: slideDown 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); pointer-events: auto; cursor: pointer; display: flex; flex-direction: column; }
     .kds-toast-title { margin: 0 0 5px; color: #D84315; font-size: 18px; font-weight: bold; }
     .kds-toast-desc { margin: 0; color: var(--text-brown); font-size: 14px; font-weight: bold; }
+    
+    @-webkit-keyframes slideDown { from { opacity: 0; -webkit-transform: translateY(-50px); } to { opacity: 1; -webkit-transform: translateY(0); } }
     @keyframes slideDown { from { opacity: 0; transform: translateY(-50px); } to { opacity: 1; transform: translateY(0); } }
   </style>
 </head>
 <body>
 
-  <audio id="kds-chime" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
+  <audio id="kds-chime" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto" playsinline></audio>
 
   <div id="kds-toast-container"></div>
 
@@ -138,20 +140,24 @@
       absoluteIdleTimeout = setTimeout(() => { fireAction('idle'); }, 1200000); 
     }
 
-    // 🚀 ฟังก์ชันปลดล็อกเสียง (ทำงานครั้งแรกที่แตะจอ)
+    // 🚀 ฟังก์ชันปลดล็อกเสียง (Trick: ลดเสียงเป็น 0 แล้วค่อยคืนค่าตอนเล่นจริง)
     let audioUnlocked = false;
     function unlockAudioContext() {
       if(audioUnlocked) return;
       const chime = document.getElementById('kds-chime');
-      chime.play().then(() => {
-        chime.pause();
-        chime.currentTime = 0;
-        audioUnlocked = true;
-      }).catch(err => console.log("Audio unlock pending..."));
+      chime.volume = 0; 
+      const playPromise = chime.play();
+      if (playPromise !== undefined) {
+        playPromise.then(() => {
+          chime.pause();
+          chime.currentTime = 0;
+          chime.volume = 1;
+          audioUnlocked = true;
+        }).catch(err => console.log("iOS Auto-play blocked unlock."));
+      }
     }
 
     function initApp() {
-      // 🚀 อัปเดตใส่กุญแจเต็มชุด (ดึงมาจากไฟล์ index.html)
       const firebaseConfig = {
         apiKey: "AIzaSyAi-8gxkAs3N4b5r3EULZHckqq3tHa6tlE",
         authDomain: "kub-cafe-pos.firebaseapp.com",
@@ -168,7 +174,6 @@
       window.globalTimerInterval = null;
       window.inputDebounce = null;
 
-      // ดัก Event การแตะจอครั้งแรกเพื่อปลดล็อกเสียง
       document.body.addEventListener('click', unlockAudioContext, { once: true });
       document.body.addEventListener('touchstart', unlockAudioContext, { once: true });
 
@@ -189,27 +194,33 @@
         updateAdminUI(data);
       });
 
-      // 🚀 เริ่มระบบดักฟัง KDS แบบล่องหน
       initKDSListener(db);
     }
 
-    // 🚀 ฟังก์ชันดักฟังและสร้างการ์ดออเดอร์
+    // 🚀 ดักฟังออเดอร์ (แยกการทำ UI กับ Audio ออกจากกัน ป้องกันโค้ดพังบน iOS)
     function initKDSListener(db) {
       db.ref('kds_orders').orderByChild('status').equalTo('pending').on('child_added', (snapshot) => {
         const order = snapshot.val();
         if (order && order.id) {
-          // เล่นเสียงแจ้งเตือน
-          const chime = document.getElementById('kds-chime');
-          chime.currentTime = 0;
-          chime.play().catch(e => console.log("รอการทัชสกรีนเพื่อเล่นเสียง"));
+          
+          // 1. บังคับโชว์หน้าต่าง Pop-up ก่อนเสมอ
+          try {
+            showKdsToast(order, snapshot.key, db);
+          } catch(e) { console.error("UI Error:", e); }
 
-          // เด้งการ์ด Popup ลงมา
-          showKdsToast(order, snapshot.key, db);
+          // 2. พยายามเล่นเสียง (ถ้าโดน iOS บล็อก Pop-up ก็ยังโชว์อยู่ดี)
+          try {
+            const chime = document.getElementById('kds-chime');
+            chime.currentTime = 0;
+            const playPromise = chime.play();
+            if (playPromise !== undefined) {
+              playPromise.catch(e => console.log("iOS: รอการทัชหน้าจอ หรือปิดโหมดสั่น (Silent)"));
+            }
+          } catch(e) { console.error("Audio Error:", e); }
         }
       });
     }
 
-    // 🚀 ฟังก์ชันสร้าง Toast Card
     function showKdsToast(order, dbKey, db) {
       const container = document.getElementById('kds-toast-container');
       const toast = document.createElement('div');
@@ -225,14 +236,12 @@
         </div>
       `;
       
-      // เมื่อบาริสต้าแตะที่การ์ด -> ปิดการ์ด + อัปเดต DB ให้หายไป
       toast.onclick = () => {
         toast.style.animation = "slideDown 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) reverse forwards";
         setTimeout(() => toast.remove(), 300);
         db.ref('kds_orders').child(dbKey).update({ status: 'completed' });
       };
 
-      // แทรกการ์ดใหม่ไว้บนสุด
       container.prepend(toast);
     }
 
@@ -298,7 +307,6 @@
       if (window.syncedState.mode === 'points' && window.syncedState.points > 0) { fireAction('points', window.syncedState.points); } else { fireAction('idle'); }
     }
 
-    // 🚀 ฟังก์ชันคัดลอกลิงก์พร้อมข้อความ (ปรับแจ้งเตือนให้ระบุอายุ 24 ชั่วโมง)
     function copyCurrentLink() {
       if (!window.currentLiffUrl || window.syncedState.mode !== 'points') { 
         alert("หน้าจอปัจจุบันไม่ใช่โหมดแจกแต้มครับ"); return; 
@@ -307,7 +315,6 @@
       const specialLink = window.currentLiffUrl.replace("KUBBAR-", "KUBLINK-");
       const pts = window.syncedState.points;
       
-      // ข้อความ Template ระบุอายุการใช้งาน 24 ชม.
       const textMsg = `☕ รับไปเลย ${pts} แต้ม! 🎉\n\nขอบคุณที่อุดหนุน KUB Cafe นะคะ กดที่ลิงก์ด้านล่างเพื่อสะสมแต้มเข้าบัตรสมาชิกได้เลยค่ะ 👇\n${specialLink}\n\n*หมายเหตุ: ลิงก์นี้ใช้ได้เพียง 1 สิทธิ์เท่านั้น และมีอายุการใช้งาน 24 ชั่วโมงค่ะ ⏰`;
 
       if (navigator.clipboard) {
