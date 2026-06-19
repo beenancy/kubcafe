@@ -47,11 +47,6 @@
     
     .kds-toast-chat { border-left-color: #06C755; }
     .kds-toast-chat .kds-toast-title { color: #06C755; }
-    
-    .quick-reply-group { display: flex; gap: 5px; margin-top: 12px; }
-    .btn-qr { background: #F0F9F4; color: #06C755; border: 1px solid #C3E8D1; border-radius: 8px; padding: 8px 5px; font-size: 12px; font-weight: bold; cursor: pointer; flex: 1; text-align: center; transition: background 0.2s; }
-    .btn-qr:active { background: #C3E8D1; }
-    .btn-qr:disabled { opacity: 0.5; pointer-events: none; }
 
     @-webkit-keyframes slideDown { from { opacity: 0; -webkit-transform: translateY(-50px); } to { opacity: 1; -webkit-transform: translateY(0); } }
     @keyframes slideDown { from { opacity: 0; transform: translateY(-50px); } to { opacity: 1; transform: translateY(0); } }
@@ -232,16 +227,6 @@
         </div>
       `;
 
-      if (isChat && order.userId) {
-        html += `
-          <div class="quick-reply-group">
-            <button class="btn-qr" onclick="sendQuickReply(event, '${order.userId}', 'รับทราบ ได้เลยครับ/ค่ะ 👍', '${dbKey}')">✅ รับทราบ</button>
-            <button class="btn-qr" onclick="sendQuickReply(event, '${order.userId}', 'รอประมาณ 5 นาทีนะคะ/ครับ ⏳', '${dbKey}')">⏱️ 5 นาที</button>
-            <button class="btn-qr" onclick="sendQuickReply(event, '${order.userId}', 'รอประมาณ 10 นาทีนะคะ/ครับ ⏳', '${dbKey}')">⏱️ 10 นาที</button>
-          </div>
-        `;
-      }
-
       toast.innerHTML = html;
       
       toast.onclick = () => {
@@ -252,52 +237,6 @@
 
       container.prepend(toast);
     }
-
-    // 🚀 [อัปเดต V.9.8]: เพิ่มระบบจับ Error โชว์แจ้งเตือนว่าพังเพราะอะไร
-    window.sendQuickReply = async function(e, userId, text, dbKey) {
-      e.stopPropagation(); // หยุดการซ่อนการ์ดชั่วคราว
-      
-      if (!userId || userId === 'undefined') {
-        alert("❌ ไม่สามารถตอบกลับได้: ไม่พบรหัสลูกค้า (น่าจะเป็นแชทเก่า ให้ลูกค้าพิมพ์เข้ามาใหม่ครับ)");
-        return;
-      }
-
-      const btn = e.target;
-      const originalText = btn.innerText;
-      btn.innerText = "กำลังส่ง...";
-      btn.disabled = true;
-
-      const activePin = localStorage.getItem("kub_admin_pin");
-      try {
-        const res = await fetch(`${CLOUDFLARE_WORKER_URL}/api/reply-chat`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'X-Admin-PIN': activePin },
-          body: JSON.stringify({ userId: userId, text: text })
-        });
-        
-        const data = await res.json();
-        
-        if (data.status === "success") {
-          // ถ้าส่งสำเร็จ ให้ซ่อนการ์ดและอัปเดตสถานะ
-          const toast = btn.closest('.kds-toast');
-          if(toast) {
-            toast.style.animation = "slideDown 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) reverse forwards";
-            setTimeout(() => toast.remove(), 300);
-          }
-          const db = firebase.database();
-          db.ref('kds_orders').child(dbKey).update({ status: 'completed' });
-        } else {
-          // ถ้าส่งไม่สำเร็จ ให้แจ้งบาริสต้า
-          alert("❌ ส่งไม่สำเร็จ: " + (data.message || "Unknown error"));
-          btn.innerText = originalText;
-          btn.disabled = false;
-        }
-      } catch (err) {
-        alert("❌ เชื่อมต่อระบบหลังบ้านล้มเหลว");
-        btn.innerText = originalText;
-        btn.disabled = false;
-      }
-    };
 
     function updateAdminUI(data) {
       clearInterval(window.globalTimerInterval);
