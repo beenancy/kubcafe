@@ -39,20 +39,19 @@
     .btn-copy { background: #F4EEFF; color: #8A56E2; border: 1px dashed #B89AEB; width: 100%; padding: 12px; border-radius: 14px; font-size: 14px; font-weight: bold; flex: 2; cursor: pointer; }
     .btn-lock { background: #FFEBEE; color: #D32F2F; border: 1px dashed #EF9A9A; width: 100%; padding: 12px; border-radius: 14px; font-size: 14px; font-weight: bold; flex: 1; cursor: pointer; }
 
-    /* 🚀 สไตล์ระบบแจ้งเตือน KDS พื้นฐาน (สีแดง/ส้ม) */
+    /* 🚀 สไตล์ระบบแจ้งเตือน KDS */
     #kds-toast-container { position: fixed; top: 15px; left: 50%; transform: translateX(-50%); z-index: 10000; display: flex; flex-direction: column; gap: 10px; width: 90%; max-width: 400px; pointer-events: none; }
     .kds-toast { background: white; border-left: 8px solid #D84315; border-radius: 14px; padding: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.25); -webkit-animation: slideDown 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); animation: slideDown 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); pointer-events: auto; cursor: pointer; display: flex; flex-direction: column; }
     .kds-toast-title { margin: 0 0 5px; color: #D84315; font-size: 18px; font-weight: bold; }
     .kds-toast-desc { margin: 0; color: var(--text-brown); font-size: 14px; font-weight: bold; }
     
-    /* 🚀 [เพิ่มใหม่] สไตล์สำหรับการแจ้งเตือนแชท LINE (สีเขียว) */
     .kds-toast-chat { border-left-color: #06C755; }
     .kds-toast-chat .kds-toast-title { color: #06C755; }
     
-    /* 🚀 [เพิ่มใหม่] สไตล์ปุ่ม Quick Reply ตอบกลับด่วน */
     .quick-reply-group { display: flex; gap: 5px; margin-top: 12px; }
     .btn-qr { background: #F0F9F4; color: #06C755; border: 1px solid #C3E8D1; border-radius: 8px; padding: 8px 5px; font-size: 12px; font-weight: bold; cursor: pointer; flex: 1; text-align: center; transition: background 0.2s; }
     .btn-qr:active { background: #C3E8D1; }
+    .btn-qr:disabled { opacity: 0.5; pointer-events: none; }
 
     @-webkit-keyframes slideDown { from { opacity: 0; -webkit-transform: translateY(-50px); } to { opacity: 1; -webkit-transform: translateY(0); } }
     @keyframes slideDown { from { opacity: 0; transform: translateY(-50px); } to { opacity: 1; transform: translateY(0); } }
@@ -216,7 +215,6 @@
       });
     }
 
-    // 🚀 [แก้ไข V.9.7] อัปเกรดหน้าต่างแจ้งเตือนให้แยกสีและมีปุ่มตอบกลับด่วน
     function showKdsToast(order, dbKey, db) {
       const container = document.getElementById('kds-toast-container');
       const toast = document.createElement('div');
@@ -234,7 +232,6 @@
         </div>
       `;
 
-      // ถ้าเป็นการแชท ให้โชว์ปุ่ม Quick Reply 3 ปุ่ม
       if (isChat && order.userId) {
         html += `
           <div class="quick-reply-group">
@@ -256,25 +253,50 @@
       container.prepend(toast);
     }
 
-    // 🚀 [เพิ่มใหม่] ฟังก์ชันสำหรับกดยิงข้อความด่วนกลับหาลูกค้า
-    window.sendQuickReply = function(e, userId, text, dbKey) {
-      e.stopPropagation(); // หยุดไม่ให้คลิกทะลุไปโดนพื้นหลังการ์ด
+    // 🚀 [อัปเดต V.9.8]: เพิ่มระบบจับ Error โชว์แจ้งเตือนว่าพังเพราะอะไร
+    window.sendQuickReply = async function(e, userId, text, dbKey) {
+      e.stopPropagation(); // หยุดการซ่อนการ์ดชั่วคราว
       
-      const activePin = localStorage.getItem("kub_admin_pin");
-      fetch(`${CLOUDFLARE_WORKER_URL}/api/reply-chat`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-Admin-PIN': activePin },
-        body: JSON.stringify({ userId: userId, text: text })
-      }).catch(err => console.error("Reply failed", err));
-
-      // ปิดการ์ดทันทีหลังจากกดปุ่ม
-      const toast = e.target.closest('.kds-toast');
-      if(toast) {
-        toast.style.animation = "slideDown 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) reverse forwards";
-        setTimeout(() => toast.remove(), 300);
+      if (!userId || userId === 'undefined') {
+        alert("❌ ไม่สามารถตอบกลับได้: ไม่พบรหัสลูกค้า (น่าจะเป็นแชทเก่า ให้ลูกค้าพิมพ์เข้ามาใหม่ครับ)");
+        return;
       }
-      const db = firebase.database();
-      db.ref('kds_orders').child(dbKey).update({ status: 'completed' });
+
+      const btn = e.target;
+      const originalText = btn.innerText;
+      btn.innerText = "กำลังส่ง...";
+      btn.disabled = true;
+
+      const activePin = localStorage.getItem("kub_admin_pin");
+      try {
+        const res = await fetch(`${CLOUDFLARE_WORKER_URL}/api/reply-chat`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-Admin-PIN': activePin },
+          body: JSON.stringify({ userId: userId, text: text })
+        });
+        
+        const data = await res.json();
+        
+        if (data.status === "success") {
+          // ถ้าส่งสำเร็จ ให้ซ่อนการ์ดและอัปเดตสถานะ
+          const toast = btn.closest('.kds-toast');
+          if(toast) {
+            toast.style.animation = "slideDown 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) reverse forwards";
+            setTimeout(() => toast.remove(), 300);
+          }
+          const db = firebase.database();
+          db.ref('kds_orders').child(dbKey).update({ status: 'completed' });
+        } else {
+          // ถ้าส่งไม่สำเร็จ ให้แจ้งบาริสต้า
+          alert("❌ ส่งไม่สำเร็จ: " + (data.message || "Unknown error"));
+          btn.innerText = originalText;
+          btn.disabled = false;
+        }
+      } catch (err) {
+        alert("❌ เชื่อมต่อระบบหลังบ้านล้มเหลว");
+        btn.innerText = originalText;
+        btn.disabled = false;
+      }
     };
 
     function updateAdminUI(data) {
