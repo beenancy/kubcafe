@@ -69,7 +69,7 @@
       <div class="qr-preview-box" onclick="refreshCurrentPoint()">
         <img id="qr-preview-img" src="https://via.placeholder.com/300x300.png?text=STANDBY" alt="QR Preview">
       </div>
-      <div class="refresh-hint">🔄 แตะที่รูปเพื่อรีเฟรชแต้มเดิมใหม่<br>(หากทิ้งไว้ 5 นาที ระบบจะเด้งเป็น 1 แต้มอัตโนมัติ)</div>
+      <div class="refresh-hint" id="qr-hint-text">🔄 แตะที่รูปเพื่อรีเฟรชแต้มเดิมใหม่<br>(หากทิ้งไว้ 5 นาที ระบบจะเด้งเป็น 1 แต้มอัตโนมัติ)</div>
     </div>
 
     <div class="control-section">
@@ -243,29 +243,35 @@
       const label = document.getElementById('sync-status-label');
       const previewImg = document.getElementById('qr-preview-img');
       const timerDisplay = document.getElementById('timer-display');
+      const hintText = document.getElementById('qr-hint-text'); // 🚀 [อัปเดต V.9.10]
 
       if (data.mode === "idle") {
         label.innerHTML = "⚪ ว่าง (STANDBY)"; label.style.color = "#B0A69D"; label.style.backgroundColor = "white"; label.style.borderColor = "var(--border-color)";
         previewImg.src = "https://via.placeholder.com/300x300.png?text=STANDBY";
         timerDisplay.innerText = "---"; window.currentLiffUrl = "";
+        hintText.innerHTML = "🔄 แตะที่รูปเพื่อรีเฟรชแต้มเดิมใหม่<br>(หากทิ้งไว้ 5 นาที ระบบจะเด้งเป็น 1 แต้มอัตโนมัติ)"; // 🚀 บริบท
       } 
       else if (data.mode === "points") {
         label.innerHTML = `☕ <b style="font-size: 18px; color: #D32F2F;">${data.points}</b> <span style="color: #D32F2F;">แต้ม</span>`; 
         label.style.color = "#D32F2F"; label.style.backgroundColor = "#FFEBEE"; label.style.borderColor = "#EF9A9A";
         previewImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(window.currentLiffUrl)}`;
         startGlobalTimer(data.timestamp);
+        hintText.innerHTML = "🔄 แตะที่รูปเพื่อรีเฟรชแต้มเดิมใหม่<br>(หากทิ้งไว้ 5 นาที ระบบจะเด้งเป็น 1 แต้มอัตโนมัติ)"; // 🚀 บริบท
       } 
       else if (data.mode === "store_line") {
         label.innerHTML = `💬 LINE OA`; label.style.color = "#06C755"; label.style.backgroundColor = "white"; label.style.borderColor = "var(--border-color)";
         previewImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent("https://line.me/R/ti/p/@848dmzja")}`; timerDisplay.innerText = "---";
+        hintText.innerHTML = "💬 คิวอาร์โค้ดสำหรับเพิ่มเพื่อน LINE OA ของร้าน"; // 🚀 บริบท
       } 
       else if (data.mode === "payment") {
         label.innerHTML = `🏦 ธนาคาร`; label.style.color = "#1565C0"; label.style.backgroundColor = "white"; label.style.borderColor = "var(--border-color)";
         previewImg.src = "https://raw.githubusercontent.com/beenancy/kubcafe/eccfab9beafd7e3dbab13523292cd3cb15dbff74/qr%20kshop.jpg"; timerDisplay.innerText = "---";
+        hintText.innerHTML = "⚠️ สแกนจ่ายด้วยแอปธนาคารเท่านั้น (ห้ามใช้ LINE สแกน)"; // 🚀 บริบท
       } 
       else if (data.mode === "true_payment") {
         label.innerHTML = `🧡 TrueMoney`; label.style.color = "#FF6600"; label.style.backgroundColor = "white"; label.style.borderColor = "var(--border-color)";
         previewImg.src = "https://raw.githubusercontent.com/beenancy/kubcafe/914d5947e4c635a2bf03f3f123dd837c2b0b29a2/truescan.jpg"; timerDisplay.innerText = "---";
+        hintText.innerHTML = "🔸 รองรับสแกนผ่าน TrueMoney และแอปธนาคาร"; // 🚀 บริบท
       }
     }
 
