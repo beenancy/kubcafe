@@ -20,8 +20,18 @@
     .top-nav { position: absolute; top: 15px; left: 15px; z-index: 100; }
     .btn-home { background: rgba(255, 255, 255, 0.9); border: 2px solid var(--border-color); color: var(--text-brown); padding: 6px 12px; border-radius: 20px; font-weight: bold; font-size: 12px; cursor: pointer; box-shadow: 0 4px 10px rgba(140, 122, 107, 0.1); display: flex; align-items: center; gap: 5px; text-decoration: none; backdrop-filter: blur(5px); }
     .preview-section { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 15px; min-height: 250px; margin-top: 40px; }
-    .qr-preview-box { background: white; padding: 8px; border-radius: 16px; border: 2px solid var(--border-color); display: flex; justify-content: center; align-items: center; width: 100%; max-width: 280px; aspect-ratio: 1/1; margin-bottom: 12px; cursor: pointer; box-shadow: 0 10px 25px rgba(140, 122, 107, 0.1); }
-    .qr-preview-box img { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 8px; }
+    
+    /* 🚀 [อัปเดต V.9.11] แก้ปัญหากล่องรูปยืดและทับข้อความใน iOS เก่า */
+    .qr-preview-box { 
+      background: white; padding: 8px; border-radius: 16px; border: 2px solid var(--border-color); 
+      display: flex; justify-content: center; align-items: center; 
+      width: 100%; max-width: 280px; height: 280px; aspect-ratio: 1/1; 
+      margin-bottom: 12px; cursor: pointer; box-shadow: 0 10px 25px rgba(140, 122, 107, 0.1); 
+      overflow: hidden; 
+    }
+    @media (max-width: 350px) { .qr-preview-box { height: 220px; } }
+    .qr-preview-box img { width: 100%; height: 100%; object-fit: contain; border-radius: 8px; }
+    
     .refresh-hint { font-size: 12px; color: var(--text-light); font-weight: bold; text-align: center; }
     .control-section { background: var(--card-white); padding: 15px 15px max(20px, env(safe-area-inset-bottom)) 15px; border-top-left-radius: 25px; border-top-right-radius: 25px; box-shadow: 0 -10px 20px rgba(140, 122, 107, 0.08); display: flex; flex-direction: column; gap: 12px; flex-shrink: 0; }
     .custom-point-row { display: flex; justify-content: space-between; align-items: center; background: var(--bg-cream); padding: 10px 15px; border-radius: 14px; }
@@ -243,35 +253,35 @@
       const label = document.getElementById('sync-status-label');
       const previewImg = document.getElementById('qr-preview-img');
       const timerDisplay = document.getElementById('timer-display');
-      const hintText = document.getElementById('qr-hint-text'); // 🚀 [อัปเดต V.9.10]
+      const hintText = document.getElementById('qr-hint-text');
 
       if (data.mode === "idle") {
         label.innerHTML = "⚪ ว่าง (STANDBY)"; label.style.color = "#B0A69D"; label.style.backgroundColor = "white"; label.style.borderColor = "var(--border-color)";
         previewImg.src = "https://via.placeholder.com/300x300.png?text=STANDBY";
         timerDisplay.innerText = "---"; window.currentLiffUrl = "";
-        hintText.innerHTML = "🔄 แตะที่รูปเพื่อรีเฟรชแต้มเดิมใหม่<br>(หากทิ้งไว้ 5 นาที ระบบจะเด้งเป็น 1 แต้มอัตโนมัติ)"; // 🚀 บริบท
+        hintText.innerHTML = "🔄 แตะที่รูปเพื่อรีเฟรชแต้มเดิมใหม่<br>(หากทิ้งไว้ 5 นาที ระบบจะเด้งเป็น 1 แต้มอัตโนมัติ)";
       } 
       else if (data.mode === "points") {
         label.innerHTML = `☕ <b style="font-size: 18px; color: #D32F2F;">${data.points}</b> <span style="color: #D32F2F;">แต้ม</span>`; 
         label.style.color = "#D32F2F"; label.style.backgroundColor = "#FFEBEE"; label.style.borderColor = "#EF9A9A";
         previewImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(window.currentLiffUrl)}`;
         startGlobalTimer(data.timestamp);
-        hintText.innerHTML = "🔄 แตะที่รูปเพื่อรีเฟรชแต้มเดิมใหม่<br>(หากทิ้งไว้ 5 นาที ระบบจะเด้งเป็น 1 แต้มอัตโนมัติ)"; // 🚀 บริบท
+        hintText.innerHTML = "🔄 แตะที่รูปเพื่อรีเฟรชแต้มเดิมใหม่<br>(หากทิ้งไว้ 5 นาที ระบบจะเด้งเป็น 1 แต้มอัตโนมัติ)";
       } 
       else if (data.mode === "store_line") {
         label.innerHTML = `💬 LINE OA`; label.style.color = "#06C755"; label.style.backgroundColor = "white"; label.style.borderColor = "var(--border-color)";
         previewImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent("https://line.me/R/ti/p/@848dmzja")}`; timerDisplay.innerText = "---";
-        hintText.innerHTML = "💬 คิวอาร์โค้ดสำหรับเพิ่มเพื่อน LINE OA ของร้าน"; // 🚀 บริบท
+        hintText.innerHTML = "💬 คิวอาร์โค้ดสำหรับเพิ่มเพื่อน LINE OA ของร้าน";
       } 
       else if (data.mode === "payment") {
         label.innerHTML = `🏦 ธนาคาร`; label.style.color = "#1565C0"; label.style.backgroundColor = "white"; label.style.borderColor = "var(--border-color)";
         previewImg.src = "https://raw.githubusercontent.com/beenancy/kubcafe/eccfab9beafd7e3dbab13523292cd3cb15dbff74/qr%20kshop.jpg"; timerDisplay.innerText = "---";
-        hintText.innerHTML = "⚠️ สแกนจ่ายด้วยแอปธนาคารเท่านั้น (ห้ามใช้ LINE สแกน)"; // 🚀 บริบท
+        hintText.innerHTML = "⚠️ สแกนจ่ายด้วยแอปธนาคารเท่านั้น (ห้ามใช้ LINE สแกน)";
       } 
       else if (data.mode === "true_payment") {
         label.innerHTML = `🧡 TrueMoney`; label.style.color = "#FF6600"; label.style.backgroundColor = "white"; label.style.borderColor = "var(--border-color)";
         previewImg.src = "https://raw.githubusercontent.com/beenancy/kubcafe/914d5947e4c635a2bf03f3f123dd837c2b0b29a2/truescan.jpg"; timerDisplay.innerText = "---";
-        hintText.innerHTML = "🔸 รองรับสแกนผ่าน TrueMoney และแอปธนาคาร"; // 🚀 บริบท
+        hintText.innerHTML = "🔸 รองรับสแกนผ่าน TrueMoney และแอปธนาคาร";
       }
     }
 
