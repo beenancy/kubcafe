@@ -112,11 +112,10 @@
   </nav>
 
   <script>
-    // ⚠️ ลิงก์ API หลังบ้านของคุณบี
     const API_URL = "https://kub-backend.nan23082526.workers.dev";
     
-    // ⚠️ นำ LIFF ID อันใหม่มาใส่ที่นี่ครับ
-    const LIFF_ID = "YOUR_LIFF_ID_HERE"; 
+    // 🚀 [อัปเดต]: ฝังรหัส LIFF ID ตัวใหม่ให้เรียบร้อยแล้วครับคุณบี
+    const LIFF_ID = "2010206186-p1vWfgui"; 
 
     let globalUserId = "";
     let globalUserName = "";
@@ -139,12 +138,10 @@
 
         await fetchMemberData();
 
-        // เช็ก Deep Link เพื่อสลับหน้า
         const urlParams = new URLSearchParams(window.location.search);
         const targetTab = urlParams.get('tab');
         if (targetTab) switchTab(targetTab);
 
-        // ซ่อน Loading
         document.getElementById('loading-overlay').style.opacity = "0";
         setTimeout(() => document.getElementById('loading-overlay').style.display = "none", 500);
 
@@ -163,7 +160,6 @@
           globalTotalPoints = result.data.totalPoints;
           document.getElementById('userPoints').innerText = globalTotalPoints;
           
-          // เช็กปุ่มแลกรางวัล
           document.querySelectorAll('.btn-redeem').forEach(btn => {
             const cost = parseInt(btn.getAttribute('onclick').match(/\d+/)[0]);
             if (globalTotalPoints < cost) {
@@ -175,7 +171,6 @@
             }
           });
 
-          // สร้างตารางประวัติ
           renderHistory(result.data.history);
         }
       } catch (err) { console.error("Fetch Data Error:", err); }
@@ -208,7 +203,6 @@
       if (globalTotalPoints < pointsNeeded) return alert("แต้มไม่พอครับ");
       if (!confirm(`ยืนยันใช้ ${pointsNeeded} แต้ม เพื่อแลก ${rewardName} ใช่ไหมครับ?`)) return;
 
-      // โชว์โหลดดิ่งทับ
       document.getElementById('loading-overlay').style.display = "flex";
       document.getElementById('loading-overlay').style.opacity = "1";
 
@@ -227,7 +221,7 @@
         const data = await res.json();
         if (data.status === "success") {
           alert(`🎉 แลกรางวัลสำเร็จ!\nโปรดแสดงหน้าจอนี้ให้พนักงาน\n(Ref: ${data.refCode})`);
-          await fetchMemberData(); // อัปเดตแต้มใหม่ทันที
+          await fetchMemberData(); 
         } else {
           alert("❌ แลกไม่สำเร็จ: " + data.message);
         }
@@ -252,7 +246,6 @@
       }
     }
 
-    // เริ่มการทำงาน
     window.onload = initApp;
   </script>
 </body>
