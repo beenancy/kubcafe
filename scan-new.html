@@ -30,9 +30,9 @@
     const API_URL = "https://kub-backend.nan23082526.workers.dev";
     const SCAN_LIFF_ID = "2010206186-u1XRJldq"; 
 
-    // 🚀 เด้งไปไฟล์ app.html (ไฟล์ใหม่) แทนไฟล์เดิม
     function redirectToMemberApp() {
-      window.location.replace("https://beenancy.github.io/kubcafe/app.html?tab=home&t=" + Date.now());
+      // 🚀 บังคับเด้งไปไฟล์ app.html (เจาะเกราะป้องกันมือถือจำหน้าเก่า)
+      window.location.replace("https://beenancy.github.io/kubcafe/app.html?tab=home&nocache=" + new Date().getTime());
     }
 
     function closeLiffAndReturnToChat() {
