@@ -17,7 +17,7 @@
     .spinner { border: 3px solid var(--border); border-left-color: var(--matcha-dark); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-bottom: 15px; }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-    /* เอา Padding ล่างออกเพราะไม่มีเมนูบาร์แล้ว */
+    /* ไม่มีเมนูบาร์แล้ว ไม่ต้องเผื่อ Padding ล่างเยอะ */
     .app-content { flex: 1; overflow-y: auto; padding: 20px; }
     .view-section { display: none; animation: fadeIn 0.4s ease; }
     .view-section.active { display: block; }
@@ -25,10 +25,13 @@
 
     .header-title { font-size: 22px; font-weight: 700; margin: 0 0 20px 0; color: var(--matcha-dark); text-align: center; }
     
-    .member-card { background: linear-gradient(135deg, #A3B18A, #8b9d70); border-radius: 24px; padding: 30px 20px; color: white; text-align: center; box-shadow: 0 15px 30px rgba(163, 177, 138, 0.3); margin-bottom: 25px; position: relative; overflow: hidden; }
+    .member-card { background: linear-gradient(135deg, #A3B18A, #8b9d70); border-radius: 24px; padding: 30px 20px; color: white; text-align: center; box-shadow: 0 15px 30px rgba(163, 177, 138, 0.3); margin-bottom: 20px; position: relative; overflow: hidden; }
     .profile-pic { width: 70px; height: 70px; border-radius: 50%; border: 3px solid white; object-fit: cover; margin-bottom: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
     .points-number { font-size: 56px; font-weight: 700; line-height: 1; margin: 5px 0; }
     
+    .action-box { background: white; padding: 20px; border-radius: 20px; text-align: center; border: 1px solid var(--border); box-shadow: 0 8px 20px rgba(0,0,0,0.02); cursor: pointer; transition: 0.2s; }
+    .action-box:active { transform: scale(0.97); }
+
     .reward-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
     .reward-box { background: white; border-radius: 20px; padding: 20px 15px; text-align: center; border: 1px solid var(--border); box-shadow: 0 8px 20px rgba(0,0,0,0.02); }
     .reward-icon { font-size: 45px; margin-bottom: 10px; }
@@ -58,24 +61,34 @@
   <div class="app-content">
     
     <div id="view-home" class="view-section active">
-      <h2 class="header-title" id="txt-home-title">หน้าหลัก</h2>
+      <h2 class="header-title" id="txt-home-title">เช็กแต้ม</h2>
       <div class="member-card">
         <img id="userProfilePic" class="profile-pic" src="https://via.placeholder.com/70" alt="Profile">
         <div class="points-number"><span id="userPoints">0</span></div>
         <div style="font-size: 16px; margin-bottom: 5px;" id="txt-pts-label">คะแนนสะสม</div>
         <div style="font-size: 13px; opacity: 0.8;" id="txt-welcome">ยินดีต้อนรับคุณ <span id="userName">...</span></div>
       </div>
+      
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+        <div class="action-box" onclick="openQRScanner()">
+          <div style="font-size: 36px; margin-bottom: 5px;">📷</div>
+          <div style="font-weight: 600; font-size: 14px; color: var(--matcha-dark);" id="txt-scan-btn">สแกนรับแต้ม</div>
+        </div>
+        <div class="action-box" onclick="switchTab('rewards')">
+          <div style="font-size: 36px; margin-bottom: 5px;">🎁</div>
+          <div style="font-weight: 600; font-size: 14px; color: #C57B57;" id="txt-go-reward-btn">แลกของรางวัล</div>
+        </div>
+      </div>
     </div>
 
     <div id="view-rewards" class="view-section">
-      <h2 class="header-title" id="txt-reward-title">ของรางวัล</h2>
+      <h2 class="header-title" id="txt-reward-title">แลกของรางวัล</h2>
       <div class="reward-grid" id="rewardGridContainer"></div>
     </div>
 
     <div id="view-history" class="view-section">
       <h2 class="header-title" id="txt-history-title">ประวัติการใช้งาน</h2>
-      <div class="history-container" id="historyContainer">
-      </div>
+      <div class="history-container" id="historyContainer"></div>
     </div>
 
     <div id="view-menu" class="view-section">
@@ -107,6 +120,7 @@
     const i18n = {
       TH: {
         homeTitle: "เช็กแต้ม", ptsLabel: "คะแนนสะสม", welcome: "ยินดีต้อนรับคุณ ", 
+        scanBtn: "สแกนรับแต้ม", goRewardBtn: "แลกของรางวัล",
         rewardTitle: "แลกของรางวัล", btnRedeem: "แลกเลย", btnNoPts: "แต้มไม่พอ", historyTitle: "ประวัติการใช้งาน", noHistory: "ไม่มีประวัติการใช้งาน",
         menuTitle: "เมนูเครื่องดื่ม", promoTitle: "โปรโมชั่นพิเศษ", comingSoon1: "เตรียมพบกับเมนูใหม่เร็วๆ นี้", comingSoon2: "โปรโมชั่นเด็ดๆ กำลังมา",
         txtEarn: "ได้รับแต้ม", txtRedeem: "แลกรางวัล", txtEdit: "ปรับปรุงแต้ม",
@@ -117,6 +131,7 @@
       },
       EN: {
         homeTitle: "Check Points", ptsLabel: "Total Points", welcome: "Welcome, ", 
+        scanBtn: "Scan QR", goRewardBtn: "Redeem Rewards",
         rewardTitle: "Redeem Rewards", btnRedeem: "Redeem", btnNoPts: "Not enough", historyTitle: "Transaction History", noHistory: "No transactions yet",
         menuTitle: "Beverage Menu", promoTitle: "Special Promo", comingSoon1: "New menus are coming very soon", comingSoon2: "Stay tuned for special offers",
         txtEarn: "Points Earned", txtRedeem: "Redeemed", txtEdit: "Points Edited",
@@ -146,7 +161,9 @@
 
         document.getElementById('loading-overlay').style.opacity = "0";
         setTimeout(() => document.getElementById('loading-overlay').style.display = "none", 400);
-      } catch (err) { Swal.fire({ icon: 'error', title: 'Error', text: 'ไม่สามารถเชื่อมต่อ LINE ได้', confirmButtonColor: '#A3B18A' }); }
+      } catch (err) { 
+        Swal.fire({ icon: 'error', title: 'Error', text: 'ไม่สามารถเชื่อมต่อ LINE ได้ กรุณาลองใหม่', confirmButtonColor: '#A3B18A' }); 
+      }
     }
 
     async function fetchMemberData() {
@@ -170,6 +187,9 @@
       document.getElementById('txt-home-title').innerText = t.homeTitle;
       document.getElementById('txt-pts-label').innerText = t.ptsLabel;
       document.getElementById('txt-welcome').innerHTML = `${t.welcome} <span id="userName">${globalUserName}</span>`;
+      document.getElementById('txt-scan-btn').innerText = t.scanBtn;
+      document.getElementById('txt-go-reward-btn').innerText = t.goRewardBtn;
+      
       document.getElementById('txt-reward-title').innerText = t.rewardTitle;
       document.getElementById('txt-history-title').innerText = t.historyTitle;
       document.getElementById('txt-menu-title').innerText = t.menuTitle;
@@ -257,9 +277,16 @@
       } catch (err) { Swal.fire({ icon: 'error', title: 'Network Error', confirmButtonColor: '#C57B57' }); }
     }
 
+    // 🚀 [อัปเดต]: ฟังก์ชันสลับหน้าเว็บแบบลบโค้ดแถบเมนูออกหมดจด (กัน Error)
     function switchTab(tabId) {
       document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
-      document.getElementById('view-' + tabId).classList.add('active');
+      const targetView = document.getElementById('view-' + tabId);
+      if (targetView) targetView.classList.add('active');
+    }
+
+    function openQRScanner() {
+      if (liff.isApiAvailable('scanCodeV2')) { liff.scanCodeV2().then(result => {}); } 
+      else { window.location.href = "https://line.me/R/nv/QRCodeReader"; }
     }
 
     window.onload = initApp;
