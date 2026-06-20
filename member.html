@@ -13,7 +13,6 @@
     :root { --bg-cream: #FDFCF0; --matcha: #A3B18A; --matcha-dark: #7A8B62; --text-main: #4A3F35; --text-light: #B0A69D; --border: #E8E2D9; }
     body, html { margin: 0; padding: 0; width: 100%; height: 100vh; font-family: 'Prompt', sans-serif; background-color: var(--bg-cream); overflow: hidden; display: flex; flex-direction: column; color: var(--text-main); }
     
-    /* Loading Screen มินิมอล */
     #loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-cream); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; color: var(--matcha-dark); transition: opacity 0.4s; }
     .spinner { border: 3px solid var(--border); border-left-color: var(--matcha-dark); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-bottom: 15px; }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
@@ -23,13 +22,11 @@
     .view-section.active { display: block; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
 
-    /* Navigation Bar */
-    .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); border-top: 1px solid var(--border); display: flex; justify-content: space-around; padding: 12px 0 calc(12px + env(safe-area-inset-bottom)) 0; z-index: 1000; box-shadow: 0 -5px 20px rgba(163, 177, 138, 0.1); }
+    .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); border-top: 1px solid var(--border); display: flex; justify-content: space-around; padding: 12px 0 calc(12px + env(safe-area-inset-bottom)) 0; z-index: 100; box-shadow: 0 -5px 20px rgba(163, 177, 138, 0.1); }
     .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; color: var(--text-light); font-size: 11px; cursor: pointer; transition: 0.3s; }
     .nav-item.active { color: var(--matcha-dark); transform: translateY(-3px); }
     .nav-icon { font-size: 22px; margin-bottom: 4px; }
 
-    /* UI Elements */
     .header-title { font-size: 22px; font-weight: 700; margin: 0 0 20px 0; color: var(--matcha-dark); text-align: center; }
     
     .member-card { background: linear-gradient(135deg, #A3B18A, #8b9d70); border-radius: 24px; padding: 30px 20px; color: white; text-align: center; box-shadow: 0 15px 30px rgba(163, 177, 138, 0.3); margin-bottom: 25px; position: relative; overflow: hidden; }
@@ -52,10 +49,11 @@
 
     .coming-soon-box { background: white; border-radius: 24px; padding: 40px 20px; text-align: center; border: 1px dashed var(--matcha); color: var(--matcha-dark); margin-top: 20px; }
 
-    /* Custom SweetAlert Style */
+    /* SweetAlert Override (z-index สูงกว่าเมนูด้านล่าง) */
+    .swal2-container { z-index: 10000 !important; }
     .swal2-popup { border-radius: 24px !important; font-family: 'Prompt', sans-serif !important; }
-    .swal2-confirm { border-radius: 12px !important; }
-    .swal2-cancel { border-radius: 12px !important; }
+    .swal2-confirm { border-radius: 12px !important; font-weight: bold !important; font-family: 'Prompt' !important; }
+    .swal2-cancel { border-radius: 12px !important; font-weight: bold !important; font-family: 'Prompt' !important; }
   </style>
 </head>
 <body>
@@ -83,20 +81,13 @@
 
     <div id="view-rewards" class="view-section">
       <h2 class="header-title" id="txt-reward-title">ของรางวัล</h2>
-      <div class="reward-grid">
-        <div class="reward-box">
-          <div class="reward-icon">☕</div>
-          <div style="font-weight: 600; font-size: 15px;">ส่วนลด 50%</div>
-          <div style="font-size: 12px; color: var(--text-light); margin-top: 5px;" id="txt-req-10">ใช้ 10 แต้ม</div>
-          <button class="btn-redeem" onclick="redeemPoints(10, 'ส่วนลด 50% 1 แก้ว')">แลกเลย</button>
-        </div>
-      </div>
+      <div class="reward-grid" id="rewardGridContainer"></div>
     </div>
 
     <div id="view-history" class="view-section">
       <h2 class="header-title" id="txt-history-title">ประวัติการใช้งาน</h2>
       <div class="history-container" id="historyContainer">
-        </div>
+      </div>
     </div>
 
     <div id="view-menu" class="view-section">
@@ -104,7 +95,7 @@
       <div class="coming-soon-box">
         <div style="font-size: 50px; margin-bottom: 10px;">🥤</div>
         <h3 style="margin:0;">Coming Soon</h3>
-        <p style="font-size: 13px; color: var(--text-light);">เตรียมพบกับเมนูใหม่เร็วๆ นี้</p>
+        <p style="font-size: 13px; color: var(--text-light);" id="txt-cs-1">เตรียมพบกับเมนูใหม่เร็วๆ นี้</p>
       </div>
     </div>
 
@@ -113,7 +104,7 @@
       <div class="coming-soon-box">
         <div style="font-size: 50px; margin-bottom: 10px;">📢</div>
         <h3 style="margin:0;">Coming Soon</h3>
-        <p style="font-size: 13px; color: var(--text-light);">โปรโมชั่นเด็ดๆ กำลังมา</p>
+        <p style="font-size: 13px; color: var(--text-light);" id="txt-cs-2">โปรโมชั่นเด็ดๆ กำลังมา</p>
       </div>
     </div>
 
@@ -141,30 +132,31 @@
     const API_URL = "https://kub-backend.nan23082526.workers.dev";
     const LIFF_ID = "2010206186-p1vWfgui"; 
 
-    let globalUserId = "";
-    let globalUserName = "";
-    let globalTotalPoints = 0;
-    let globalLang = "TH";
+    let globalUserId = ""; let globalUserName = ""; let globalTotalPoints = 0; let globalLang = "TH";
 
-    // 🌐 พจนานุกรมแปลภาษา
+    // 🌐 พจนานุกรมแปลภาษา (รวมข้อมูลของรางวัลด้วย)
     const i18n = {
       TH: {
-        loading: "กำลังเข้าสู่ระบบ...",
-        homeTitle: "หน้าหลัก", ptsLabel: "คะแนนสะสม", welcome: "ยินดีต้อนรับคุณ ", scanBtn: "📷 สแกนรับแต้ม",
-        rewardTitle: "ของรางวัล", req10: "ใช้ 10 แต้ม", btnRedeem: "แลกเลย", btnNoPts: "แต้มไม่พอ",
-        historyTitle: "ประวัติการใช้งาน", noHistory: "ไม่มีประวัติการใช้งาน",
-        menuTitle: "เมนูเครื่องดื่ม", promoTitle: "โปรโมชั่นพิเศษ", comingSoon: "เตรียมพบกันเร็วๆ นี้",
+        loading: "กำลังเข้าสู่ระบบ...", homeTitle: "หน้าหลัก", ptsLabel: "คะแนนสะสม", welcome: "ยินดีต้อนรับคุณ ", scanBtn: "📷 สแกนรับแต้ม",
+        rewardTitle: "ของรางวัล", btnRedeem: "แลกเลย", btnNoPts: "แต้มไม่พอ", historyTitle: "ประวัติการใช้งาน", noHistory: "ไม่มีประวัติการใช้งาน",
+        menuTitle: "เมนูเครื่องดื่ม", promoTitle: "โปรโมชั่นพิเศษ", comingSoon1: "เตรียมพบกับเมนูใหม่เร็วๆ นี้", comingSoon2: "โปรโมชั่นเด็ดๆ กำลังมา",
         navHome: "หน้าหลัก", navReward: "แลกรางวัล", navHist: "ประวัติ", navMenu: "เมนู", navPromo: "โปรโมชั่น",
-        txtEarn: "ได้รับแต้ม", txtRedeem: "แลกรางวัล", txtEdit: "ปรับปรุงแต้ม"
+        txtEarn: "ได้รับแต้ม", txtRedeem: "แลกรางวัล", txtEdit: "ปรับปรุงแต้ม",
+        rewards: [
+          { icon: "☕", name: "ส่วนลด 50%", req: "ใช้ 10 แต้ม", cost: 10, logName: "ส่วนลด 50% 1 แก้ว" },
+          { icon: "🍰", name: "ฟรี เค้ก 1 ชิ้น", req: "ใช้ 20 แต้ม", cost: 20, logName: "ฟรีเค้ก 1 ชิ้น" }
+        ]
       },
       EN: {
-        loading: "Loading...",
-        homeTitle: "Home", ptsLabel: "Total Points", welcome: "Welcome, ", scanBtn: "📷 Scan QR",
-        rewardTitle: "Rewards", req10: "10 Pts req.", btnRedeem: "Redeem", btnNoPts: "Not enough",
-        historyTitle: "Transaction History", noHistory: "No transactions yet",
-        menuTitle: "Beverage Menu", promoTitle: "Special Promo", comingSoon: "Coming very soon",
+        loading: "Loading...", homeTitle: "Home", ptsLabel: "Total Points", welcome: "Welcome, ", scanBtn: "📷 Scan QR",
+        rewardTitle: "Rewards", btnRedeem: "Redeem", btnNoPts: "Not enough", historyTitle: "Transaction History", noHistory: "No transactions yet",
+        menuTitle: "Beverage Menu", promoTitle: "Special Promo", comingSoon1: "New menus are coming very soon", comingSoon2: "Stay tuned for special offers",
         navHome: "Home", navReward: "Rewards", navHist: "History", navMenu: "Menu", navPromo: "Promo",
-        txtEarn: "Points Earned", txtRedeem: "Redeemed", txtEdit: "Points Edited"
+        txtEarn: "Points Earned", txtRedeem: "Redeemed", txtEdit: "Points Edited",
+        rewards: [
+          { icon: "☕", name: "50% Discount", req: "10 Pts req.", cost: 10, logName: "ส่วนลด 50% 1 แก้ว" },
+          { icon: "🍰", name: "Free 1 Cake", req: "20 Pts req.", cost: 20, logName: "ฟรีเค้ก 1 ชิ้น" }
+        ]
       }
     };
 
@@ -174,9 +166,7 @@
         if (!liff.isLoggedIn()) { liff.login(); return; }
 
         const profile = await liff.getProfile();
-        globalUserId = profile.userId;
-        globalUserName = profile.displayName;
-        
+        globalUserId = profile.userId; globalUserName = profile.displayName;
         document.getElementById('userProfilePic').src = profile.pictureUrl || "https://via.placeholder.com/70";
         document.getElementById('userName').innerText = profile.displayName;
 
@@ -188,9 +178,7 @@
 
         document.getElementById('loading-overlay').style.opacity = "0";
         setTimeout(() => document.getElementById('loading-overlay').style.display = "none", 400);
-      } catch (err) {
-        Swal.fire({ icon: 'error', title: 'Error', text: 'ไม่สามารถเชื่อมต่อ LINE ได้', confirmButtonColor: '#A3B18A' });
-      }
+      } catch (err) { Swal.fire({ icon: 'error', title: 'Error', text: 'ไม่สามารถเชื่อมต่อ LINE ได้', confirmButtonColor: '#A3B18A' }); }
     }
 
     async function fetchMemberData() {
@@ -200,21 +188,11 @@
         
         if (result.status === "success") {
           globalTotalPoints = result.data.totalPoints;
-          globalLang = result.data.lang || "TH"; // รับค่าภาษาจากระบบ
+          globalLang = result.data.lang || "TH"; 
           document.getElementById('userPoints').innerText = globalTotalPoints;
           
-          applyLanguage(); // อัปเดตภาษาหน้าจอทันที
-          
-          document.querySelectorAll('.btn-redeem').forEach(btn => {
-            const cost = parseInt(btn.getAttribute('onclick').match(/\d+/)[0]);
-            if (globalTotalPoints < cost) {
-              btn.disabled = true; btn.innerText = i18n[globalLang].btnNoPts;
-            } else {
-              btn.disabled = false; btn.innerText = i18n[globalLang].btnRedeem;
-            }
-          });
-
-          renderHistory(result.data.history);
+          applyLanguage(); // อัปเดตภาษาหน้าจอทั้งหมด
+          renderHistory(result.data.history); // วาดตารางประวัติ
         }
       } catch (err) { console.log(err); }
     }
@@ -226,24 +204,43 @@
       document.getElementById('txt-welcome').innerHTML = `${t.welcome} <span id="userName">${globalUserName}</span>`;
       document.getElementById('txt-scan-btn').innerText = t.scanBtn;
       document.getElementById('txt-reward-title').innerText = t.rewardTitle;
-      document.getElementById('txt-req-10').innerText = t.req10;
       document.getElementById('txt-history-title').innerText = t.historyTitle;
       document.getElementById('txt-menu-title').innerText = t.menuTitle;
       document.getElementById('txt-promo-title').innerText = t.promoTitle;
+      document.getElementById('txt-cs-1').innerText = t.comingSoon1;
+      document.getElementById('txt-cs-2').innerText = t.comingSoon2;
       
       document.getElementById('nav-txt-home').innerText = t.navHome;
       document.getElementById('nav-txt-reward').innerText = t.navReward;
       document.getElementById('nav-txt-history').innerText = t.navHist;
       document.getElementById('nav-txt-menu').innerText = t.navMenu;
       document.getElementById('nav-txt-promo').innerText = t.navPromo;
+
+      // วาดหน้าต่างของรางวัลใหม่ตามภาษา
+      let rewardHtml = "";
+      t.rewards.forEach(rw => {
+        const isEnough = globalTotalPoints >= rw.cost;
+        const btnClass = isEnough ? "btn-redeem" : "btn-redeem disabled";
+        const btnAttr = isEnough ? `onclick="redeemPoints(${rw.cost}, '${rw.logName}', '${rw.name}')"` : "disabled";
+        const btnText = isEnough ? t.btnRedeem : t.btnNoPts;
+        
+        rewardHtml += `
+          <div class="reward-box">
+            <div class="reward-icon">${rw.icon}</div>
+            <div style="font-weight: 600; font-size: 15px;">${rw.name}</div>
+            <div style="font-size: 12px; color: var(--text-light); margin-top: 5px;">${rw.req}</div>
+            <button class="${btnClass}" ${btnAttr}>${btnText}</button>
+          </div>
+        `;
+      });
+      document.getElementById('rewardGridContainer').innerHTML = rewardHtml;
     }
 
     function renderHistory(historyArr) {
       const container = document.getElementById('historyContainer');
       const t = i18n[globalLang];
       if (!historyArr || historyArr.length === 0) {
-        container.innerHTML = `<div style="padding: 30px; text-align: center; color: var(--text-light);">${t.noHistory}</div>`;
-        return;
+        container.innerHTML = `<div style="padding: 30px; text-align: center; color: var(--text-light);">${t.noHistory}</div>`; return;
       }
 
       let html = "";
@@ -265,19 +262,18 @@
       container.innerHTML = html;
     }
 
-    // 🚀 ระบบแลกรางวัล (ใช้ SweetAlert แทน confirm แบบเก่า)
-    async function redeemPoints(pointsNeeded, rewardName) {
+    // 🚀 ระบบแลกรางวัล (SweetAlert)
+    async function redeemPoints(pointsNeeded, logName, displayRewardName) {
       if (globalTotalPoints < pointsNeeded) return;
       
-      const txtConfirm = globalLang === "EN" ? `Confirm to use ${pointsNeeded} PTS for ${rewardName}?` : `ยืนยันใช้ ${pointsNeeded} แต้ม เพื่อแลก ${rewardName}?`;
+      const txtConfirm = globalLang === "EN" ? `Confirm to use ${pointsNeeded} PTS for ${displayRewardName}?` : `ยืนยันใช้ ${pointsNeeded} แต้ม เพื่อแลก ${displayRewardName}?`;
       const txtYes = globalLang === "EN" ? "Yes, Redeem" : "ยืนยันแลกเลย";
       const txtNo = globalLang === "EN" ? "Cancel" : "ยกเลิก";
 
       const confirmResult = await Swal.fire({
         title: globalLang === "EN" ? 'Confirm?' : 'ยืนยันการแลก?', text: txtConfirm, icon: 'question',
         showCancelButton: true, confirmButtonColor: '#A3B18A', cancelButtonColor: '#E8E2D9',
-        confirmButtonText: txtYes, cancelButtonText: `<span style="color:#4A3F35">${txtNo}</span>`,
-        reverseButtons: true
+        confirmButtonText: txtYes, cancelButtonText: `<span style="color:#4A3F35">${txtNo}</span>`, reverseButtons: true
       });
 
       if (!confirmResult.isConfirmed) return;
@@ -287,7 +283,7 @@
       try {
         const res = await fetch(`${API_URL}/api/redeem-reward`, {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ userId: globalUserId, customerName: globalUserName, pointsUsed: pointsNeeded, rewardName: rewardName })
+          body: JSON.stringify({ userId: globalUserId, customerName: globalUserName, pointsUsed: pointsNeeded, rewardName: logName })
         });
         const data = await res.json();
         
@@ -298,9 +294,7 @@
             confirmButtonColor: '#A3B18A'
           });
           await fetchMemberData(); 
-        } else {
-          Swal.fire({ icon: 'error', title: 'Failed', text: data.message, confirmButtonColor: '#C57B57' });
-        }
+        } else { Swal.fire({ icon: 'error', title: 'Failed', text: data.message, confirmButtonColor: '#C57B57' }); }
       } catch (err) { Swal.fire({ icon: 'error', title: 'Network Error', confirmButtonColor: '#C57B57' }); }
     }
 
@@ -312,9 +306,8 @@
     }
 
     function openQRScanner() {
-      if (liff.isApiAvailable('scanCodeV2')) {
-        liff.scanCodeV2().then(result => { if(result.value) { /* จะไปหน้า scan.html อัตโนมัติ */ } });
-      } else { window.location.href = "https://line.me/R/nv/QRCodeReader"; }
+      if (liff.isApiAvailable('scanCodeV2')) { liff.scanCodeV2().then(result => {}); } 
+      else { window.location.href = "https://line.me/R/nv/QRCodeReader"; }
     }
 
     window.onload = initApp;
