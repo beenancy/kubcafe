@@ -3,7 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
   <title>KUB Cafe</title>
+  
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   
@@ -18,9 +22,9 @@
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
     .app-content { flex: 1; overflow-y: auto; padding: 20px; }
-    .view-section { display: none; animation: fadeIn 0.4s ease; padding-bottom: 30px; }
+    .view-section { display: none; animation: fadeIn 0.3s ease; padding-bottom: 30px; }
     .view-section.active { display: block; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
     .header-title { font-size: 22px; font-weight: 700; margin: 0 0 20px 0; color: var(--matcha-dark); text-align: center; }
     
@@ -44,7 +48,7 @@
 
     .coming-soon-box { background: white; border-radius: 24px; padding: 40px 20px; text-align: center; border: 1px dashed var(--matcha); color: var(--matcha-dark); margin-top: 20px; margin-bottom: 20px; }
 
-    /* ปุ่มปิดหน้าต่าง */
+    /* ปุ่ม OK (กลับหน้าแชท) */
     .btn-close-app { background: #E8E2D9; color: var(--text-main); border: none; padding: 15px; border-radius: 16px; font-weight: 600; font-family: 'Prompt'; margin-top: 25px; width: 100%; cursor: pointer; transition: 0.2s; font-size: 14px; box-shadow: 0 5px 15px rgba(0,0,0,0.03); }
     .btn-close-app:active { transform: scale(0.97); }
 
@@ -175,7 +179,8 @@
 
     async function fetchMemberData() {
       try {
-        const res = await fetch(`${API_URL}/api/get-member?userId=${globalUserId}`);
+        // 🚀 ฝังรหัสกัน Cache (Timestamp) ให้ Android อัปเดตข้อมูลใหม่ 100%
+        const res = await fetch(`${API_URL}/api/get-member?userId=${globalUserId}&t=${Date.now()}`);
         const result = await res.json();
         
         if (result.status === "success") {
@@ -204,7 +209,6 @@
       document.getElementById('txt-cs-1').innerText = t.comingSoon1;
       document.getElementById('txt-cs-2').innerText = t.comingSoon2;
       
-      // อัปเดตภาษาของปุ่ม กลับหน้าแชท ทุกๆ ปุ่ม
       document.querySelectorAll('.text-close-btn').forEach(el => el.innerText = t.closeBtn);
       
       let rewardHtml = "";
@@ -277,10 +281,13 @@
         const data = await res.json();
         
         if (data.status === "success") {
+          // 🚀 กดปุ่ม OK หลังแลกรางวัล แล้วเด้งกลับหน้าเช็กแต้ม (Home) ทันที
           Swal.fire({
             icon: 'success', title: globalLang === "EN" ? 'Success!' : 'แลกรางวัลสำเร็จ!',
             text: globalLang === "EN" ? `Ref: ${data.refCode}\nPlease show this to staff.` : `รหัสอ้างอิง: ${data.refCode}\nโปรดแสดงหน้าจอนี้ให้พนักงาน`,
             confirmButtonColor: '#A3B18A'
+          }).then(() => {
+            switchTab('home'); 
           });
           await fetchMemberData(); 
         } else { Swal.fire({ icon: 'error', title: 'Failed', text: data.message, confirmButtonColor: '#C57B57' }); }
@@ -291,6 +298,7 @@
       document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
       const targetView = document.getElementById('view-' + tabId);
       if (targetView) targetView.classList.add('active');
+      window.scrollTo(0, 0); // รีเซ็ตการเลื่อนหน้าจอ
     }
 
     function openQRScanner() {
