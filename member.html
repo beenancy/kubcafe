@@ -46,6 +46,7 @@
     .list-item { padding: 18px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
     .list-item:last-child { border-bottom: none; }
 
+    /* ปุ่มกลับหน้าแชท (OK) */
     .btn-close-app { background: #E8E2D9; color: var(--text-main); border: none; padding: 15px; border-radius: 16px; font-weight: 600; font-family: 'Prompt'; margin-top: 25px; width: 100%; cursor: pointer; transition: 0.2s; font-size: 14px; box-shadow: 0 5px 15px rgba(0,0,0,0.03); }
     .btn-close-app:active { transform: scale(0.97); }
 
@@ -71,6 +72,7 @@
         <div style="font-size: 16px; margin-bottom: 5px;" id="txt-pts-label">คะแนนสะสม</div>
         <div style="font-size: 13px; opacity: 0.8;" id="txt-welcome">ยินดีต้อนรับคุณ <span id="userName">...</span></div>
       </div>
+      
       <div class="grid-2">
         <div class="action-box" onclick="openQRScanner()">
           <div style="font-size: 36px; margin-bottom: 5px;">📷</div>
@@ -81,19 +83,19 @@
           <div style="font-weight: 600; font-size: 14px; color: #C57B57;" id="txt-go-reward-btn">แลกของรางวัล</div>
         </div>
       </div>
-      <button class="btn-close-app text-close-btn" onclick="liff.closeWindow()">กลับหน้าแชท</button>
+      <button class="btn-close-app text-close-btn" onclick="closeApp()">กลับหน้าแชท</button>
     </div>
 
     <div id="view-rewards" class="view-section">
       <h2 class="header-title" id="txt-reward-title">แลกของรางวัล</h2>
       <div class="grid-2" id="rewardGridContainer"></div>
-      <button class="btn-close-app text-close-btn" onclick="liff.closeWindow()">กลับหน้าแชท</button>
+      <button class="btn-close-app text-close-btn" onclick="closeApp()">กลับหน้าแชท</button>
     </div>
 
     <div id="view-history" class="view-section">
       <h2 class="header-title" id="txt-history-title">ประวัติการใช้งาน</h2>
       <div class="list-container" id="historyContainer"></div>
-      <button class="btn-close-app text-close-btn" onclick="liff.closeWindow()">กลับหน้าแชท</button>
+      <button class="btn-close-app text-close-btn" onclick="closeApp()">กลับหน้าแชท</button>
     </div>
 
     <div id="view-menu" class="view-section">
@@ -102,34 +104,34 @@
         <div class="list-item">
           <div style="display:flex; align-items:center;">
             <div style="font-size:30px; margin-right:15px;">🍵</div>
-            <div><div style="font-weight:bold;">ชาเขียวมัทฉะเย็น</div><div style="font-size:12px; color:var(--text-light);">Iced Matcha Green Tea</div></div>
+            <div><div style="font-weight:bold;" id="txt-m1">ชาเขียวมัทฉะเย็น</div><div style="font-size:12px; color:var(--text-light);">Iced Matcha Green Tea</div></div>
           </div>
           <div style="font-weight:bold; color:var(--matcha-dark);">60.-</div>
         </div>
         <div class="list-item">
           <div style="display:flex; align-items:center;">
             <div style="font-size:30px; margin-right:15px;">☕</div>
-            <div><div style="font-weight:bold;">อเมริกาโน่เย็น</div><div style="font-size:12px; color:var(--text-light);">Iced Americano</div></div>
+            <div><div style="font-weight:bold;" id="txt-m2">อเมริกาโน่เย็น</div><div style="font-size:12px; color:var(--text-light);">Iced Americano</div></div>
           </div>
           <div style="font-weight:bold; color:var(--matcha-dark);">55.-</div>
         </div>
       </div>
-      <button class="btn-close-app text-close-btn" onclick="liff.closeWindow()">กลับหน้าแชท</button>
+      <button class="btn-close-app text-close-btn" onclick="closeApp()">กลับหน้าแชท</button>
     </div>
 
     <div id="view-promo" class="view-section">
       <h2 class="header-title" id="txt-promo-title">โปรโมชั่นพิเศษ</h2>
       <div class="card-box" style="text-align:left; margin-bottom:15px;">
         <div style="font-size:30px; margin-bottom:10px;">🎉</div>
-        <div style="font-weight:bold; font-size:16px;">โปรโมชั่นเปิดร้านใหม่!</div>
-        <div style="font-size:13px; color:var(--text-light); margin-top:5px;">รับส่วนลด 10% สำหรับเครื่องดื่มทุกเมนูตลอดเดือนนี้</div>
+        <div style="font-weight:bold; font-size:16px;" id="txt-p1-title">โปรโมชั่นเปิดร้านใหม่!</div>
+        <div style="font-size:13px; color:var(--text-light); margin-top:5px;" id="txt-p1-desc">รับส่วนลด 10% สำหรับเครื่องดื่มทุกเมนูตลอดเดือนนี้</div>
       </div>
       <div class="card-box" style="text-align:left;">
         <div style="font-size:30px; margin-bottom:10px;">🍰</div>
-        <div style="font-weight:bold; font-size:16px;">อร่อยเป็นคู่</div>
-        <div style="font-size:13px; color:var(--text-light); margin-top:5px;">ซื้อเค้ก 1 ชิ้น คู่กับเครื่องดื่ม รับส่วนลดทันที 10 บาท</div>
+        <div style="font-weight:bold; font-size:16px;" id="txt-p2-title">อร่อยเป็นคู่</div>
+        <div style="font-size:13px; color:var(--text-light); margin-top:5px;" id="txt-p2-desc">ซื้อเค้ก 1 ชิ้น คู่กับเครื่องดื่ม รับส่วนลดทันที 10 บาท</div>
       </div>
-      <button class="btn-close-app text-close-btn" onclick="liff.closeWindow()">กลับหน้าแชท</button>
+      <button class="btn-close-app text-close-btn" onclick="closeApp()">กลับหน้าแชท</button>
     </div>
 
   </div>
@@ -140,13 +142,17 @@
 
     let globalUserId = ""; let globalUserName = ""; let globalTotalPoints = 0; let globalLang = "TH";
 
+    // 🌐 พจนานุกรมแปลภาษา
     const i18n = {
       TH: {
         homeTitle: "เช็กแต้ม", ptsLabel: "คะแนนสะสม", welcome: "ยินดีต้อนรับคุณ ", 
         scanBtn: "สแกนรับแต้ม", goRewardBtn: "แลกของรางวัล",
         rewardTitle: "แลกของรางวัล", btnRedeem: "แลกเลย", btnNoPts: "แต้มไม่พอ", historyTitle: "ประวัติการใช้งาน", noHistory: "ไม่มีประวัติการใช้งาน",
         menuTitle: "เมนูเครื่องดื่ม", promoTitle: "โปรโมชั่นพิเศษ", 
-        txtEarn: "ได้รับแต้ม", txtRedeem: "แลกรางวัล", txtEdit: "ปรับปรุงแต้ม", closeBtn: "กลับหน้าแชท",
+        txtEarn: "ได้รับแต้ม", txtRedeem: "แลกรางวัล", txtEdit: "ปรับปรุงแต้ม", closeBtn: "กลับหน้าแชท (OK)",
+        m1: "ชาเขียวมัทฉะเย็น", m2: "อเมริกาโน่เย็น",
+        p1t: "โปรโมชั่นเปิดร้านใหม่!", p1d: "รับส่วนลด 10% สำหรับเครื่องดื่มทุกเมนูตลอดเดือนนี้",
+        p2t: "อร่อยเป็นคู่", p2d: "ซื้อเค้ก 1 ชิ้น คู่กับเครื่องดื่ม รับส่วนลดทันที 10 บาท",
         rewards: [
           { icon: "☕", name: "ส่วนลด 50%", req: "ใช้ 10 แต้ม", cost: 10, logName: "ส่วนลด 50% 1 แก้ว" },
           { icon: "🍰", name: "ฟรี เค้ก 1 ชิ้น", req: "ใช้ 20 แต้ม", cost: 20, logName: "ฟรีเค้ก 1 ชิ้น" }
@@ -157,7 +163,10 @@
         scanBtn: "Scan QR", goRewardBtn: "Redeem Rewards",
         rewardTitle: "Redeem Rewards", btnRedeem: "Redeem", btnNoPts: "Not enough", historyTitle: "Transaction History", noHistory: "No transactions yet",
         menuTitle: "Beverage Menu", promoTitle: "Special Promo", 
-        txtEarn: "Points Earned", txtRedeem: "Redeemed", txtEdit: "Points Edited", closeBtn: "Back to Chat",
+        txtEarn: "Points Earned", txtRedeem: "Redeemed", txtEdit: "Points Edited", closeBtn: "Back to Chat (OK)",
+        m1: "Iced Matcha Green Tea", m2: "Iced Americano",
+        p1t: "Grand Opening Promo!", p1d: "Get 10% off all beverages this month.",
+        p2t: "Perfect Pair", p2d: "Buy 1 Cake with any beverage, get 10 Baht off.",
         rewards: [
           { icon: "☕", name: "50% Discount", req: "10 Pts req.", cost: 10, logName: "ส่วนลด 50% 1 แก้ว" },
           { icon: "🍰", name: "Free 1 Cake", req: "20 Pts req.", cost: 20, logName: "ฟรีเค้ก 1 ชิ้น" }
@@ -204,63 +213,79 @@
     }
 
     function applyLanguage() {
-      const t = i18n[globalLang];
-      document.getElementById('txt-home-title').innerText = t.homeTitle;
-      document.getElementById('txt-pts-label').innerText = t.ptsLabel;
-      document.getElementById('txt-welcome').innerHTML = `${t.welcome} <span id="userName">${globalUserName}</span>`;
-      document.getElementById('txt-scan-btn').innerText = t.scanBtn;
-      document.getElementById('txt-go-reward-btn').innerText = t.goRewardBtn;
-      
-      document.getElementById('txt-reward-title').innerText = t.rewardTitle;
-      document.getElementById('txt-history-title').innerText = t.historyTitle;
-      document.getElementById('txt-menu-title').innerText = t.menuTitle;
-      document.getElementById('txt-promo-title').innerText = t.promoTitle;
-      
-      document.querySelectorAll('.text-close-btn').forEach(el => el.innerText = t.closeBtn);
-      
-      let rewardHtml = "";
-      t.rewards.forEach(rw => {
-        const isEnough = globalTotalPoints >= rw.cost;
-        const btnClass = isEnough ? "btn-matcha" : "btn-matcha disabled";
-        const btnAttr = isEnough ? `onclick="redeemPoints(${rw.cost}, '${rw.logName}', '${rw.name}')"` : "disabled";
-        const btnText = isEnough ? t.btnRedeem : t.btnNoPts;
+      try {
+        const t = i18n[globalLang];
+        document.getElementById('txt-home-title').innerText = t.homeTitle;
+        document.getElementById('txt-pts-label').innerText = t.ptsLabel;
+        document.getElementById('txt-welcome').innerHTML = `${t.welcome} <span id="userName">${globalUserName}</span>`;
+        document.getElementById('txt-scan-btn').innerText = t.scanBtn;
+        document.getElementById('txt-go-reward-btn').innerText = t.goRewardBtn;
         
-        rewardHtml += `
-          <div class="card-box">
-            <div class="card-icon">${rw.icon}</div>
-            <div style="font-weight: 600; font-size: 15px;">${rw.name}</div>
-            <div style="font-size: 12px; color: var(--text-light); margin-top: 5px;">${rw.req}</div>
-            <button class="${btnClass}" ${btnAttr}>${btnText}</button>
-          </div>
-        `;
-      });
-      document.getElementById('rewardGridContainer').innerHTML = rewardHtml;
+        document.getElementById('txt-reward-title').innerText = t.rewardTitle;
+        document.getElementById('txt-history-title').innerText = t.historyTitle;
+        document.getElementById('txt-menu-title').innerText = t.menuTitle;
+        document.getElementById('txt-promo-title').innerText = t.promoTitle;
+
+        // แปลภาษาข้อมูลจำลอง
+        document.getElementById('txt-m1').innerText = t.m1;
+        document.getElementById('txt-m2').innerText = t.m2;
+        document.getElementById('txt-p1-title').innerText = t.p1t;
+        document.getElementById('txt-p1-desc').innerText = t.p1d;
+        document.getElementById('txt-p2-title').innerText = t.p2t;
+        document.getElementById('txt-p2-desc').innerText = t.p2d;
+        
+        document.querySelectorAll('.text-close-btn').forEach(el => el.innerText = t.closeBtn);
+        
+        let rewardHtml = "";
+        t.rewards.forEach(rw => {
+          const isEnough = globalTotalPoints >= rw.cost;
+          const btnClass = isEnough ? "btn-matcha" : "btn-matcha disabled";
+          const btnAttr = isEnough ? `onclick="redeemPoints(${rw.cost}, '${rw.logName}', '${rw.name}')"` : "disabled";
+          const btnText = isEnough ? t.btnRedeem : t.btnNoPts;
+          
+          rewardHtml += `
+            <div class="card-box">
+              <div class="card-icon">${rw.icon}</div>
+              <div style="font-weight: 600; font-size: 15px;">${rw.name}</div>
+              <div style="font-size: 12px; color: var(--text-light); margin-top: 5px;">${rw.req}</div>
+              <button class="${btnClass}" ${btnAttr}>${btnText}</button>
+            </div>
+          `;
+        });
+        document.getElementById('rewardGridContainer').innerHTML = rewardHtml;
+      } catch (err) {
+        console.error("Language render error:", err);
+      }
     }
 
     function renderHistory(historyArr) {
-      const container = document.getElementById('historyContainer');
-      const t = i18n[globalLang];
-      if (!historyArr || historyArr.length === 0) {
-        container.innerHTML = `<div style="padding: 30px; text-align: center; color: var(--text-light);">${t.noHistory}</div>`; return;
+      try {
+        const container = document.getElementById('historyContainer');
+        const t = i18n[globalLang];
+        if (!historyArr || historyArr.length === 0) {
+          container.innerHTML = `<div style="padding: 30px; text-align: center; color: var(--text-light);">${t.noHistory}</div>`; return;
+        }
+
+        let html = "";
+        historyArr.forEach(item => {
+          const d = new Date(item.timestamp);
+          const dateStr = d.toLocaleDateString('th-TH', { day: '2-digit', month: '2-digit', year: '2-digit' }) + ' ' + d.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+          
+          let icon = "☕"; let title = t.txtEarn; let ptsText = `+${item.points}`; let ptsColor = "#A3B18A";
+          if (item.type === "redeem") { icon = "🎁"; title = t.txtRedeem; ptsText = `-${item.points}`; ptsColor = "#C57B57"; }
+          else if (item.type === "edit") { icon = "⚙️"; title = t.txtEdit; ptsText = item.points > 0 ? `+${item.points}` : item.points; }
+
+          html += `
+            <div class="list-item">
+              <div><div style="font-weight:600; font-size:14px; color:var(--text-main);">${icon} ${title}</div><div style="font-size:11px; color:var(--text-light); margin-top:3px;">${dateStr}</div></div>
+              <div style="color: ${ptsColor}; font-weight: 700; font-size: 18px;">${ptsText}</div>
+            </div>
+          `;
+        });
+        container.innerHTML = html;
+      } catch (err) {
+        console.error("History render error:", err);
       }
-
-      let html = "";
-      historyArr.forEach(item => {
-        const d = new Date(item.timestamp);
-        const dateStr = d.toLocaleDateString('th-TH', { day: '2-digit', month: '2-digit', year: '2-digit' }) + ' ' + d.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
-        
-        let icon = "☕"; let title = t.txtEarn; let ptsText = `+${item.points}`; let ptsColor = "#A3B18A";
-        if (item.type === "redeem") { icon = "🎁"; title = t.txtRedeem; ptsText = `-${item.points}`; ptsColor = "#C57B57"; }
-        else if (item.type === "edit") { icon = "⚙️"; title = t.txtEdit; ptsText = item.points > 0 ? `+${item.points}` : item.points; }
-
-        html += `
-          <div class="list-item">
-            <div><div style="font-weight:600; font-size:14px; color:var(--text-main);">${icon} ${title}</div><div style="font-size:11px; color:var(--text-light); margin-top:3px;">${dateStr}</div></div>
-            <div style="color: ${ptsColor}; font-weight: 700; font-size: 18px;">${ptsText}</div>
-          </div>
-        `;
-      });
-      container.innerHTML = html;
     }
 
     async function redeemPoints(pointsNeeded, logName, displayRewardName) {
@@ -293,8 +318,8 @@
             text: globalLang === "EN" ? `Ref: ${data.refCode}\nPlease show this to staff.` : `รหัสอ้างอิง: ${data.refCode}\nโปรดแสดงหน้าจอนี้ให้พนักงาน`,
             confirmButtonColor: '#A3B18A'
           }).then(() => {
-            // 🚀 แลกสำเร็จ ให้อยู่หน้าเดิม (Rewards) แต่แต้มอัปเดตใหม่
-            // (หรือถ้าอยากให้เด้งกลับหน้าแต้ม ให้ใส่ switchTab('home') ตรงนี้ครับ)
+            // 🚀 แลกสำเร็จ ให้เด้งกลับไปที่แท็บหน้าหลัก (Home / เช็กแต้ม) ทันที
+            switchTab('home'); 
           });
           await fetchMemberData(); 
         } else { Swal.fire({ icon: 'error', title: 'Failed', text: data.message, confirmButtonColor: '#C57B57' }); }
@@ -311,6 +336,14 @@
     function openQRScanner() {
       if (liff.isApiAvailable('scanCodeV2')) { liff.scanCodeV2().then(result => {}); } 
       else { window.location.href = "https://line.me/R/nv/QRCodeReader"; }
+    }
+
+    function closeApp() {
+      if (liff.isInClient()) {
+        liff.closeWindow();
+      } else {
+        window.location.href = "https://line.me/R/ti/p/@848dmzja";
+      }
     }
 
     window.onload = initApp;
