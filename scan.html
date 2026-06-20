@@ -1,152 +1,86 @@
-<!-- =======================================================
-KUB Cafe - QR Scanner Module (V.7.14 URL Scheme Fix Edition)
-Includes: Audio Playback, Confetti, Compact UI,
-and Corrected oaMessage Scheme (/?เช็กแต้ม)
-======================================================== -->
 <!DOCTYPE html>
 <html lang="th">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>ระบบประมวลผลแต้ม KUB Cafe</title>
-  
+  <title>KUB Cafe - Scan</title>
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-  
   <style>
-    body { background-color: #FDFCF0; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; margin: 0; padding: 0 20px; text-align: center; }
-    #loading-ui { display: flex; flex-direction: column; align-items: center; }
-    .loader { border: 4px solid #E8E2D9; border-top: 4px solid #A3B18A; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-bottom: 15px; }
-    h2 { color: #4A3F35; font-size: 16px; margin: 0 0 8px 0; }
-    .sub-text { font-size: 12px; color: #B0A69D; }
+    body { font-family: 'Prompt', 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #FDFCF0; margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; flex-direction: column; }
+    .loader { border: 4px solid #E8E2D9; border-left-color: #A3B18A; border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; margin-bottom: 20px; }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-    
-    .custom-swal-popup { width: 75% !important; max-width: 260px !important; padding: 1.5em 1.2em 1.2em !important; border-radius: 20px !important; background-color: #FFFFFF !important; box-shadow: 0 10px 25px rgba(140, 122, 107, 0.15) !important; overflow: hidden; }
-    .custom-swal-title { font-size: 18px !important; font-weight: 800 !important; color: #4A3F35 !important; margin-bottom: 5px !important; }
-    .custom-swal-html { font-size: 14px !important; color: #6B705C !important; line-height: 1.4 !important; }
-    
-    .matcha-btn { font-size: 14px !important; padding: 10px 24px !important; min-width: 120px !important; border-radius: 12px !important; font-weight: 600 !important; background-color: #A3B18A !important; color: #ffffff !important; border: none !important; box-shadow: 0 4px 10px rgba(163, 177, 138, 0.3) !important; cursor: pointer; transition: transform 0.1s; margin-top: 5px !important;}
-    .matcha-btn:active { transform: scale(0.95); }
-    .warning-btn { background-color: #C57B57 !important; box-shadow: 0 4px 10px rgba(197, 123, 87, 0.3) !important; }
+    .text { color: #A3B18A; font-weight: bold; font-size: 16px; }
+    .swal2-popup { border-radius: 20px !important; font-family: 'Prompt', sans-serif !important; }
   </style>
 </head>
 <body>
-  <div id="loading-ui">
-    <div class="loader"></div>
-    <h2 id="status-text">กำลังประมวลผลแต้ม...</h2>
-    <div class="sub-text">กรุณารอสักครู่ ห้ามปิดหน้าจอ</div>
-  </div>
+
+  <div class="loader" id="spinner"></div>
+  <div class="text" id="statusText">กำลังประมวลผลรับแต้ม...</div>
+  <audio id="dingSound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
 
   <script>
-    const LIFF_ID = "2010206186-u1XRJldq"; 
-    const API_URL = "https://kub-backend.nan23082526.workers.dev/"; 
-    const lineOA_ID = "@848dmzja"; 
+    const API_URL = "https://kub-backend.nan23082526.workers.dev";
     
-    const SUCCESS_SOUND_URL = "https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3";
-    let isProcessing = false; 
+    // ⚠️ LIFF ID ของการสแกน (ใช้ตัวเดิมของคุณบี)
+    const SCAN_LIFF_ID = "2010206186-u1XRJldq"; 
 
-    // 🚀 อัปเดตฟังก์ชัน: แก้ไข Syntax ของ oaMessage โดยลบ text= ออก
-    function redirectToChatRoom() {
-      const autoText = encodeURIComponent("เช็กแต้ม");
-      // โครงสร้างที่ถูกต้องของ LINE คือ /?ตามด้วยข้อความที่เข้ารหัสเลย
-      window.location.href = "https://line.me/R/oaMessage/" + lineOA_ID + "/?" + autoText;
+    // 🚀 ฟังก์ชันเด้งไปหน้าแอป Member (พร้อมระบุหน้าแรก)
+    function redirectToMemberApp() {
+      // ⚠️ เปลี่ยนไปที่หน้า member.html ที่อยู่ใน GitHub ของคุณบี
+      window.location.replace("https://beenancy.github.io/kubcafe/member.html?tab=home");
     }
 
-    async function showAlert(title, text, icon, btnText, isWarning = false) {
-      document.getElementById('loading-ui').style.display = 'none';
-      await Swal.fire({
-        title: title, html: text, icon: icon,
-        customClass: { popup: 'custom-swal-popup', title: 'custom-swal-title', htmlContainer: 'custom-swal-html', confirmButton: isWarning ? 'matcha-btn warning-btn' : 'matcha-btn' },
-        allowOutsideClick: false, confirmButtonText: btnText, buttonsStyling: false 
-      });
-    }
-
-    async function showCooldownCountdown(remainSec, lang) {
-      document.getElementById('loading-ui').style.display = 'none';
-      let currentRemain = remainSec;
-      let countdownInterval;
-      const isEN = lang === "EN";
-      
-      await Swal.fire({
-        title: isEN ? 'Wait a moment ⏱️' : 'ใจเย็นๆ น้า ⏱️',
-        html: isEN ? `Next scan available in<br><span style="font-size:30px; font-weight:900; color:#A3B18A;" id="cd-timer">${currentRemain}</span> sec` : `สแกนรอบถัดไปได้ในอีก<br><span style="font-size:30px; font-weight:900; color:#A3B18A;" id="cd-timer">${currentRemain}</span> วิ`,
-        icon: 'warning',
-        customClass: { popup: 'custom-swal-popup', title: 'custom-swal-title', htmlContainer: 'custom-swal-html', confirmButton: 'matcha-btn warning-btn' },
-        allowOutsideClick: false, showConfirmButton: true, confirmButtonText: isEN ? 'OK' : 'ตกลง', buttonsStyling: false,
-        didOpen: () => {
-          const timerSpan = document.getElementById('cd-timer');
-          countdownInterval = setInterval(() => {
-            currentRemain--;
-            if (timerSpan) timerSpan.innerText = currentRemain;
-            if (currentRemain <= 0) { clearInterval(countdownInterval); if (timerSpan) timerSpan.innerText = "0"; }
-          }, 1000);
-        },
-        willClose: () => { clearInterval(countdownInterval); }
-      });
-      redirectToChatRoom();
-    }
-
-    function shootConfetti() {
-      const duration = 2000;
-      const end = Date.now() + duration;
-      (function frame() {
-        confetti({ particleCount: 3, angle: 60, spread: 40, origin: { x: 0 }, colors: ['#A3B18A', '#ff4d4d', '#FDFCF0'] });
-        confetti({ particleCount: 3, angle: 120, spread: 40, origin: { x: 1 }, colors: ['#A3B18A', '#ff4d4d', '#FDFCF0'] });
-        if (Date.now() < end) { requestAnimationFrame(frame); }
-      }());
-    }
-
-    async function processPoints() {
-      if (isProcessing) return;
-      isProcessing = true;
+    async function initScan() {
       try {
-        if (!navigator.onLine) { await showAlert('ไม่มีเน็ต', 'กรุณาเช็กอินเทอร์เน็ตค่ะ', 'error', 'ตกลง'); redirectToChatRoom(); return; }
-        await liff.init({ liffId: LIFF_ID });
-        if (!liff.isLoggedIn()) { liff.login({ redirectUri: window.location.href }); return; }
-        
+        await liff.init({ liffId: SCAN_LIFF_ID });
+        if (!liff.isLoggedIn()) { liff.login(); return; }
+
         const urlParams = new URLSearchParams(window.location.search);
         const shopCode = urlParams.get('code');
-        if (!shopCode) { await showAlert('ไม่พบข้อมูล', '❌ สแกนผิดวิธีค่ะ', 'error', 'ตกลง'); redirectToChatRoom(); return; }
         
-        const profile = await liff.getProfile();
-        const cleanedName = encodeURIComponent((profile.displayName || '').replace(/[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF]/g, ''));
-        const response = await fetch(`${API_URL}?action=scanAddPoint&userId=${profile.userId}&name=${cleanedName}&shopCode=${encodeURIComponent(shopCode)}`);
-        const data = await response.json();
-        
-        const isEN = data.lang === "EN";
-        
-        if (data.status === "success") {
-          try {
-            const audio = new Audio(SUCCESS_SOUND_URL);
-            audio.play();
-          } catch(e) { console.log("Audio blocked"); }
-
-          shootConfetti();
-
-          const ptsText = `<div style="font-size:26px; font-weight:900; color:#A3B18A; margin:8px 0; line-height: 1;">+${data.ptsAdded} ${isEN ? 'PTS' : 'แต้ม'} ☕</div>`;
-          const totalText = `<div style="font-size:14px; color:#4A3F35; font-weight:bold; margin-bottom:12px;">${isEN ? 'Total:' : 'สะสมรวม:'} <span style="color:#E65100; font-size:20px; font-weight:900;">${data.totalPts}</span> ${isEN ? 'PTS' : 'แต้ม'}</div>`;
-          
-          const remarkLabel = isEN 
-            ? '🚨 Press SEND to check points!' 
-            : '🚨 เข้าแชทแล้ว "กดส่งข้อความ"<br>เพื่อรับสลิปแจ้งเตือนนะคะ';
-          const remark = `<div style="font-size:13px; font-weight:800; color:#D32F2F; border-top: 1px dashed #E8E2D9; padding-top: 12px; margin-top: 5px;">${remarkLabel}</div>`;
-          
-          await showAlert(isEN ? 'SUCCESS! 🎉' : 'รับแต้มสำเร็จ 🎉', ptsText + totalText + remark, 'success', isEN ? 'OK' : 'เยี่ยมเลย');
-          redirectToChatRoom(); 
-        } else if (data.status === "cooldown") {
-          await showCooldownCountdown(data.remain || 30, data.lang);
-        } else {
-          await showAlert(isEN ? 'Failed' : 'ไม่สำเร็จ', `${data.message}`, 'error', isEN ? 'OK' : 'ตกลง');
-          redirectToChatRoom(); 
+        if (!shopCode) {
+          Swal.fire({ icon: 'error', title: 'ผิดพลาด', text: 'ไม่พบรหัส QR', confirmButtonColor: '#C57B57' }).then(redirectToMemberApp);
+          return;
         }
-      } catch (err) { 
-        await showAlert('ระบบขัดข้อง', 'กรุณาสแกนใหม่ค่ะ', 'error', 'ตกลง');
-        redirectToChatRoom(); 
+
+        const profile = await liff.getProfile();
+        
+        const res = await fetch(`${API_URL}?action=scanAddPoint&userId=${profile.userId}&name=${encodeURIComponent(profile.displayName)}&shopCode=${encodeURIComponent(shopCode)}`);
+        const result = await res.json();
+
+        document.getElementById('spinner').style.display = 'none';
+
+        if (result.status === "success") {
+          // เล่นเสียง ติ๊ง
+          document.getElementById('dingSound').play().catch(()=>{});
+          document.getElementById('statusText').innerText = "รับแต้มสำเร็จ!";
+          
+          // เด้ง Alert มินิมอล โชว์ 1.5 วินาทีแล้วเด้งไปหน้า member.html อัตโนมัติ
+          Swal.fire({
+            icon: 'success',
+            title: result.lang === "EN" ? 'Success!' : 'สำเร็จ!',
+            text: result.lang === "EN" ? `+${result.ptsAdded} Points` : `ได้รับ ${result.ptsAdded} แต้ม`,
+            showConfirmButton: false,
+            timer: 1500,
+            timerProgressBar: true
+          }).then(() => {
+            redirectToMemberApp();
+          });
+
+        } else if (result.status === "cooldown") {
+          Swal.fire({ icon: 'warning', title: 'รอสักครู่', text: `กรุณารออีก ${result.remain} วินาที ก่อนสแกนใหม่`, confirmButtonColor: '#A3B18A' }).then(redirectToMemberApp);
+        } else {
+          Swal.fire({ icon: 'error', title: 'ผิดพลาด', text: result.message, confirmButtonColor: '#C57B57' }).then(redirectToMemberApp);
+        }
+      } catch (err) {
+        document.getElementById('spinner').style.display = 'none';
+        Swal.fire({ icon: 'error', title: 'เชื่อมต่อล้มเหลว', text: 'กรุณาลองใหม่อีกครั้ง', confirmButtonColor: '#C57B57' }).then(redirectToMemberApp);
       }
     }
-    
-    document.addEventListener("DOMContentLoaded", processPoints);
+
+    window.onload = initScan;
   </script>
 </body>
 </html>
