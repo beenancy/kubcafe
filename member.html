@@ -3,94 +3,117 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>KUB Cafe - Member App</title>
+  <title>KUB Cafe</title>
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  
   <style>
-    :root { --bg-cream: #FDFCF0; --matcha: #A3B18A; --matcha-dark: #7A8B62; --text-main: #4A3F35; --text-light: #B0A69D; --border: #E8E2D9; }
-    body, html { margin: 0; padding: 0; width: 100%; height: 100vh; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: var(--bg-cream); overflow: hidden; display: flex; flex-direction: column; }
+    @import url('https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;600;700&display=swap');
     
-    #loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-cream); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; color: var(--matcha-dark); transition: opacity 0.5s; }
-    .spinner { border: 4px solid rgba(163, 177, 138, 0.3); border-left-color: var(--matcha-dark); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-bottom: 15px; }
+    :root { --bg-cream: #FDFCF0; --matcha: #A3B18A; --matcha-dark: #7A8B62; --text-main: #4A3F35; --text-light: #B0A69D; --border: #E8E2D9; }
+    body, html { margin: 0; padding: 0; width: 100%; height: 100vh; font-family: 'Prompt', sans-serif; background-color: var(--bg-cream); overflow: hidden; display: flex; flex-direction: column; color: var(--text-main); }
+    
+    /* Loading Screen มินิมอล */
+    #loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-cream); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; color: var(--matcha-dark); transition: opacity 0.4s; }
+    .spinner { border: 3px solid var(--border); border-left-color: var(--matcha-dark); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-bottom: 15px; }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-    .app-content { flex: 1; overflow-y: auto; padding-bottom: 80px; position: relative; }
-    .view-section { display: none; padding: 20px; animation: fadeIn 0.3s ease; }
+    .app-content { flex: 1; overflow-y: auto; padding: 20px 20px 90px 20px; }
+    .view-section { display: none; animation: fadeIn 0.4s ease; }
     .view-section.active { display: block; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
 
-    .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: white; border-top: 1px solid var(--border); display: flex; justify-content: space-around; padding: 10px 0 calc(10px + env(safe-area-inset-bottom)) 0; box-shadow: 0 -5px 15px rgba(0,0,0,0.05); z-index: 1000; }
-    .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; color: var(--text-light); text-decoration: none; font-size: 11px; font-weight: bold; cursor: pointer; transition: 0.2s; }
-    .nav-item.active { color: var(--matcha-dark); }
-    .nav-icon { font-size: 24px; margin-bottom: 2px; }
+    /* Navigation Bar */
+    .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); border-top: 1px solid var(--border); display: flex; justify-content: space-around; padding: 12px 0 calc(12px + env(safe-area-inset-bottom)) 0; z-index: 1000; box-shadow: 0 -5px 20px rgba(163, 177, 138, 0.1); }
+    .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; color: var(--text-light); font-size: 11px; cursor: pointer; transition: 0.3s; }
+    .nav-item.active { color: var(--matcha-dark); transform: translateY(-3px); }
+    .nav-icon { font-size: 22px; margin-bottom: 4px; }
 
-    .member-card { background: linear-gradient(135deg, #A3B18A, #7A8B62); border-radius: 20px; padding: 25px; color: white; box-shadow: 0 10px 25px rgba(122, 139, 98, 0.3); text-align: center; margin-bottom: 20px; position: relative; overflow: hidden; }
-    .profile-pic { width: 60px; height: 60px; border-radius: 50%; border: 3px solid white; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-bottom: 10px; }
-    .points-number { font-size: 48px; font-weight: 900; margin: 0; line-height: 1; }
+    /* UI Elements */
+    .header-title { font-size: 22px; font-weight: 700; margin: 0 0 20px 0; color: var(--matcha-dark); text-align: center; }
     
-    .reward-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-    .reward-box { background: white; border-radius: 16px; padding: 15px; text-align: center; border: 1px solid var(--border); box-shadow: 0 5px 15px rgba(0,0,0,0.03); }
-    .reward-icon { font-size: 40px; margin-bottom: 10px; }
-    .btn-redeem { background: var(--matcha); color: white; border: none; padding: 8px 20px; border-radius: 12px; font-weight: bold; margin-top: 10px; width: 100%; cursor: pointer; transition: 0.2s; }
-    .btn-redeem:active { transform: scale(0.95); }
-    .btn-redeem:disabled { background: #ccc; cursor: not-allowed; transform: none; }
+    .member-card { background: linear-gradient(135deg, #A3B18A, #8b9d70); border-radius: 24px; padding: 30px 20px; color: white; text-align: center; box-shadow: 0 15px 30px rgba(163, 177, 138, 0.3); margin-bottom: 25px; position: relative; overflow: hidden; }
+    .profile-pic { width: 70px; height: 70px; border-radius: 50%; border: 3px solid white; object-fit: cover; margin-bottom: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+    .points-number { font-size: 56px; font-weight: 700; line-height: 1; margin: 5px 0; }
+    
+    .action-box { background: white; padding: 20px; border-radius: 20px; text-align: center; border: 1px solid var(--border); box-shadow: 0 8px 20px rgba(0,0,0,0.02); cursor: pointer; transition: 0.2s; }
+    .action-box:active { transform: scale(0.97); }
 
-    .history-box { background: white; border-radius: 16px; border: 1px solid var(--border); overflow: hidden; }
-    .history-item { padding: 15px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+    .reward-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+    .reward-box { background: white; border-radius: 20px; padding: 20px 15px; text-align: center; border: 1px solid var(--border); box-shadow: 0 8px 20px rgba(0,0,0,0.02); }
+    .reward-icon { font-size: 45px; margin-bottom: 10px; }
+    .btn-redeem { background: var(--matcha); color: white; border: none; padding: 10px; border-radius: 14px; font-weight: 600; font-family: 'Prompt'; margin-top: 15px; width: 100%; cursor: pointer; transition: 0.2s; font-size: 14px; }
+    .btn-redeem:active { transform: scale(0.95); }
+    .btn-redeem:disabled { background: #E8E2D9; color: var(--text-light); cursor: not-allowed; transform: none; }
+
+    .history-container { background: white; border-radius: 20px; border: 1px solid var(--border); overflow: hidden; box-shadow: 0 8px 20px rgba(0,0,0,0.02); }
+    .history-item { padding: 18px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
     .history-item:last-child { border-bottom: none; }
+
+    .coming-soon-box { background: white; border-radius: 24px; padding: 40px 20px; text-align: center; border: 1px dashed var(--matcha); color: var(--matcha-dark); margin-top: 20px; }
+
+    /* Custom SweetAlert Style */
+    .swal2-popup { border-radius: 24px !important; font-family: 'Prompt', sans-serif !important; }
+    .swal2-confirm { border-radius: 12px !important; }
+    .swal2-cancel { border-radius: 12px !important; }
   </style>
 </head>
 <body>
 
   <div id="loading-overlay">
     <div class="spinner"></div>
-    <div style="font-weight: bold;">กำลังดึงข้อมูลสมาชิก...</div>
+    <div id="loading-text" style="font-size: 14px;">กำลังเข้าสู่ระบบ...</div>
   </div>
 
   <div class="app-content">
     
     <div id="view-home" class="view-section active">
-      <h2 style="color: var(--text-main); margin-top:0;">บัตรสมาชิกของฉัน</h2>
+      <h2 class="header-title" id="txt-home-title">หน้าหลัก</h2>
       <div class="member-card">
-        <img id="userProfilePic" class="profile-pic" src="https://via.placeholder.com/60" alt="Profile">
-        <div class="points-number"><span id="userPoints">0</span><span style="font-size: 20px;"> แต้ม</span></div>
-        <div style="font-size: 14px; margin-top: 5px; opacity: 0.9;">คุณ <span id="userName">...</span></div>
+        <img id="userProfilePic" class="profile-pic" src="https://via.placeholder.com/70" alt="Profile">
+        <div class="points-number"><span id="userPoints">0</span></div>
+        <div style="font-size: 16px; margin-bottom: 5px;" id="txt-pts-label">คะแนนสะสม</div>
+        <div style="font-size: 13px; opacity: 0.8;" id="txt-welcome">ยินดีต้อนรับคุณ <span id="userName">...</span></div>
       </div>
-      <div style="background: white; padding: 20px; border-radius: 16px; text-align: center; border: 1px solid var(--border);" onclick="openQRScanner()">
-        <p style="color: var(--text-main); font-weight: bold; margin-top:0;">📷 แตะที่นี่เพื่อสแกนรับแต้ม</p>
-        <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://line.me/R/nv/QRCodeReader" style="width: 120px; border-radius: 10px; opacity: 0.8;">
+      <div class="action-box" onclick="openQRScanner()">
+        <p style="font-weight: 600; margin: 0 0 10px 0; color: var(--matcha-dark);" id="txt-scan-btn">📷 สแกนรับแต้ม</p>
+        <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://line.me/R/nv/QRCodeReader" style="width: 100px; opacity: 0.5;">
       </div>
     </div>
 
     <div id="view-rewards" class="view-section">
-      <h2 style="color: var(--text-main); margin-top:0;">แลกของรางวัล</h2>
+      <h2 class="header-title" id="txt-reward-title">ของรางวัล</h2>
       <div class="reward-grid">
         <div class="reward-box">
           <div class="reward-icon">☕</div>
-          <div style="font-weight: bold; color: var(--text-main);">ส่วนลด 50%</div>
-          <div style="font-size: 12px; color: var(--text-light);">ใช้ 10 แต้ม</div>
+          <div style="font-weight: 600; font-size: 15px;">ส่วนลด 50%</div>
+          <div style="font-size: 12px; color: var(--text-light); margin-top: 5px;" id="txt-req-10">ใช้ 10 แต้ม</div>
           <button class="btn-redeem" onclick="redeemPoints(10, 'ส่วนลด 50% 1 แก้ว')">แลกเลย</button>
-        </div>
-        <div class="reward-box">
-          <div class="reward-icon">🍰</div>
-          <div style="font-weight: bold; color: var(--text-main);">ฟรี เค้ก 1 ชิ้น</div>
-          <div style="font-size: 12px; color: var(--text-light);">ใช้ 20 แต้ม</div>
-          <button class="btn-redeem" onclick="redeemPoints(20, 'ฟรีเค้ก 1 ชิ้น')">แลกเลย</button>
         </div>
       </div>
     </div>
 
     <div id="view-history" class="view-section">
-      <h2 style="color: var(--text-main); margin-top:0;">ประวัติย้อนหลัง</h2>
-      <div class="history-box" id="historyContainer">
-        <div style="padding: 20px; text-align: center; color: var(--text-light);">ไม่มีประวัติการใช้งาน</div>
+      <h2 class="header-title" id="txt-history-title">ประวัติการใช้งาน</h2>
+      <div class="history-container" id="historyContainer">
+        </div>
+    </div>
+
+    <div id="view-menu" class="view-section">
+      <h2 class="header-title" id="txt-menu-title">เมนูเครื่องดื่ม</h2>
+      <div class="coming-soon-box">
+        <div style="font-size: 50px; margin-bottom: 10px;">🥤</div>
+        <h3 style="margin:0;">Coming Soon</h3>
+        <p style="font-size: 13px; color: var(--text-light);">เตรียมพบกับเมนูใหม่เร็วๆ นี้</p>
       </div>
     </div>
 
-    <div id="view-more" class="view-section">
-      <h2 style="color: var(--text-main); margin-top:0;">เมนูร้านค้า</h2>
-      <div style="background: white; border-radius: 16px; border: 1px solid var(--border); padding: 15px; display:flex; gap:10px; flex-direction:column;">
-        <button style="padding:15px; border-radius:10px; border:1px solid #eee; background:#fafafa; text-align:left; font-size:16px; cursor:pointer;">🥤 เมนูเครื่องดื่ม</button>
-        <button style="padding:15px; border-radius:10px; border:1px solid #eee; background:#fafafa; text-align:left; font-size:16px; cursor:pointer;" onclick="window.location.href='https://maps.app.goo.gl/jHLN2KvxMJEDJ8gm8'">📍 แผนที่ร้าน</button>
+    <div id="view-promo" class="view-section">
+      <h2 class="header-title" id="txt-promo-title">โปรโมชั่นพิเศษ</h2>
+      <div class="coming-soon-box">
+        <div style="font-size: 50px; margin-bottom: 10px;">📢</div>
+        <h3 style="margin:0;">Coming Soon</h3>
+        <p style="font-size: 13px; color: var(--text-light);">โปรโมชั่นเด็ดๆ กำลังมา</p>
       </div>
     </div>
 
@@ -98,42 +121,63 @@
 
   <nav class="bottom-nav">
     <div id="nav-home" class="nav-item active" onclick="switchTab('home')">
-      <span class="nav-icon">💳</span><span>หน้าหลัก</span>
+      <span class="nav-icon">💳</span><span id="nav-txt-home">หน้าหลัก</span>
     </div>
     <div id="nav-rewards" class="nav-item" onclick="switchTab('rewards')">
-      <span class="nav-icon">🎁</span><span>แลกรางวัล</span>
+      <span class="nav-icon">🎁</span><span id="nav-txt-reward">แลกรางวัล</span>
     </div>
     <div id="nav-history" class="nav-item" onclick="switchTab('history')">
-      <span class="nav-icon">📜</span><span>ประวัติ</span>
+      <span class="nav-icon">📜</span><span id="nav-txt-history">ประวัติ</span>
     </div>
-    <div id="nav-more" class="nav-item" onclick="switchTab('more')">
-      <span class="nav-icon">🥤</span><span>เมนู</span>
+    <div id="nav-menu" class="nav-item" onclick="switchTab('menu')">
+      <span class="nav-icon">🥤</span><span id="nav-txt-menu">เมนู</span>
+    </div>
+    <div id="nav-promo" class="nav-item" onclick="switchTab('promo')">
+      <span class="nav-icon">📢</span><span id="nav-txt-promo">โปรโมชั่น</span>
     </div>
   </nav>
 
   <script>
     const API_URL = "https://kub-backend.nan23082526.workers.dev";
-    
-    // 🚀 [อัปเดต]: ฝังรหัส LIFF ID ตัวใหม่ให้เรียบร้อยแล้วครับคุณบี
     const LIFF_ID = "2010206186-p1vWfgui"; 
 
     let globalUserId = "";
     let globalUserName = "";
     let globalTotalPoints = 0;
+    let globalLang = "TH";
+
+    // 🌐 พจนานุกรมแปลภาษา
+    const i18n = {
+      TH: {
+        loading: "กำลังเข้าสู่ระบบ...",
+        homeTitle: "หน้าหลัก", ptsLabel: "คะแนนสะสม", welcome: "ยินดีต้อนรับคุณ ", scanBtn: "📷 สแกนรับแต้ม",
+        rewardTitle: "ของรางวัล", req10: "ใช้ 10 แต้ม", btnRedeem: "แลกเลย", btnNoPts: "แต้มไม่พอ",
+        historyTitle: "ประวัติการใช้งาน", noHistory: "ไม่มีประวัติการใช้งาน",
+        menuTitle: "เมนูเครื่องดื่ม", promoTitle: "โปรโมชั่นพิเศษ", comingSoon: "เตรียมพบกันเร็วๆ นี้",
+        navHome: "หน้าหลัก", navReward: "แลกรางวัล", navHist: "ประวัติ", navMenu: "เมนู", navPromo: "โปรโมชั่น",
+        txtEarn: "ได้รับแต้ม", txtRedeem: "แลกรางวัล", txtEdit: "ปรับปรุงแต้ม"
+      },
+      EN: {
+        loading: "Loading...",
+        homeTitle: "Home", ptsLabel: "Total Points", welcome: "Welcome, ", scanBtn: "📷 Scan QR",
+        rewardTitle: "Rewards", req10: "10 Pts req.", btnRedeem: "Redeem", btnNoPts: "Not enough",
+        historyTitle: "Transaction History", noHistory: "No transactions yet",
+        menuTitle: "Beverage Menu", promoTitle: "Special Promo", comingSoon: "Coming very soon",
+        navHome: "Home", navReward: "Rewards", navHist: "History", navMenu: "Menu", navPromo: "Promo",
+        txtEarn: "Points Earned", txtRedeem: "Redeemed", txtEdit: "Points Edited"
+      }
+    };
 
     async function initApp() {
       try {
         await liff.init({ liffId: LIFF_ID });
-        if (!liff.isLoggedIn()) {
-          liff.login();
-          return;
-        }
+        if (!liff.isLoggedIn()) { liff.login(); return; }
 
         const profile = await liff.getProfile();
         globalUserId = profile.userId;
         globalUserName = profile.displayName;
         
-        document.getElementById('userProfilePic').src = profile.pictureUrl || "https://via.placeholder.com/60";
+        document.getElementById('userProfilePic').src = profile.pictureUrl || "https://via.placeholder.com/70";
         document.getElementById('userName').innerText = profile.displayName;
 
         await fetchMemberData();
@@ -143,11 +187,9 @@
         if (targetTab) switchTab(targetTab);
 
         document.getElementById('loading-overlay').style.opacity = "0";
-        setTimeout(() => document.getElementById('loading-overlay').style.display = "none", 500);
-
+        setTimeout(() => document.getElementById('loading-overlay').style.display = "none", 400);
       } catch (err) {
-        alert("เกิดข้อผิดพลาดในการเชื่อมต่อ LINE");
-        console.error(err);
+        Swal.fire({ icon: 'error', title: 'Error', text: 'ไม่สามารถเชื่อมต่อ LINE ได้', confirmButtonColor: '#A3B18A' });
       }
     }
 
@@ -158,77 +200,108 @@
         
         if (result.status === "success") {
           globalTotalPoints = result.data.totalPoints;
+          globalLang = result.data.lang || "TH"; // รับค่าภาษาจากระบบ
           document.getElementById('userPoints').innerText = globalTotalPoints;
+          
+          applyLanguage(); // อัปเดตภาษาหน้าจอทันที
           
           document.querySelectorAll('.btn-redeem').forEach(btn => {
             const cost = parseInt(btn.getAttribute('onclick').match(/\d+/)[0]);
             if (globalTotalPoints < cost) {
-              btn.disabled = true;
-              btn.innerText = "แต้มไม่พอ";
+              btn.disabled = true; btn.innerText = i18n[globalLang].btnNoPts;
             } else {
-              btn.disabled = false;
-              btn.innerText = "แลกเลย";
+              btn.disabled = false; btn.innerText = i18n[globalLang].btnRedeem;
             }
           });
 
           renderHistory(result.data.history);
         }
-      } catch (err) { console.error("Fetch Data Error:", err); }
+      } catch (err) { console.log(err); }
+    }
+
+    function applyLanguage() {
+      const t = i18n[globalLang];
+      document.getElementById('txt-home-title').innerText = t.homeTitle;
+      document.getElementById('txt-pts-label').innerText = t.ptsLabel;
+      document.getElementById('txt-welcome').innerHTML = `${t.welcome} <span id="userName">${globalUserName}</span>`;
+      document.getElementById('txt-scan-btn').innerText = t.scanBtn;
+      document.getElementById('txt-reward-title').innerText = t.rewardTitle;
+      document.getElementById('txt-req-10').innerText = t.req10;
+      document.getElementById('txt-history-title').innerText = t.historyTitle;
+      document.getElementById('txt-menu-title').innerText = t.menuTitle;
+      document.getElementById('txt-promo-title').innerText = t.promoTitle;
+      
+      document.getElementById('nav-txt-home').innerText = t.navHome;
+      document.getElementById('nav-txt-reward').innerText = t.navReward;
+      document.getElementById('nav-txt-history').innerText = t.navHist;
+      document.getElementById('nav-txt-menu').innerText = t.navMenu;
+      document.getElementById('nav-txt-promo').innerText = t.navPromo;
     }
 
     function renderHistory(historyArr) {
       const container = document.getElementById('historyContainer');
-      if (!historyArr || historyArr.length === 0) return;
+      const t = i18n[globalLang];
+      if (!historyArr || historyArr.length === 0) {
+        container.innerHTML = `<div style="padding: 30px; text-align: center; color: var(--text-light);">${t.noHistory}</div>`;
+        return;
+      }
 
       let html = "";
       historyArr.forEach(item => {
         const d = new Date(item.timestamp);
         const dateStr = d.toLocaleDateString('th-TH', { day: '2-digit', month: '2-digit', year: '2-digit' }) + ' ' + d.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
         
-        let icon = "☕"; let title = "ได้รับแต้ม"; let ptsText = `+${item.points}`; let ptsColor = "#A3B18A";
-        if (item.type === "redeem") { icon = "🎁"; title = "แลกรางวัล"; ptsText = `-${item.points}`; ptsColor = "#C57B57"; }
-        else if (item.type === "edit") { icon = "⚙️"; title = "ปรับปรุงแต้ม"; ptsText = item.points > 0 ? `+${item.points}` : item.points; }
+        let icon = "☕"; let title = t.txtEarn; let ptsText = `+${item.points}`; let ptsColor = "#A3B18A";
+        if (item.type === "redeem") { icon = "🎁"; title = t.txtRedeem; ptsText = `-${item.points}`; ptsColor = "#C57B57"; }
+        else if (item.type === "edit") { icon = "⚙️"; title = t.txtEdit; ptsText = item.points > 0 ? `+${item.points}` : item.points; }
 
         html += `
           <div class="history-item">
-            <div><div style="font-weight:bold; color:var(--text-main);">${icon} ${title}</div><div style="font-size:12px; color:var(--text-light);">${dateStr}</div></div>
-            <div style="color: ${ptsColor}; font-weight: 900; font-size: 18px;">${ptsText}</div>
+            <div><div style="font-weight:600; font-size:14px; color:var(--text-main);">${icon} ${title}</div><div style="font-size:11px; color:var(--text-light); margin-top:3px;">${dateStr}</div></div>
+            <div style="color: ${ptsColor}; font-weight: 700; font-size: 18px;">${ptsText}</div>
           </div>
         `;
       });
       container.innerHTML = html;
     }
 
+    // 🚀 ระบบแลกรางวัล (ใช้ SweetAlert แทน confirm แบบเก่า)
     async function redeemPoints(pointsNeeded, rewardName) {
-      if (globalTotalPoints < pointsNeeded) return alert("แต้มไม่พอครับ");
-      if (!confirm(`ยืนยันใช้ ${pointsNeeded} แต้ม เพื่อแลก ${rewardName} ใช่ไหมครับ?`)) return;
+      if (globalTotalPoints < pointsNeeded) return;
+      
+      const txtConfirm = globalLang === "EN" ? `Confirm to use ${pointsNeeded} PTS for ${rewardName}?` : `ยืนยันใช้ ${pointsNeeded} แต้ม เพื่อแลก ${rewardName}?`;
+      const txtYes = globalLang === "EN" ? "Yes, Redeem" : "ยืนยันแลกเลย";
+      const txtNo = globalLang === "EN" ? "Cancel" : "ยกเลิก";
 
-      document.getElementById('loading-overlay').style.display = "flex";
-      document.getElementById('loading-overlay').style.opacity = "1";
+      const confirmResult = await Swal.fire({
+        title: globalLang === "EN" ? 'Confirm?' : 'ยืนยันการแลก?', text: txtConfirm, icon: 'question',
+        showCancelButton: true, confirmButtonColor: '#A3B18A', cancelButtonColor: '#E8E2D9',
+        confirmButtonText: txtYes, cancelButtonText: `<span style="color:#4A3F35">${txtNo}</span>`,
+        reverseButtons: true
+      });
+
+      if (!confirmResult.isConfirmed) return;
+
+      Swal.fire({ title: globalLang === "EN" ? 'Processing...' : 'กำลังดำเนินการ...', allowOutsideClick: false, didOpen: () => { Swal.showLoading() } });
 
       try {
         const res = await fetch(`${API_URL}/api/redeem-reward`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            userId: globalUserId,
-            customerName: globalUserName,
-            pointsUsed: pointsNeeded,
-            rewardName: rewardName
-          })
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId: globalUserId, customerName: globalUserName, pointsUsed: pointsNeeded, rewardName: rewardName })
         });
-
         const data = await res.json();
+        
         if (data.status === "success") {
-          alert(`🎉 แลกรางวัลสำเร็จ!\nโปรดแสดงหน้าจอนี้ให้พนักงาน\n(Ref: ${data.refCode})`);
+          Swal.fire({
+            icon: 'success', title: globalLang === "EN" ? 'Success!' : 'แลกรางวัลสำเร็จ!',
+            text: globalLang === "EN" ? `Ref: ${data.refCode}\nPlease show this to staff.` : `รหัสอ้างอิง: ${data.refCode}\nโปรดแสดงหน้าจอนี้ให้พนักงาน`,
+            confirmButtonColor: '#A3B18A'
+          });
           await fetchMemberData(); 
         } else {
-          alert("❌ แลกไม่สำเร็จ: " + data.message);
+          Swal.fire({ icon: 'error', title: 'Failed', text: data.message, confirmButtonColor: '#C57B57' });
         }
-      } catch (err) { alert("เชื่อมต่อล้มเหลว"); }
-      
-      document.getElementById('loading-overlay').style.opacity = "0";
-      setTimeout(() => document.getElementById('loading-overlay').style.display = "none", 500);
+      } catch (err) { Swal.fire({ icon: 'error', title: 'Network Error', confirmButtonColor: '#C57B57' }); }
     }
 
     function switchTab(tabId) {
@@ -240,10 +313,8 @@
 
     function openQRScanner() {
       if (liff.isApiAvailable('scanCodeV2')) {
-        liff.scanCodeV2().then(result => { if(result.value) alert("Scan สำเร็จ ระบบจะโหลดแต้มเข้าให้ครับ"); });
-      } else {
-        window.location.href = "https://line.me/R/nv/QRCodeReader";
-      }
+        liff.scanCodeV2().then(result => { if(result.value) { /* จะไปหน้า scan.html อัตโนมัติ */ } });
+      } else { window.location.href = "https://line.me/R/nv/QRCodeReader"; }
     }
 
     window.onload = initApp;
