@@ -35,7 +35,7 @@
     .action-box { background: white; padding: 20px; border-radius: 20px; text-align: center; border: 1px solid var(--border); box-shadow: 0 8px 20px rgba(0,0,0,0.02); cursor: pointer; transition: 0.2s; }
     .action-box:active { transform: scale(0.97); }
 
-    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
     .card-box { background: white; border-radius: 20px; padding: 20px 15px; text-align: center; border: 1px solid var(--border); box-shadow: 0 8px 20px rgba(0,0,0,0.02); margin-bottom: 15px; }
     .card-icon { font-size: 45px; margin-bottom: 10px; }
     
@@ -47,7 +47,7 @@
     .list-item { padding: 18px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
     .list-item:last-child { border-bottom: none; }
 
-    .btn-close-app { background: #E8E2D9; color: var(--text-main); border: none; padding: 15px; border-radius: 16px; font-weight: 600; font-family: 'Prompt'; margin-top: 25px; width: 100%; cursor: pointer; transition: 0.2s; font-size: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.03); }
+    .btn-close-app { background: #E8E2D9; color: var(--text-main); border: none; padding: 15px; border-radius: 16px; font-weight: 600; font-family: 'Prompt'; margin-top: 15px; width: 100%; cursor: pointer; transition: 0.2s; font-size: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.03); }
     .btn-close-app:active { transform: scale(0.97); }
 
     .swal2-container { z-index: 10000 !important; }
@@ -72,6 +72,7 @@
         <div style="font-size: 16px; margin-bottom: 5px;" id="txt-pts-label">คะแนนสะสม</div>
         <div style="font-size: 13px; opacity: 0.8;" id="txt-welcome">ยินดีต้อนรับคุณ <span id="userName">...</span></div>
       </div>
+      
       <div class="grid-2">
         <div class="action-box" onclick="openQRScanner()">
           <div style="font-size: 36px; margin-bottom: 5px;">📷</div>
@@ -82,6 +83,12 @@
           <div style="font-weight: 600; font-size: 14px; color: #C57B57;" id="txt-go-reward-btn">แลกของรางวัล</div>
         </div>
       </div>
+
+      <div style="margin-top: 10px;">
+        <h3 style="font-size: 16px; font-weight: 700; margin-bottom: 12px; color: var(--text-main);" id="txt-recent-history">ประวัติล่าสุด</h3>
+        <div class="list-container" id="recentHistoryContainer"></div>
+      </div>
+
       <button class="btn-close-app text-close-btn" onclick="liff.closeWindow()">กลับหน้าแชท (OK)</button>
     </div>
 
@@ -144,7 +151,7 @@
     const i18n = {
       TH: {
         homeTitle: "เช็กแต้ม", ptsLabel: "คะแนนสะสม", welcome: "ยินดีต้อนรับคุณ ", 
-        scanBtn: "สแกนรับแต้ม", goRewardBtn: "แลกของรางวัล",
+        scanBtn: "สแกนรับแต้ม", goRewardBtn: "แลกของรางวัล", recentHistory: "ประวัติล่าสุด",
         rewardTitle: "แลกของรางวัล", btnRedeem: "แลกเลย", btnNoPts: "แต้มไม่พอ", 
         historyTitle: "ประวัติการใช้งาน", noHistory: "ไม่มีประวัติการใช้งาน",
         menuTitle: "เมนูเครื่องดื่ม", promoTitle: "โปรโมชั่นพิเศษ", 
@@ -159,7 +166,7 @@
       },
       EN: {
         homeTitle: "Check Points", ptsLabel: "Total Points", welcome: "Welcome, ", 
-        scanBtn: "Scan QR", goRewardBtn: "Redeem Rewards",
+        scanBtn: "Scan QR", goRewardBtn: "Redeem Rewards", recentHistory: "Recent History",
         rewardTitle: "Redeem Rewards", btnRedeem: "Redeem", btnNoPts: "Not enough", 
         historyTitle: "Transaction History", noHistory: "No transactions yet",
         menuTitle: "Beverage Menu", promoTitle: "Special Promo", 
@@ -205,7 +212,6 @@
 
     async function fetchMemberData() {
       try {
-        // 🚀 เปลี่ยนการยิง API เป็นแบบ POST ทะลุทะลวงแคช Android 100%
         const fetchUrl = `${API_URL}/api/get-member?userId=${globalUserId}&t=${Date.now()}`;
         const res = await fetch(fetchUrl, {
           method: 'POST',
@@ -219,7 +225,6 @@
           globalLang = result.data.lang || "TH"; 
           document.getElementById('userPoints').innerText = globalTotalPoints;
           
-          // 🚀 ดับเบิ้ลล็อก! สั่งเรียงวันที่จากใหม่ไปเก่าในฝั่งมือถืออีกรอบ กันพลาด!
           let historyData = result.data.history || [];
           historyData.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
 
@@ -237,6 +242,7 @@
         safeSetText('txt-welcome', `${t.welcome} <span style="font-weight:bold;">${globalUserName}</span>`);
         safeSetText('txt-scan-btn', t.scanBtn);
         safeSetText('txt-go-reward-btn', t.goRewardBtn);
+        safeSetText('txt-recent-history', t.recentHistory);
         
         safeSetText('txt-reward-title', t.rewardTitle);
         safeSetText('txt-history-title', t.historyTitle);
@@ -271,14 +277,21 @@
 
     function renderHistory(historyArr) {
       try {
-        const container = document.getElementById('historyContainer');
+        const fullContainer = document.getElementById('historyContainer');
+        const recentContainer = document.getElementById('recentHistoryContainer');
         const t = i18n[globalLang];
+        
         if (!historyArr || historyArr.length === 0) {
-          container.innerHTML = `<div style="padding: 30px; text-align: center; color: var(--text-light); font-size:14px;">${t.noHistory}</div>`; return;
+          const emptyHtml = `<div style="padding: 30px; text-align: center; color: var(--text-light); font-size:14px;">${t.noHistory}</div>`;
+          fullContainer.innerHTML = emptyHtml;
+          if(recentContainer) recentContainer.innerHTML = emptyHtml;
+          return;
         }
 
-        let html = "";
-        historyArr.forEach(item => {
+        let fullHtml = "";
+        let recentHtml = "";
+
+        historyArr.forEach((item, index) => {
           const d = new Date(item.timestamp);
           const dateStr = d.toLocaleDateString('th-TH', { day: '2-digit', month: '2-digit', year: '2-digit' }) + ' ' + d.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
           
@@ -286,14 +299,24 @@
           if (item.type === "redeem") { icon = "🎁"; title = t.txtRedeem; ptsText = `-${item.points}`; ptsColor = "#C57B57"; }
           else if (item.type === "edit") { icon = "⚙️"; title = t.txtEdit; ptsText = item.points > 0 ? `+${item.points}` : item.points; }
 
-          html += `
+          const itemHtml = `
             <div class="list-item">
               <div><div style="font-weight:600; font-size:14px; color:var(--text-main);">${icon} ${title}</div><div style="font-size:11px; color:var(--text-light); margin-top:3px;">${dateStr}</div></div>
               <div style="color: ${ptsColor}; font-weight: 700; font-size: 18px;">${ptsText}</div>
             </div>
           `;
+          
+          fullHtml += itemHtml;
+          
+          // โชว์แค่ 3 รายการล่าสุดในหน้า Home
+          if(index < 3) {
+            recentHtml += itemHtml;
+          }
         });
-        container.innerHTML = html;
+        
+        fullContainer.innerHTML = fullHtml;
+        if(recentContainer) recentContainer.innerHTML = recentHtml;
+
       } catch (err) { console.error(err); }
     }
 
@@ -340,6 +363,11 @@
       if (targetView) { targetView.classList.add('active'); } 
       else { document.getElementById('view-home').classList.add('active'); }
       window.scrollTo(0, 0); 
+    }
+
+    function openQRScanner() {
+      if (liff.isApiAvailable('scanCodeV2')) { liff.scanCodeV2().then(result => {}); } 
+      else { window.location.href = "https://line.me/R/nv/QRCodeReader"; }
     }
 
     window.onload = initApp;
