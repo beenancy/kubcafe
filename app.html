@@ -47,6 +47,9 @@
     .list-item { padding: 18px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
     .list-item:last-child { border-bottom: none; }
 
+    /* กล่อง Coming Soon สวยๆ */
+    .coming-soon-box { background: white; border-radius: 24px; padding: 50px 20px; text-align: center; border: 2px dashed var(--border); color: var(--matcha-dark); margin-bottom: 15px; box-shadow: 0 8px 20px rgba(0,0,0,0.01); }
+
     .btn-close-app { background: #E8E2D9; color: var(--text-main); border: none; padding: 15px; border-radius: 16px; font-weight: 600; font-family: 'Prompt'; margin-top: 15px; width: 100%; cursor: pointer; transition: 0.2s; font-size: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.03); }
     .btn-close-app:active { transform: scale(0.97); }
 
@@ -106,36 +109,20 @@
 
     <div id="view-menu" class="view-section">
       <h2 class="header-title" id="txt-menu-title">เมนูเครื่องดื่ม</h2>
-      <div class="list-container">
-        <div class="list-item">
-          <div style="display:flex; align-items:center;">
-            <div style="font-size:30px; margin-right:15px;">🍵</div>
-            <div><div style="font-weight:bold;" id="txt-m1">ชาเขียวมัทฉะเย็น</div><div style="font-size:12px; color:var(--text-light);">Iced Matcha Green Tea</div></div>
-          </div>
-          <div style="font-weight:bold; color:var(--matcha-dark);">60.-</div>
-        </div>
-        <div class="list-item">
-          <div style="display:flex; align-items:center;">
-            <div style="font-size:30px; margin-right:15px;">☕</div>
-            <div><div style="font-weight:bold;" id="txt-m2">อเมริกาโน่เย็น</div><div style="font-size:12px; color:var(--text-light);">Iced Americano</div></div>
-          </div>
-          <div style="font-weight:bold; color:var(--matcha-dark);">55.-</div>
-        </div>
+      <div class="coming-soon-box">
+        <div style="font-size: 55px; margin-bottom: 15px;">🥤</div>
+        <h3 style="margin: 0 0 5px 0; font-size: 20px;">Coming Soon</h3>
+        <p style="font-size: 14px; margin: 0; color: var(--text-light);" id="txt-cs-1">เตรียมพบกับเมนูใหม่เร็วๆ นี้</p>
       </div>
       <button class="btn-close-app text-close-btn" onclick="liff.closeWindow()">กลับหน้าแชท (OK)</button>
     </div>
 
     <div id="view-promo" class="view-section">
       <h2 class="header-title" id="txt-promo-title">โปรโมชั่นพิเศษ</h2>
-      <div class="card-box" style="text-align:left;">
-        <div style="font-size:30px; margin-bottom:10px;">🎉</div>
-        <div style="font-weight:bold; font-size:16px;" id="txt-p1-title">โปรโมชั่นเปิดร้านใหม่!</div>
-        <div style="font-size:13px; color:var(--text-light); margin-top:5px;" id="txt-p1-desc">รับส่วนลด 10% สำหรับเครื่องดื่มทุกเมนูตลอดเดือนนี้</div>
-      </div>
-      <div class="card-box" style="text-align:left;">
-        <div style="font-size:30px; margin-bottom:10px;">🍰</div>
-        <div style="font-weight:bold; font-size:16px;" id="txt-p2-title">อร่อยเป็นคู่</div>
-        <div style="font-size:13px; color:var(--text-light); margin-top:5px;" id="txt-p2-desc">ซื้อเค้ก 1 ชิ้น คู่กับเครื่องดื่ม รับส่วนลดทันที 10 บาท</div>
+      <div class="coming-soon-box">
+        <div style="font-size: 55px; margin-bottom: 15px;">📢</div>
+        <h3 style="margin: 0 0 5px 0; font-size: 20px;">Coming Soon</h3>
+        <p style="font-size: 14px; margin: 0; color: var(--text-light);" id="txt-cs-2">โปรโมชั่นเด็ดๆ กำลังมา</p>
       </div>
       <button class="btn-close-app text-close-btn" onclick="liff.closeWindow()">กลับหน้าแชท (OK)</button>
     </div>
@@ -156,9 +143,7 @@
         historyTitle: "ประวัติการใช้งาน", noHistory: "ไม่มีประวัติการใช้งาน",
         menuTitle: "เมนูเครื่องดื่ม", promoTitle: "โปรโมชั่นพิเศษ", 
         txtEarn: "ได้รับแต้ม", txtRedeem: "แลกรางวัล", txtEdit: "ปรับปรุงแต้ม", closeBtn: "กลับหน้าแชท (OK)",
-        m1: "ชาเขียวมัทฉะเย็น", m2: "อเมริกาโน่เย็น",
-        p1t: "โปรโมชั่นเปิดร้านใหม่!", p1d: "รับส่วนลด 10% สำหรับเครื่องดื่มทุกเมนูตลอดเดือนนี้",
-        p2t: "อร่อยเป็นคู่", p2d: "ซื้อเค้ก 1 ชิ้น คู่กับเครื่องดื่ม รับส่วนลดทันที 10 บาท",
+        comingSoon1: "เตรียมพบกับเมนูใหม่เร็วๆ นี้", comingSoon2: "โปรโมชั่นเด็ดๆ กำลังมา",
         rewards: [
           { icon: "☕", name: "ส่วนลด 50%", req: "ใช้ 10 แต้ม", cost: 10, logName: "ส่วนลด 50% 1 แก้ว" },
           { icon: "🍰", name: "ฟรี เค้ก 1 ชิ้น", req: "ใช้ 20 แต้ม", cost: 20, logName: "ฟรีเค้ก 1 ชิ้น" }
@@ -171,9 +156,7 @@
         historyTitle: "Transaction History", noHistory: "No transactions yet",
         menuTitle: "Beverage Menu", promoTitle: "Special Promo", 
         txtEarn: "Points Earned", txtRedeem: "Redeemed", txtEdit: "Points Edited", closeBtn: "Back to Chat (OK)",
-        m1: "Iced Matcha Green Tea", m2: "Iced Americano",
-        p1t: "Grand Opening Promo!", p1d: "Get 10% off all beverages this month.",
-        p2t: "Perfect Pair", p2d: "Buy 1 Cake with any beverage, get 10 Baht off.",
+        comingSoon1: "New menus are coming very soon", comingSoon2: "Stay tuned for special offers",
         rewards: [
           { icon: "☕", name: "50% Discount", req: "10 Pts req.", cost: 10, logName: "ส่วนลด 50% 1 แก้ว" },
           { icon: "🍰", name: "Free 1 Cake", req: "20 Pts req.", cost: 20, logName: "ฟรีเค้ก 1 ชิ้น" }
@@ -195,12 +178,11 @@
         globalUserId = profile.userId; globalUserName = profile.displayName;
         document.getElementById('userProfilePic').src = profile.pictureUrl || "https://via.placeholder.com/70";
 
-        // 🚀 ดักจับ URL ฉลาดขึ้น (รองรับลิงก์เก่า tab=more ด้วย)
         const currentUrl = window.location.href.toLowerCase();
         let targetTab = 'home'; 
         if (currentUrl.includes('tab=rewards')) targetTab = 'rewards';
         else if (currentUrl.includes('tab=history')) targetTab = 'history';
-        else if (currentUrl.includes('tab=menu') || currentUrl.includes('tab=more')) targetTab = 'menu'; // <- ดักลิงก์เก่า!
+        else if (currentUrl.includes('tab=menu') || currentUrl.includes('tab=more')) targetTab = 'menu';
         else if (currentUrl.includes('tab=promo')) targetTab = 'promo';
         
         switchTab(targetTab); 
@@ -227,6 +209,7 @@
           document.getElementById('userPoints').innerText = globalTotalPoints;
           
           let historyData = result.data.history || [];
+          // ดับเบิ้ลล็อกเรียงวันที่อีกรอบ
           historyData.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
 
           applyLanguage(); 
@@ -250,9 +233,8 @@
         safeSetText('txt-menu-title', t.menuTitle);
         safeSetText('txt-promo-title', t.promoTitle);
 
-        safeSetText('txt-m1', t.m1); safeSetText('txt-m2', t.m2);
-        safeSetText('txt-p1-title', t.p1t); safeSetText('txt-p1-desc', t.p1d);
-        safeSetText('txt-p2-title', t.p2t); safeSetText('txt-p2-desc', t.p2d);
+        safeSetText('txt-cs-1', t.comingSoon1); 
+        safeSetText('txt-cs-2', t.comingSoon2); 
         
         document.querySelectorAll('.text-close-btn').forEach(el => el.innerText = t.closeBtn);
         
