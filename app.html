@@ -3,6 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
   <title>KUB Cafe</title>
   
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
@@ -61,7 +64,7 @@
 
   <div class="app-content">
     
-    <div id="view-home" class="view-section">
+    <div id="view-home" class="view-section active">
       <h2 class="header-title" id="txt-home-title">เช็กแต้ม</h2>
       <div class="member-card">
         <img id="userProfilePic" class="profile-pic" src="https://via.placeholder.com/70" alt="Profile">
@@ -185,30 +188,30 @@
         globalUserId = profile.userId; globalUserName = profile.displayName;
         document.getElementById('userProfilePic').src = profile.pictureUrl || "https://via.placeholder.com/70";
 
-        // 🚀 เจาะเกราะ Android: เช็ก URL ทั้งเส้น ไม่พึ่ง urlParams อย่างเดียว
         const currentUrl = window.location.href.toLowerCase();
-        let targetTab = 'home'; // ค่าเริ่มต้น
+        let targetTab = 'home'; 
         if (currentUrl.includes('tab=rewards')) targetTab = 'rewards';
         else if (currentUrl.includes('tab=history')) targetTab = 'history';
         else if (currentUrl.includes('tab=menu')) targetTab = 'menu';
         else if (currentUrl.includes('tab=promo')) targetTab = 'promo';
         
-        switchTab(targetTab); // สลับหน้าให้ถูกต้อง
-
+        switchTab(targetTab); 
         await fetchMemberData();
 
         document.getElementById('loading-overlay').style.opacity = "0";
         setTimeout(() => document.getElementById('loading-overlay').style.display = "none", 400);
-      } catch (err) { 
-        Swal.fire({ icon: 'error', title: 'Error', text: 'ไม่สามารถเชื่อมต่อ LINE ได้' }); 
-      }
+      } catch (err) { Swal.fire({ icon: 'error', title: 'Error', text: 'ไม่สามารถเชื่อมต่อ LINE ได้' }); }
     }
 
     async function fetchMemberData() {
       try {
-        // 🚀 ถอด Custom Headers ออกทั้งหมด ป้องกัน CORS Preflight บน Android บล็อกการทำงาน
+        // 🚀 เปลี่ยนการยิง API เป็นแบบ POST ทะลุทะลวงแคช Android 100%
         const fetchUrl = `${API_URL}/api/get-member?userId=${globalUserId}&t=${Date.now()}`;
-        const res = await fetch(fetchUrl); 
+        const res = await fetch(fetchUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ bypassCache: true })
+        }); 
         const result = await res.json();
         
         if (result.status === "success") {
@@ -216,8 +219,12 @@
           globalLang = result.data.lang || "TH"; 
           document.getElementById('userPoints').innerText = globalTotalPoints;
           
+          // 🚀 ดับเบิ้ลล็อก! สั่งเรียงวันที่จากใหม่ไปเก่าในฝั่งมือถืออีกรอบ กันพลาด!
+          let historyData = result.data.history || [];
+          historyData.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+
           applyLanguage(); 
-          renderHistory(result.data.history); 
+          renderHistory(historyData); 
         }
       } catch (err) { console.error("Fetch Data Error:", err); }
     }
@@ -236,12 +243,9 @@
         safeSetText('txt-menu-title', t.menuTitle);
         safeSetText('txt-promo-title', t.promoTitle);
 
-        safeSetText('txt-m1', t.m1);
-        safeSetText('txt-m2', t.m2);
-        safeSetText('txt-p1-title', t.p1t);
-        safeSetText('txt-p1-desc', t.p1d);
-        safeSetText('txt-p2-title', t.p2t);
-        safeSetText('txt-p2-desc', t.p2d);
+        safeSetText('txt-m1', t.m1); safeSetText('txt-m2', t.m2);
+        safeSetText('txt-p1-title', t.p1t); safeSetText('txt-p1-desc', t.p1d);
+        safeSetText('txt-p2-title', t.p2t); safeSetText('txt-p2-desc', t.p2d);
         
         document.querySelectorAll('.text-close-btn').forEach(el => el.innerText = t.closeBtn);
         
@@ -323,7 +327,7 @@
             text: globalLang === "EN" ? `Ref: ${data.refCode}\nPlease show this to staff.` : `รหัสอ้างอิง: ${data.refCode}\nโปรดแสดงหน้าจอนี้ให้พนักงาน`,
             confirmButtonColor: '#A3B18A'
           }).then(() => {
-            switchTab('home'); // เด้งกลับหน้าแต้ม
+            switchTab('home'); 
           });
           await fetchMemberData(); 
         } else { Swal.fire({ icon: 'error', title: 'Failed', text: data.message, confirmButtonColor: '#C57B57' }); }
@@ -333,17 +337,9 @@
     function switchTab(tabId) {
       document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
       const targetView = document.getElementById('view-' + tabId);
-      if (targetView) {
-        targetView.classList.add('active');
-      } else {
-        document.getElementById('view-home').classList.add('active'); // กันพลาด
-      }
+      if (targetView) { targetView.classList.add('active'); } 
+      else { document.getElementById('view-home').classList.add('active'); }
       window.scrollTo(0, 0); 
-    }
-
-    function openQRScanner() {
-      if (liff.isApiAvailable('scanCodeV2')) { liff.scanCodeV2().then(result => {}); } 
-      else { window.location.href = "https://line.me/R/nv/QRCodeReader"; }
     }
 
     window.onload = initApp;
