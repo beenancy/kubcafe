@@ -47,7 +47,6 @@
     .list-item { padding: 18px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
     .list-item:last-child { border-bottom: none; }
 
-    /* กล่อง Coming Soon สวยๆ */
     .coming-soon-box { background: white; border-radius: 24px; padding: 50px 20px; text-align: center; border: 2px dashed var(--border); color: var(--matcha-dark); margin-bottom: 15px; box-shadow: 0 8px 20px rgba(0,0,0,0.01); }
 
     .btn-close-app { background: #E8E2D9; color: var(--text-main); border: none; padding: 15px; border-radius: 16px; font-weight: 600; font-family: 'Prompt'; margin-top: 15px; width: 100%; cursor: pointer; transition: 0.2s; font-size: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.03); }
@@ -289,11 +288,7 @@
           `;
           
           fullHtml += itemHtml;
-          
-          // โชว์แค่ 3 รายการล่าสุด
-          if(index < 3) {
-            recentHtml += itemHtml;
-          }
+          if(index < 3) { recentHtml += itemHtml; }
         });
         
         fullContainer.innerHTML = fullHtml;
@@ -347,10 +342,18 @@
       window.scrollTo(0, 0); 
     }
 
+    // ฟังก์ชันนี้แหละครับที่เป็นพระเอก! สั่งให้สแกนแล้วพาวาร์ปไปลิงก์ที่ซ่อนอยู่ในคิวอาร์โค้ด
     function openQRScanner() {
-  // เปลี่ยนรหัสด้านล่างนี้ ให้เป็น LIFF ID ของ "Scan Test" นะครับ!
-  window.location.href = "https://liff.line.me/2010460841-1So0N2Jn";
-}
+      if (liff.isApiAvailable('scanCodeV2')) { 
+        liff.scanCodeV2().then(result => {
+          if (result && result.value) {
+            window.location.href = result.value; 
+          }
+        }).catch(err => { console.log(err); }); 
+      } else { 
+        window.location.href = "https://line.me/R/nv/QRCodeReader"; 
+      }
+    }
 
     window.onload = initApp;
   </script>
