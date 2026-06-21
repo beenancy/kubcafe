@@ -348,9 +348,9 @@
     }
 
     function openQRScanner() {
-      if (liff.isApiAvailable('scanCodeV2')) { liff.scanCodeV2().then(result => {}); } 
-      else { window.location.href = "https://line.me/R/nv/QRCodeReader"; }
-    }
+  // เปลี่ยนรหัสด้านล่างนี้ ให้เป็น LIFF ID ของ "Scan Test" นะครับ!
+  window.location.href = "https://liff.line.me/2010460841-1So0N2Jn";
+}
 
     window.onload = initApp;
   </script>
