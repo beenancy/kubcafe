@@ -209,7 +209,6 @@
           document.getElementById('userPoints').innerText = globalTotalPoints;
           
           let historyData = result.data.history || [];
-          // ดับเบิ้ลล็อกเรียงวันที่อีกรอบ
           historyData.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
 
           applyLanguage(); 
@@ -291,6 +290,7 @@
           
           fullHtml += itemHtml;
           
+          // โชว์แค่ 3 รายการล่าสุด
           if(index < 3) {
             recentHtml += itemHtml;
           }
