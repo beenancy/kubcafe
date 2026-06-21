@@ -195,11 +195,12 @@
         globalUserId = profile.userId; globalUserName = profile.displayName;
         document.getElementById('userProfilePic').src = profile.pictureUrl || "https://via.placeholder.com/70";
 
+        // 🚀 ดักจับ URL ฉลาดขึ้น (รองรับลิงก์เก่า tab=more ด้วย)
         const currentUrl = window.location.href.toLowerCase();
         let targetTab = 'home'; 
         if (currentUrl.includes('tab=rewards')) targetTab = 'rewards';
         else if (currentUrl.includes('tab=history')) targetTab = 'history';
-        else if (currentUrl.includes('tab=menu')) targetTab = 'menu';
+        else if (currentUrl.includes('tab=menu') || currentUrl.includes('tab=more')) targetTab = 'menu'; // <- ดักลิงก์เก่า!
         else if (currentUrl.includes('tab=promo')) targetTab = 'promo';
         
         switchTab(targetTab); 
@@ -308,7 +309,6 @@
           
           fullHtml += itemHtml;
           
-          // โชว์แค่ 3 รายการล่าสุดในหน้า Home
           if(index < 3) {
             recentHtml += itemHtml;
           }
