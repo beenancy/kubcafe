@@ -47,7 +47,6 @@
     .list-item { padding: 18px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
     .list-item:last-child { border-bottom: none; }
 
-    /* กล่อง Coming Soon สวยๆ */
     .coming-soon-box { background: white; border-radius: 24px; padding: 50px 20px; text-align: center; border: 2px dashed var(--border); color: var(--matcha-dark); margin-bottom: 15px; box-shadow: 0 8px 20px rgba(0,0,0,0.01); }
 
     .btn-close-app { background: #E8E2D9; color: var(--text-main); border: none; padding: 15px; border-radius: 16px; font-weight: 600; font-family: 'Prompt'; margin-top: 15px; width: 100%; cursor: pointer; transition: 0.2s; font-size: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.03); }
@@ -92,19 +91,19 @@
         <div class="list-container" id="recentHistoryContainer"></div>
       </div>
 
-      <button class="btn-close-app text-close-btn" onclick="liff.closeWindow()">กลับหน้าแชท (OK)</button>
+      <button class="btn-close-app text-close-btn" onclick="liff.closeWindow()">OK</button>
     </div>
 
     <div id="view-rewards" class="view-section">
       <h2 class="header-title" id="txt-reward-title">แลกของรางวัล</h2>
       <div class="grid-2" id="rewardGridContainer"></div>
-      <button class="btn-close-app text-close-btn" onclick="liff.closeWindow()">กลับหน้าแชท (OK)</button>
+      <button class="btn-close-app text-close-btn" onclick="liff.closeWindow()">OK</button>
     </div>
 
     <div id="view-history" class="view-section">
       <h2 class="header-title" id="txt-history-title">ประวัติการใช้งาน</h2>
       <div class="list-container" id="historyContainer"></div>
-      <button class="btn-close-app text-close-btn" onclick="liff.closeWindow()">กลับหน้าแชท (OK)</button>
+      <button class="btn-close-app text-close-btn" onclick="liff.closeWindow()">OK</button>
     </div>
 
     <div id="view-menu" class="view-section">
@@ -114,7 +113,7 @@
         <h3 style="margin: 0 0 5px 0; font-size: 20px;">Coming Soon</h3>
         <p style="font-size: 14px; margin: 0; color: var(--text-light);" id="txt-cs-1">เตรียมพบกับเมนูใหม่เร็วๆ นี้</p>
       </div>
-      <button class="btn-close-app text-close-btn" onclick="liff.closeWindow()">กลับหน้าแชท (OK)</button>
+      <button class="btn-close-app text-close-btn" onclick="liff.closeWindow()">OK</button>
     </div>
 
     <div id="view-promo" class="view-section">
@@ -124,7 +123,7 @@
         <h3 style="margin: 0 0 5px 0; font-size: 20px;">Coming Soon</h3>
         <p style="font-size: 14px; margin: 0; color: var(--text-light);" id="txt-cs-2">โปรโมชั่นเด็ดๆ กำลังมา</p>
       </div>
-      <button class="btn-close-app text-close-btn" onclick="liff.closeWindow()">กลับหน้าแชท (OK)</button>
+      <button class="btn-close-app text-close-btn" onclick="liff.closeWindow()">OK</button>
     </div>
 
   </div>
@@ -142,11 +141,10 @@
         rewardTitle: "แลกของรางวัล", btnRedeem: "แลกเลย", btnNoPts: "แต้มไม่พอ", 
         historyTitle: "ประวัติการใช้งาน", noHistory: "ไม่มีประวัติการใช้งาน",
         menuTitle: "เมนูเครื่องดื่ม", promoTitle: "โปรโมชั่นพิเศษ", 
-        txtEarn: "ได้รับแต้ม", txtRedeem: "แลกรางวัล", txtEdit: "ปรับปรุงแต้ม", closeBtn: "กลับหน้าแชท (OK)",
+        txtEarn: "ได้รับแต้ม", txtRedeem: "แลกรางวัล", txtEdit: "ปรับปรุงแต้ม", closeBtn: "OK",
         comingSoon1: "เตรียมพบกับเมนูใหม่เร็วๆ นี้", comingSoon2: "โปรโมชั่นเด็ดๆ กำลังมา",
         rewards: [
-          { icon: "☕", name: "ส่วนลด 50%", req: "ใช้ 10 แต้ม", cost: 10, logName: "ส่วนลด 50% 1 แก้ว" },
-          { icon: "🍰", name: "ฟรี เค้ก 1 ชิ้น", req: "ใช้ 20 แต้ม", cost: 20, logName: "ฟรีเค้ก 1 ชิ้น" }
+          { icon: "☕", name: "ส่วนลด 50%", req: "ใช้ 10 แต้ม", cost: 10, logName: "ส่วนลด 50% 1 แก้ว" }
         ]
       },
       EN: {
@@ -155,11 +153,10 @@
         rewardTitle: "Redeem Rewards", btnRedeem: "Redeem", btnNoPts: "Not enough", 
         historyTitle: "Transaction History", noHistory: "No transactions yet",
         menuTitle: "Beverage Menu", promoTitle: "Special Promo", 
-        txtEarn: "Points Earned", txtRedeem: "Redeemed", txtEdit: "Points Edited", closeBtn: "Back to Chat (OK)",
+        txtEarn: "Points Earned", txtRedeem: "Redeemed", txtEdit: "Points Edited", closeBtn: "OK",
         comingSoon1: "New menus are coming very soon", comingSoon2: "Stay tuned for special offers",
         rewards: [
-          { icon: "☕", name: "50% Discount", req: "10 Pts req.", cost: 10, logName: "ส่วนลด 50% 1 แก้ว" },
-          { icon: "🍰", name: "Free 1 Cake", req: "20 Pts req.", cost: 20, logName: "ฟรีเค้ก 1 ชิ้น" }
+          { icon: "☕", name: "50% Discount", req: "10 Pts req.", cost: 10, logName: "ส่วนลด 50% 1 แก้ว" }
         ]
       }
     };
@@ -290,7 +287,6 @@
           
           fullHtml += itemHtml;
           
-          // โชว์แค่ 3 รายการล่าสุด
           if(index < 3) {
             recentHtml += itemHtml;
           }
