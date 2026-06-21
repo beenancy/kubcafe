@@ -31,8 +31,8 @@
     const SCAN_LIFF_ID = "2010206186-u1XRJldq"; 
 
     function redirectToMemberApp() {
-      // 🚀 เติมรหัสเวลาต่อท้าย (Cache Buster) บังคับ Android ให้ดึงข้อมูลใหม่
-      window.location.replace("https://beenancy.github.io/kubcafe/member.html?tab=home&t=" + Date.now());
+      // 🚀 เด้งไปไฟล์ app.html ตัวใหม่ล่าสุด
+      window.location.replace("https://beenancy.github.io/kubcafe/app.html?tab=home&nocache=" + new Date().getTime());
     }
 
     function closeLiffAndReturnToChat() {
