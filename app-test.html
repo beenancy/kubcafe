@@ -12,120 +12,689 @@
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&family=Quicksand:wght@400;500;600;700&display=swap');
     
-    :root { --bg-cream: #FDFCF0; --matcha: #A3B18A; --matcha-dark: #7A8B62; --text-main: #4A3F35; --text-light: #B0A69D; --border: #E8E2D9; }
-    body, html { margin: 0; padding: 0; width: 100%; height: 100vh; font-family: 'Prompt', sans-serif; background-color: var(--bg-cream); overflow-x: hidden; display: flex; flex-direction: column; color: var(--text-main); }
+    :root {
+      --bg-cream: #FAF6F0; /* Soft warm ivory/cream */
+      --matcha: #556B2F; /* Rich Matcha Green */
+      --matcha-light: #8FBC8F; /* Soft Sage Green */
+      --matcha-dark: #3B4B27; /* Dark Forest/Espresso Green */
+      --matcha-glow: rgba(85, 107, 47, 0.1); /* Soft green glow */
+      --text-main: #3C332D; /* Espresso charcoal */
+      --text-light: #9B8E85; /* Muted warm gray */
+      --border: #ECE6DC; /* Soft warm borders */
+      --card-bg: #FFFFFF;
+      --accent-caramel: #C68B59; /* Accent for rewards/redeem */
+      --accent-caramel-glow: rgba(198, 139, 89, 0.1);
+      
+      --shadow-sm: 0 4px 12px rgba(60, 51, 45, 0.03);
+      --shadow-md: 0 8px 24px rgba(60, 51, 45, 0.06);
+      --shadow-lg: 0 16px 36px rgba(60, 51, 45, 0.1);
+    }
     
-    #loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-cream); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; color: var(--matcha-dark); transition: opacity 0.3s; }
-    .spinner { border: 3px solid var(--border); border-left-color: var(--matcha-dark); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-bottom: 15px; }
-    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-    .app-content { flex: 1; overflow-y: auto; padding: 20px; }
-    .view-section { display: none; animation: fadeIn 0.4s ease; padding-bottom: 30px; }
-    .view-section.active { display: block; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-    .header-title { font-size: 22px; font-weight: 700; margin: 0 0 20px 0; color: var(--matcha-dark); text-align: center; }
+    body, html {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100vh;
+      font-family: 'Prompt', 'Quicksand', sans-serif;
+      background-color: #EFECE6;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: var(--text-main);
+    }
     
-    .member-card { background: linear-gradient(135deg, #A3B18A, #8b9d70); border-radius: 24px; padding: 30px 20px; color: white; text-align: center; box-shadow: 0 15px 30px rgba(163, 177, 138, 0.3); margin-bottom: 20px; position: relative; overflow: hidden; }
-    .profile-pic { width: 70px; height: 70px; border-radius: 50%; border: 3px solid white; object-fit: cover; margin-bottom: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
-    .points-number { font-size: 56px; font-weight: 700; line-height: 1; margin: 5px 0; }
+    .app-container {
+      width: 100%;
+      max-width: 480px;
+      height: 100%;
+      background-color: var(--bg-cream);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+      overflow: hidden;
+    }
     
-    .action-box { background: white; padding: 20px; border-radius: 20px; text-align: center; border: 1px solid var(--border); box-shadow: 0 8px 20px rgba(0,0,0,0.02); cursor: pointer; transition: 0.2s; }
-    .action-box:active { transform: scale(0.97); }
-
-    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
-    .card-box { background: white; border-radius: 20px; padding: 20px 15px; text-align: center; border: 1px solid var(--border); box-shadow: 0 8px 20px rgba(0,0,0,0.02); margin-bottom: 15px; }
-    .card-icon { font-size: 45px; margin-bottom: 10px; }
+    #loading-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: var(--bg-cream);
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      color: var(--matcha-dark);
+      transition: opacity 0.4s ease, visibility 0.4s;
+    }
     
-    .btn-matcha { background: var(--matcha); color: white; border: none; padding: 10px; border-radius: 14px; font-weight: 600; font-family: 'Prompt'; margin-top: 15px; width: 100%; cursor: pointer; transition: 0.2s; font-size: 14px; }
-    .btn-matcha:active { transform: scale(0.95); }
-    .btn-matcha:disabled { background: #E8E2D9; color: var(--text-light); cursor: not-allowed; transform: none; }
-
-    .list-container { background: white; border-radius: 20px; border: 1px solid var(--border); overflow: hidden; box-shadow: 0 8px 20px rgba(0,0,0,0.02); margin-bottom: 15px; }
-    .list-item { padding: 18px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
-    .list-item:last-child { border-bottom: none; }
-
-    .coming-soon-box { background: white; border-radius: 24px; padding: 50px 20px; text-align: center; border: 2px dashed var(--border); color: var(--matcha-dark); margin-bottom: 15px; box-shadow: 0 8px 20px rgba(0,0,0,0.01); }
-
-    .btn-close-app { background: #E8E2D9; color: var(--text-main); border: none; padding: 15px; border-radius: 16px; font-weight: 600; font-family: 'Prompt'; margin-top: 15px; width: 100%; cursor: pointer; transition: 0.2s; font-size: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.03); }
-    .btn-close-app:active { transform: scale(0.97); }
-
-    .swal2-container { z-index: 10000 !important; }
-    .swal2-popup { border-radius: 24px !important; font-family: 'Prompt', sans-serif !important; }
-    .swal2-confirm, .swal2-cancel { border-radius: 12px !important; font-weight: bold !important; font-family: 'Prompt' !important; }
+    .loading-logo {
+      font-size: 48px;
+      margin-bottom: 16px;
+      animation: bounce 2s infinite ease-in-out;
+    }
+    
+    .spinner {
+      border: 3px solid rgba(85, 107, 47, 0.1);
+      border-left-color: var(--matcha);
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 0.8s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+      margin-bottom: 20px;
+    }
+    
+    .loading-text {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-light);
+      animation: pulse 1.5s infinite ease-in-out;
+      font-family: 'Prompt', sans-serif;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+    
+    @keyframes pulse {
+      0%, 100% { opacity: 0.6; }
+      50% { opacity: 1; }
+    }
+    
+    .app-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      -webkit-overflow-scrolling: touch;
+    }
+    
+    .view-section {
+      display: none;
+      animation: slideUpFade 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+      padding-bottom: 24px;
+    }
+    
+    .view-section.active {
+      display: flex;
+      flex-direction: column;
+    }
+    
+    @keyframes slideUpFade {
+      from {
+        opacity: 0;
+        transform: translateY(16px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    .header-title {
+      font-size: 24px;
+      font-weight: 700;
+      margin: 8px 0 20px 0;
+      color: var(--matcha-dark);
+      text-align: center;
+      letter-spacing: -0.5px;
+    }
+    
+    .member-card {
+      background: linear-gradient(135deg, #3B4B27, #556B2F);
+      border-radius: 28px;
+      padding: 28px 24px;
+      color: white;
+      text-align: center;
+      box-shadow: var(--shadow-lg), inset 0 1px 1px rgba(255,255,255,0.15);
+      margin-bottom: 24px;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    
+    .member-card::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0) 70%);
+      pointer-events: none;
+    }
+    
+    .member-card::after {
+      content: 'KUB CAFE';
+      position: absolute;
+      bottom: 16px;
+      right: 24px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      opacity: 0.15;
+      font-family: 'Quicksand', sans-serif;
+    }
+    
+    .profile-pic {
+      width: 76px;
+      height: 76px;
+      border-radius: 50%;
+      border: 3px solid rgba(255, 255, 255, 0.95);
+      object-fit: cover;
+      margin-bottom: 12px;
+      box-shadow: 0 8px 16px rgba(0,0,0,0.12);
+      transition: transform 0.3s ease;
+    }
+    
+    .profile-pic:hover {
+      transform: scale(1.05);
+    }
+    
+    .welcome-msg {
+      font-size: 13px;
+      font-weight: 400;
+      color: rgba(255, 255, 255, 0.85);
+      margin-bottom: 14px;
+      line-height: 1.4;
+    }
+    
+    .welcome-msg span {
+      font-weight: 600;
+      color: #FFF;
+    }
+    
+    .points-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    
+    .points-number {
+      font-family: 'Quicksand', sans-serif;
+      font-size: 60px;
+      font-weight: 700;
+      line-height: 1;
+      margin: 0;
+      color: #FFF;
+      text-shadow: 0 4px 8px rgba(0,0,0,0.08);
+      letter-spacing: -1px;
+    }
+    
+    .points-label {
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: 0.5px;
+      color: rgba(255, 255, 255, 0.75);
+      margin-top: 6px;
+    }
+    
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    
+    .action-box {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 24px 16px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .action-box:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-md);
+    }
+    
+    .action-box:active {
+      transform: translateY(-1px) scale(0.97);
+      box-shadow: var(--shadow-sm);
+    }
+    
+    .action-icon {
+      font-size: 38px;
+      margin-bottom: 8px;
+      transition: transform 0.3s ease;
+    }
+    
+    .action-box:hover .action-icon {
+      transform: scale(1.1) translateY(-2px);
+    }
+    
+    .action-text {
+      font-size: 14px;
+      font-weight: 600;
+      margin: 0;
+      letter-spacing: 0.1px;
+    }
+    
+    .action-box-scan {
+      border-color: rgba(85, 107, 47, 0.15);
+    }
+    .action-box-scan:hover {
+      background: #F3F6F1;
+    }
+    
+    .action-box-redeem {
+      border-color: rgba(198, 139, 89, 0.15);
+    }
+    .action-box-redeem:hover {
+      background: #FAF4EE;
+    }
+    
+    .section-container {
+      margin-top: 8px;
+    }
+    
+    .section-title {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 12px;
+      color: var(--text-main);
+    }
+    
+    .card-box {
+      background: var(--card-bg);
+      border-radius: 24px;
+      padding: 24px 16px;
+      text-align: center;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-sm);
+      transition: all 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    
+    .card-box:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-md);
+    }
+    
+    .card-icon {
+      font-size: 48px;
+      margin-bottom: 10px;
+      transition: transform 0.3s ease;
+    }
+    
+    .card-box:hover .card-icon {
+      transform: scale(1.1);
+    }
+    
+    .btn-matcha {
+      background: var(--matcha);
+      color: white;
+      border: none;
+      padding: 12px 18px;
+      border-radius: 16px;
+      font-weight: 600;
+      font-family: 'Prompt', sans-serif;
+      margin-top: 16px;
+      width: 100%;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-size: 14px;
+      box-shadow: 0 4px 12px rgba(85, 107, 47, 0.15);
+    }
+    
+    .btn-matcha:hover {
+      background: var(--matcha-dark);
+      box-shadow: 0 6px 16px rgba(85, 107, 47, 0.25);
+    }
+    
+    .btn-matcha:active {
+      transform: scale(0.96);
+    }
+    
+    .btn-matcha.disabled, .btn-matcha:disabled {
+      background: #EAE5DE !important;
+      color: var(--text-light) !important;
+      cursor: not-allowed;
+      transform: none !important;
+      box-shadow: none !important;
+    }
+    
+    .list-container {
+      background: var(--card-bg);
+      border-radius: 24px;
+      border: 1px solid var(--border);
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 24px;
+    }
+    
+    .list-item {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: background-color 0.2s ease;
+    }
+    
+    .list-item:hover {
+      background-color: #FAF9F6;
+    }
+    
+    .list-item:last-child {
+      border-bottom: none;
+    }
+    
+    /* Dynamic history styling overrides */
+    .list-item > div:last-child {
+      font-family: 'Quicksand', sans-serif !important;
+      font-weight: 700 !important;
+      font-size: 20px !important;
+    }
+    
+    .list-item > div[style*="#A3B18A"] {
+      color: var(--matcha) !important;
+    }
+    
+    .list-item > div[style*="#C57B57"] {
+      color: var(--accent-caramel) !important;
+    }
+    
+    .coming-soon-box {
+      background: var(--card-bg);
+      border-radius: 28px;
+      padding: 48px 24px;
+      text-align: center;
+      border: 2px dashed var(--border);
+      color: var(--matcha-dark);
+      margin-bottom: 24px;
+      box-shadow: var(--shadow-sm);
+    }
+    
+    .coming-soon-icon {
+      font-size: 56px;
+      margin-bottom: 16px;
+      animation: rotateSlow 12s linear infinite;
+    }
+    
+    @keyframes rotateSlow {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    .coming-soon-title {
+      margin: 0 0 6px 0;
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--matcha-dark);
+    }
+    
+    .coming-soon-subtitle {
+      font-size: 14px;
+      margin: 0;
+      color: var(--text-light);
+    }
+    
+    .btn-close-app {
+      background: #EFECE6;
+      color: var(--text-main);
+      border: 1px solid var(--border);
+      padding: 14px 20px;
+      border-radius: 18px;
+      font-weight: 600;
+      font-family: 'Prompt', sans-serif;
+      margin-top: 24px;
+      width: 100%;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-size: 15px;
+    }
+    
+    .btn-close-app:hover {
+      background: #E6E2DA;
+    }
+    
+    .btn-close-app:active {
+      transform: scale(0.97);
+    }
+    
+    /* Bottom Navigation Bar */
+    .bottom-nav {
+      background: var(--card-bg);
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-around;
+      padding: 10px 10px calc(10px + env(safe-area-inset-bottom));
+      position: relative;
+      box-shadow: 0 -4px 16px rgba(0,0,0,0.02);
+      z-index: 100;
+    }
+    
+    .nav-item {
+      background: none;
+      border: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-light);
+      cursor: pointer;
+      padding: 4px 8px;
+      flex: 1;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      outline: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    
+    .nav-icon-wrapper {
+      font-size: 20px;
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 4px;
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    
+    .nav-label {
+      font-size: 10px;
+      font-weight: 500;
+      font-family: 'Prompt', sans-serif;
+      transition: color 0.3s ease;
+    }
+    
+    /* Active states via parent container state */
+    .app-container:has(#view-home.active) .nav-home,
+    .app-container:has(#view-rewards.active) .nav-rewards,
+    .app-container:has(#view-history.active) .nav-history,
+    .app-container:has(#view-menu.active) .nav-menu,
+    .app-container:has(#view-promo.active) .nav-promo {
+      color: var(--matcha-dark);
+    }
+    
+    .app-container:has(#view-home.active) .nav-home .nav-icon-wrapper,
+    .app-container:has(#view-rewards.active) .nav-rewards .nav-icon-wrapper,
+    .app-container:has(#view-history.active) .nav-history .nav-icon-wrapper,
+    .app-container:has(#view-menu.active) .nav-menu .nav-icon-wrapper,
+    .app-container:has(#view-promo.active) .nav-promo .nav-icon-wrapper {
+      background-color: var(--matcha-glow);
+      color: var(--matcha-dark);
+      transform: scale(1.1) translateY(-2px);
+    }
+    
+    .app-container:has(#view-home.active) .nav-home .nav-label,
+    .app-container:has(#view-rewards.active) .nav-rewards .nav-label,
+    .app-container:has(#view-history.active) .nav-history .nav-label,
+    .app-container:has(#view-menu.active) .nav-menu .nav-label,
+    .app-container:has(#view-promo.active) .nav-promo .nav-label {
+      font-weight: 700;
+    }
+    
+    /* SweetAlert2 Elegant Theme Override */
+    .swal2-container {
+      z-index: 10000 !important;
+    }
+    .swal2-popup {
+      border-radius: 28px !important;
+      background-color: var(--bg-cream) !important;
+      font-family: 'Prompt', sans-serif !important;
+      border: 1px solid var(--border) !important;
+      box-shadow: var(--shadow-lg) !important;
+      padding: 30px 20px !important;
+    }
+    .swal2-title {
+      color: var(--text-main) !important;
+      font-weight: 700 !important;
+      font-size: 20px !important;
+    }
+    .swal2-html-container {
+      color: var(--text-light) !important;
+      font-size: 14px !important;
+      line-height: 1.6 !important;
+    }
+    .swal2-confirm {
+      background-color: var(--matcha) !important;
+      border-radius: 16px !important;
+      font-weight: 600 !important;
+      padding: 12px 30px !important;
+      box-shadow: 0 4px 12px rgba(85, 107, 47, 0.2) !important;
+      font-family: 'Prompt', sans-serif !important;
+    }
+    .swal2-confirm:focus {
+      box-shadow: 0 0 0 3px rgba(85, 107, 47, 0.3) !important;
+    }
+    .swal2-cancel {
+      background-color: #EFECE6 !important;
+      color: var(--text-main) !important;
+      border-radius: 16px !important;
+      font-weight: 600 !important;
+      padding: 12px 30px !important;
+      font-family: 'Prompt', sans-serif !important;
+      border: 1px solid var(--border) !important;
+    }
   </style>
 </head>
 <body>
 
   <div id="loading-overlay">
     <div class="spinner"></div>
-    <div style="font-size: 14px;">กำลังเข้าสู่ระบบ...</div>
+    <div class="loading-text">กำลังเข้าสู่ระบบ...</div>
   </div>
 
-  <div class="app-content">
-    
-    <div id="view-home" class="view-section active">
-      <h2 class="header-title" id="txt-home-title">เช็กแต้ม</h2>
-      <div class="member-card">
-        <img id="userProfilePic" class="profile-pic" src="https://via.placeholder.com/70" alt="Profile">
-        <div class="points-number"><span id="userPoints">0</span></div>
-        <div style="font-size: 16px; margin-bottom: 5px;" id="txt-pts-label">คะแนนสะสม</div>
-        <div style="font-size: 13px; opacity: 0.8;" id="txt-welcome">ยินดีต้อนรับคุณ <span id="userName">...</span></div>
-      </div>
+  <div class="app-container">
+    <div class="app-content">
       
-      <div class="grid-2">
-        <div class="action-box" onclick="openQRScanner()">
-          <div style="font-size: 36px; margin-bottom: 5px;">📷</div>
-          <div style="font-weight: 600; font-size: 14px; color: var(--matcha-dark);" id="txt-scan-btn">สแกนรับแต้ม</div>
+      <div id="view-home" class="view-section active">
+        <h2 class="header-title" id="txt-home-title">เช็กแต้ม</h2>
+        
+        <div class="member-card">
+          <img id="userProfilePic" class="profile-pic" src="https://via.placeholder.com/70" alt="Profile">
+          <div class="welcome-msg" id="txt-welcome">ยินดีต้อนรับคุณ <span id="userName">...</span></div>
+          <div class="points-container">
+            <div class="points-number"><span id="userPoints">0</span></div>
+            <div class="points-label" id="txt-pts-label">คะแนนสะสม</div>
+          </div>
         </div>
-        <div class="action-box" onclick="switchTab('rewards')">
-          <div style="font-size: 36px; margin-bottom: 5px;">🎁</div>
-          <div style="font-weight: 600; font-size: 14px; color: #C57B57;" id="txt-go-reward-btn">แลกของรางวัล</div>
+        
+        <div class="grid-2">
+          <div class="action-box action-box-scan" onclick="openQRScanner()">
+            <div class="action-icon">📷</div>
+            <div class="action-text" style="color: var(--matcha-dark);" id="txt-scan-btn">สแกนรับแต้ม</div>
+          </div>
+          <div class="action-box action-box-redeem" onclick="switchTab('rewards')">
+            <div class="action-icon">🎁</div>
+            <div class="action-text" style="color: var(--accent-caramel);" id="txt-go-reward-btn">แลกของรางวัล</div>
+          </div>
         </div>
+  
+        <div class="section-container">
+          <h3 class="section-title" id="txt-recent-history">ประวัติล่าสุด</h3>
+          <div class="list-container" id="recentHistoryContainer"></div>
+        </div>
+  
+        <button class="btn-close-app text-close-btn" onclick="liff.closeWindow()">กลับหน้าแชท (OK)</button>
       </div>
-
-      <div style="margin-top: 10px;">
-        <h3 style="font-size: 16px; font-weight: 700; margin-bottom: 12px; color: var(--text-main);" id="txt-recent-history">ประวัติล่าสุด</h3>
-        <div class="list-container" id="recentHistoryContainer"></div>
+  
+      <div id="view-rewards" class="view-section">
+        <h2 class="header-title" id="txt-reward-title">แลกของรางวัล</h2>
+        <div class="grid-2" id="rewardGridContainer"></div>
+        <button class="btn-close-app text-close-btn" onclick="liff.closeWindow()">กลับหน้าแชท (OK)</button>
       </div>
-
-      <button class="btn-close-app text-close-btn" onclick="liff.closeWindow()">กลับหน้าแชท (OK)</button>
-    </div>
-
-    <div id="view-rewards" class="view-section">
-      <h2 class="header-title" id="txt-reward-title">แลกของรางวัล</h2>
-      <div class="grid-2" id="rewardGridContainer"></div>
-      <button class="btn-close-app text-close-btn" onclick="liff.closeWindow()">กลับหน้าแชท (OK)</button>
-    </div>
-
-    <div id="view-history" class="view-section">
-      <h2 class="header-title" id="txt-history-title">ประวัติการใช้งาน</h2>
-      <div class="list-container" id="historyContainer"></div>
-      <button class="btn-close-app text-close-btn" onclick="liff.closeWindow()">กลับหน้าแชท (OK)</button>
-    </div>
-
-    <div id="view-menu" class="view-section">
-      <h2 class="header-title" id="txt-menu-title">เมนูเครื่องดื่ม</h2>
-      <div class="coming-soon-box">
-        <div style="font-size: 55px; margin-bottom: 15px;">🥤</div>
-        <h3 style="margin: 0 0 5px 0; font-size: 20px;">Coming Soon</h3>
-        <p style="font-size: 14px; margin: 0; color: var(--text-light);" id="txt-cs-1">เตรียมพบกับเมนูใหม่เร็วๆ นี้</p>
+  
+      <div id="view-history" class="view-section">
+        <h2 class="header-title" id="txt-history-title">ประวัติการใช้งาน</h2>
+        <div class="list-container" id="historyContainer"></div>
+        <button class="btn-close-app text-close-btn" onclick="liff.closeWindow()">กลับหน้าแชท (OK)</button>
       </div>
-      <button class="btn-close-app text-close-btn" onclick="liff.closeWindow()">กลับหน้าแชท (OK)</button>
-    </div>
-
-    <div id="view-promo" class="view-section">
-      <h2 class="header-title" id="txt-promo-title">โปรโมชั่นพิเศษ</h2>
-      <div class="coming-soon-box">
-        <div style="font-size: 55px; margin-bottom: 15px;">📢</div>
-        <h3 style="margin: 0 0 5px 0; font-size: 20px;">Coming Soon</h3>
-        <p style="font-size: 14px; margin: 0; color: var(--text-light);" id="txt-cs-2">โปรโมชั่นเด็ดๆ กำลังมา</p>
+  
+      <div id="view-menu" class="view-section">
+        <h2 class="header-title" id="txt-menu-title">เมนูเครื่องดื่ม</h2>
+        <div class="coming-soon-box">
+          <div class="coming-soon-icon">🥤</div>
+          <h3 class="coming-soon-title">Coming Soon</h3>
+          <p class="coming-soon-subtitle" id="txt-cs-1">เตรียมพบกับเมนูใหม่เร็วๆ นี้</p>
+        </div>
+        <button class="btn-close-app text-close-btn" onclick="liff.closeWindow()">กลับหน้าแชท (OK)</button>
       </div>
-      <button class="btn-close-app text-close-btn" onclick="liff.closeWindow()">กลับหน้าแชท (OK)</button>
+  
+      <div id="view-promo" class="view-section">
+        <h2 class="header-title" id="txt-promo-title">โปรโมชั่นพิเศษ</h2>
+        <div class="coming-soon-box">
+          <div class="coming-soon-icon">📢</div>
+          <h3 class="coming-soon-title">Coming Soon</h3>
+          <p class="coming-soon-subtitle" id="txt-cs-2">โปรโมชั่นเด็ดๆ กำลังมา</p>
+        </div>
+        <button class="btn-close-app text-close-btn" onclick="liff.closeWindow()">กลับหน้าแชท (OK)</button>
+      </div>
+  
     </div>
 
+    <!-- Modern Bottom Navigation Bar -->
+    <nav class="bottom-nav">
+      <button class="nav-item nav-home" onclick="switchTab('home')">
+        <div class="nav-icon-wrapper">🏡</div>
+        <span class="nav-label">หน้าแรก</span>
+      </button>
+      <button class="nav-item nav-rewards" onclick="switchTab('rewards')">
+        <div class="nav-icon-wrapper">🎁</div>
+        <span class="nav-label">แลกรางวัล</span>
+      </button>
+      <button class="nav-item nav-history" onclick="switchTab('history')">
+        <div class="nav-icon-wrapper">📋</div>
+        <span class="nav-label">ประวัติ</span>
+      </button>
+      <button class="nav-item nav-menu" onclick="switchTab('menu')">
+        <div class="nav-icon-wrapper">🥤</div>
+        <span class="nav-label">เมนู</span>
+      </button>
+      <button class="nav-item nav-promo" onclick="switchTab('promo')">
+        <div class="nav-icon-wrapper">📢</div>
+        <span class="nav-label">โปรโมชั่น</span>
+      </button>
+    </nav>
   </div>
 
   <script>
