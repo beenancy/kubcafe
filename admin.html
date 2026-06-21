@@ -21,14 +21,7 @@
     .btn-home { background: rgba(255, 255, 255, 0.9); border: 2px solid var(--border-color); color: var(--text-brown); padding: 6px 12px; border-radius: 20px; font-weight: bold; font-size: 12px; cursor: pointer; box-shadow: 0 4px 10px rgba(140, 122, 107, 0.1); display: flex; align-items: center; gap: 5px; text-decoration: none; backdrop-filter: blur(5px); }
     .preview-section { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 15px; min-height: 250px; margin-top: 40px; }
     
-    /* 🚀 [อัปเดต V.9.11] แก้ปัญหากล่องรูปยืดและทับข้อความใน iOS เก่า */
-    .qr-preview-box { 
-      background: white; padding: 8px; border-radius: 16px; border: 2px solid var(--border-color); 
-      display: flex; justify-content: center; align-items: center; 
-      width: 100%; max-width: 280px; height: 280px; aspect-ratio: 1/1; 
-      margin-bottom: 12px; cursor: pointer; box-shadow: 0 10px 25px rgba(140, 122, 107, 0.1); 
-      overflow: hidden; 
-    }
+    .qr-preview-box { background: white; padding: 8px; border-radius: 16px; border: 2px solid var(--border-color); display: flex; justify-content: center; align-items: center; width: 100%; max-width: 280px; height: 280px; aspect-ratio: 1/1; margin-bottom: 12px; cursor: pointer; box-shadow: 0 10px 25px rgba(140, 122, 107, 0.1); overflow: hidden; }
     @media (max-width: 350px) { .qr-preview-box { height: 220px; } }
     .qr-preview-box img { width: 100%; height: 100%; object-fit: contain; border-radius: 8px; }
     
@@ -51,12 +44,17 @@
 
     /* 🚀 สไตล์ระบบแจ้งเตือน KDS */
     #kds-toast-container { position: fixed; top: 15px; left: 50%; transform: translateX(-50%); z-index: 10000; display: flex; flex-direction: column; gap: 10px; width: 90%; max-width: 400px; pointer-events: none; }
-    .kds-toast { background: white; border-left: 8px solid #D84315; border-radius: 14px; padding: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.25); -webkit-animation: slideDown 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); animation: slideDown 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); pointer-events: auto; cursor: pointer; display: flex; flex-direction: column; }
-    .kds-toast-title { margin: 0 0 5px; color: #D84315; font-size: 18px; font-weight: bold; }
+    
+    /* โทนสี 3 โหมด */
+    .kds-toast { background: white; border-left: 8px solid #D32F2F; border-radius: 14px; padding: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.25); -webkit-animation: slideDown 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); animation: slideDown 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); pointer-events: auto; cursor: pointer; display: flex; flex-direction: column; }
+    .kds-toast-title { margin: 0 0 5px; color: #D32F2F; font-size: 18px; font-weight: bold; } /* แดง (แลกแต้ม Default) */
     .kds-toast-desc { margin: 0; color: var(--text-brown); font-size: 14px; font-weight: bold; }
     
-    .kds-toast-chat { border-left-color: #06C755; }
+    .kds-toast-chat { border-left-color: #06C755; } /* เขียว (พิมพ์แชทมา) */
     .kds-toast-chat .kds-toast-title { color: #06C755; }
+
+    .kds-toast-duplicate { border-left-color: #F39C12; } /* ส้ม (สแกนซ้ำ) */
+    .kds-toast-duplicate .kds-toast-title { color: #F39C12; }
 
     @-webkit-keyframes slideDown { from { opacity: 0; -webkit-transform: translateY(-50px); } to { opacity: 1; -webkit-transform: translateY(0); } }
     @keyframes slideDown { from { opacity: 0; transform: translateY(-50px); } to { opacity: 1; transform: translateY(0); } }
@@ -224,13 +222,25 @@
       const container = document.getElementById('kds-toast-container');
       const toast = document.createElement('div');
       
+      // 🚀 แยกเงื่อนไขการใช้สี
       const isChat = order.type === 'chat';
-      toast.className = 'kds-toast' + (isChat ? ' kds-toast-chat' : '');
+      const isDup = order.type === 'duplicate';
+      
+      let extraClass = '';
+      if (isChat) extraClass = ' kds-toast-chat';
+      else if (isDup) extraClass = ' kds-toast-duplicate';
+      
+      toast.className = 'kds-toast' + extraClass;
       
       const timeStr = new Date(order.timestamp).toLocaleTimeString('th-TH');
       
+      // 🚀 เลือกไอคอนนำหน้าให้เข้ากับโหมด
+      let iconPrefix = '🎁 ';
+      if (isChat) iconPrefix = '';
+      if (isDup) iconPrefix = '⚠️ ';
+      
       let html = `
-        <div class="kds-toast-title">${isChat ? '' : '🎁 '} ${order.item}</div>
+        <div class="kds-toast-title">${iconPrefix}${order.item}</div>
         <div class="kds-toast-desc">👤 ลูกค้า: ${order.customerName}</div>
         <div style="font-size: 12px; color: #B0A69D; margin-top: 8px;">
           ⏱️ ${timeStr} | แตะพื้นที่ว่างเพื่อรับทราบ (ซ่อนการ์ด)
