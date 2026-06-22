@@ -91,19 +91,19 @@
         <div class="list-container" id="recentHistoryContainer"></div>
       </div>
 
-      <button class="btn-close-app text-close-btn" onclick="liff.closeWindow()">OK</button>
+      <button class="btn-close-app text-close-btn" onclick="closeAppAndGoToLINE()">OK</button>
     </div>
 
     <div id="view-rewards" class="view-section">
       <h2 class="header-title" id="txt-reward-title">แลกของรางวัล</h2>
       <div class="grid-2" id="rewardGridContainer"></div>
-      <button class="btn-close-app text-close-btn" onclick="liff.closeWindow()">OK</button>
+      <button class="btn-close-app text-close-btn" onclick="closeAppAndGoToLINE()">OK</button>
     </div>
 
     <div id="view-history" class="view-section">
       <h2 class="header-title" id="txt-history-title">ประวัติการใช้งาน</h2>
       <div class="list-container" id="historyContainer"></div>
-      <button class="btn-close-app text-close-btn" onclick="liff.closeWindow()">OK</button>
+      <button class="btn-close-app text-close-btn" onclick="closeAppAndGoToLINE()">OK</button>
     </div>
 
     <div id="view-menu" class="view-section">
@@ -113,7 +113,7 @@
         <h3 style="margin: 0 0 5px 0; font-size: 20px;">Coming Soon</h3>
         <p style="font-size: 14px; margin: 0; color: var(--text-light);" id="txt-cs-1">เตรียมพบกับเมนูใหม่เร็วๆ นี้</p>
       </div>
-      <button class="btn-close-app text-close-btn" onclick="liff.closeWindow()">OK</button>
+      <button class="btn-close-app text-close-btn" onclick="closeAppAndGoToLINE()">OK</button>
     </div>
 
     <div id="view-promo" class="view-section">
@@ -123,7 +123,7 @@
         <h3 style="margin: 0 0 5px 0; font-size: 20px;">Coming Soon</h3>
         <p style="font-size: 14px; margin: 0; color: var(--text-light);" id="txt-cs-2">โปรโมชั่นเด็ดๆ กำลังมา</p>
       </div>
-      <button class="btn-close-app text-close-btn" onclick="liff.closeWindow()">OK</button>
+      <button class="btn-close-app text-close-btn" onclick="closeAppAndGoToLINE()">OK</button>
     </div>
 
   </div>
@@ -348,6 +348,15 @@
     function openQRScanner() {
       if (liff.isApiAvailable('scanCodeV2')) { liff.scanCodeV2().then(result => {}); } 
       else { window.location.href = "https://line.me/R/nv/QRCodeReader"; }
+    }
+
+    // 🚀 ฟังก์ชันใหม่: ดักการปิดหน้าจอ เพื่อพากลับเข้า LINE OA กรณีเปิดจากเบราว์เซอร์ภายนอก
+    function closeAppAndGoToLINE() {
+      if (liff.isInClient()) {
+        liff.closeWindow(); 
+      } else {
+        window.location.href = "https://line.me/R/ti/p/@848dmzja"; 
+      }
     }
 
     window.onload = initApp;
