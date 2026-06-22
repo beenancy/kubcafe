@@ -350,9 +350,13 @@
       else { window.location.href = "https://line.me/R/nv/QRCodeReader"; }
     }
 
-    // 🚀 Smart Router: บังคับวิ่งเข้าลิงก์เปิดหน้าแชท LINE OA โดยตรงทุกกรณี ไม่ว่าจะอยู่ข้างในหรือข้างนอก LINE
+    // 🚀 Smart Router: เช็กบริบทแวดล้อมเพื่อสร้าง UX ที่ดีที่สุด (Smooth Close vs Force Deep Link)
     function closeAppAndGoToLINE() {
-      window.location.href = "https://line.me/R/ti/p/@848dmzja"; 
+      if (liff.isInClient()) {
+        liff.closeWindow(); 
+      } else {
+        window.location.href = "https://line.me/R/ti/p/@848dmzja"; 
+      }
     }
 
     window.onload = initApp;
