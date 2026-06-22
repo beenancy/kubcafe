@@ -192,7 +192,8 @@
 
     async function fetchMemberData() {
       try {
-        const fetchUrl = `${API_URL}/api/get-member?userId=${globalUserId}&t=${Date.now()}`;
+        const idToken = liff.getIDToken();
+        const fetchUrl = `${API_URL}/api/get-member?userId=${globalUserId}&idToken=${idToken || ''}&t=${Date.now()}`;
         const res = await fetch(fetchUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -316,9 +317,10 @@
       Swal.fire({ title: globalLang === "EN" ? 'Processing...' : 'กำลังดำเนินการ...', allowOutsideClick: false, didOpen: () => { Swal.showLoading() } });
 
       try {
+        const idToken = liff.getIDToken();
         const res = await fetch(`${API_URL}/api/redeem-reward`, {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ userId: globalUserId, customerName: globalUserName, pointsUsed: pointsNeeded, rewardName: logName })
+          body: JSON.stringify({ userId: globalUserId, idToken: idToken, customerName: globalUserName, pointsUsed: pointsNeeded, rewardName: logName })
         });
         const data = await res.json();
         
