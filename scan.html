@@ -31,7 +31,6 @@
     const SCAN_LIFF_ID = "2010206186-u1XRJldq"; 
 
     function redirectToMemberApp() {
-      // 🚀 เด้งไปไฟล์ app.html ตัวใหม่ล่าสุด
       window.location.replace("https://beenancy.github.io/kubcafe/app.html?tab=home&nocache=" + new Date().getTime());
     }
 
@@ -86,8 +85,9 @@
         if (!shopCode) { await showAlert('ไม่พบข้อมูล', '❌ สแกนผิดวิธีค่ะ', 'error', 'ตกลง', true); return; }
         
         const profile = await liff.getProfile();
+        const idToken = liff.getIDToken();
         const cleanedName = encodeURIComponent((profile.displayName || '').replace(/[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF]/g, ''));
-        const response = await fetch(`${API_URL}?action=scanAddPoint&userId=${profile.userId}&name=${cleanedName}&shopCode=${encodeURIComponent(shopCode)}`);
+        const response = await fetch(`${API_URL}?action=scanAddPoint&userId=${profile.userId}&idToken=${idToken || ''}&name=${cleanedName}&shopCode=${encodeURIComponent(shopCode)}`);
         const data = await response.json();
         const isEN = data.lang === "EN";
         
