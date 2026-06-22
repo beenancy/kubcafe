@@ -34,10 +34,15 @@
       window.location.replace("https://beenancy.github.io/kubcafe/app.html?tab=home&nocache=" + new Date().getTime());
     }
 
-    function closeLiffAndReturnToChat() {
-      if (liff.isInClient()) { liff.closeWindow(); } 
-      else { window.location.href = "https://line.me/R/ti/p/@848dmzja"; }
-    }
+    // เปลี่ยนจากเดิมที่เป็น closeLiffAndReturnToChat ให้เป็นฟังก์ชัน Smart Router ตัวใหม่นี้ครับ
+function closeAppAndGoToLINE() {
+  if (liff.isInClient()) {
+    liff.closeWindow(); 
+  } else {
+    // กรณีที่ไม่ได้เปิดผ่านแอป LINE (เช่น เบราว์เซอร์ปกติ) ให้ดีดกลับเข้า LINE OA
+    window.location.href = "https://line.me/R/ti/p/@848dmzja"; 
+  }
+}
 
     async function showAlert(title, text, icon, btnText, isWarning = false) {
       document.getElementById('spinner').style.display = 'none';
@@ -47,7 +52,7 @@
         customClass: { popup: 'custom-swal-popup', title: 'custom-swal-title', htmlContainer: 'custom-swal-html', confirmButton: isWarning ? 'matcha-btn warning-btn' : 'matcha-btn' },
         allowOutsideClick: false, confirmButtonText: btnText, buttonsStyling: false 
       });
-      closeLiffAndReturnToChat(); 
+      closeAppAndGoToLINE(); 
     }
 
     async function showCooldownCountdown(remainSec, lang) {
@@ -71,7 +76,7 @@
         },
         willClose: () => { clearInterval(countdownInterval); }
       });
-      closeLiffAndReturnToChat(); 
+      closeAppAndGoToLINE(); 
     }
 
     async function processPoints() {
