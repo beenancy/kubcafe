@@ -30,17 +30,9 @@
     const API_URL = "https://kub-backend.nan23082526.workers.dev";
     const SCAN_LIFF_ID = "2010206186-u1XRJldq"; 
 
-    function redirectToMemberApp() {
-      window.location.replace("https://beenancy.github.io/kubcafe/app.html?tab=home&nocache=" + new Date().getTime());
-    }
-
-    // 🚀 Smart Router: ควบคุมสถาปัตยกรรมปิดหน้าเว็บ และบังคับนำทางกลับสู่ LINE OA
+    // 🚀 Smart Router: บังคับวิ่งเข้าลิงก์เปิดหน้าแชท LINE OA โดยตรงทุกกรณี 100%
     function closeAppAndGoToLINE() {
-      if (liff.isInClient()) {
-        liff.closeWindow(); 
-      } else {
-        window.location.href = "https://line.me/R/ti/p/@848dmzja"; 
-      }
+      window.location.href = "https://line.me/R/ti/p/@848dmzja"; 
     }
 
     async function showAlert(title, text, icon, btnText, isWarning = false) {
@@ -100,7 +92,7 @@
 
           const ptsText = `<div style="font-size:26px; font-weight:900; color:#A3B18A; margin:8px 0; line-height: 1;">+${data.ptsAdded} ${isEN ? 'PTS' : 'แต้ม'} ☕</div>`;
           const totalText = `<div style="font-size:14px; color:#4A3F35; font-weight:bold; margin-bottom:12px;">${isEN ? 'Total:' : 'สะสมรวม:'} <span style="color:#E65100; font-size:20px; font-weight:900;">${data.totalPts}</span> ${isEN ? 'PTS' : 'แต้ม'}</div>`;
-          const remarkLabel = isEN ? 'Loading Member App...' : 'กำลังพาท่านเข้าสู่หน้าเช็กแต้ม...';
+          const remarkLabel = isEN ? 'Returning to Chat...' : 'กำลังพาท่านเข้าสู่หน้าแชท...';
           const remark = `<div style="font-size:12px; font-weight:600; color:#A3B18A; border-top: 1px dashed #E8E2D9; padding-top: 12px; margin-top: 5px;">${remarkLabel}</div>`;
           
           document.getElementById('spinner').style.display = 'none';
@@ -108,10 +100,10 @@
           
           Swal.fire({
             icon: 'success', title: isEN ? 'SUCCESS!' : 'รับแต้มสำเร็จ', html: ptsText + totalText + remark,
-            showConfirmButton: true, confirmButtonText: isEN ? 'Go to App' : 'เข้าสู่หน้าเช็กแต้ม',
+            showConfirmButton: true, confirmButtonText: isEN ? 'Go to Chat' : 'เข้าสู่หน้าแชท LINE',
             customClass: { popup: 'custom-swal-popup', title: 'custom-swal-title', htmlContainer: 'custom-swal-html', confirmButton: 'matcha-btn' },
             buttonsStyling: false, timer: 2500, timerProgressBar: true
-          }).then(() => { redirectToMemberApp(); });
+          }).then(() => { closeAppAndGoToLINE(); });
 
         } else if (data.status === "cooldown") {
           await showCooldownCountdown(data.remain || 30, data.lang);
