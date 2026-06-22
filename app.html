@@ -350,13 +350,9 @@
       else { window.location.href = "https://line.me/R/nv/QRCodeReader"; }
     }
 
-    // 🚀 ฟังก์ชันใหม่: ดักการปิดหน้าจอ เพื่อพากลับเข้า LINE OA กรณีเปิดจากเบราว์เซอร์ภายนอก
+    // 🚀 Smart Router: บังคับวิ่งเข้าลิงก์เปิดหน้าแชท LINE OA โดยตรงทุกกรณี ไม่ว่าจะอยู่ข้างในหรือข้างนอก LINE
     function closeAppAndGoToLINE() {
-      if (liff.isInClient()) {
-        liff.closeWindow(); 
-      } else {
-        window.location.href = "https://line.me/R/ti/p/@848dmzja"; 
-      }
+      window.location.href = "https://line.me/R/ti/p/@848dmzja"; 
     }
 
     window.onload = initApp;
