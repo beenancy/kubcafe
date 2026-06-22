@@ -2,224 +2,188 @@
 <html lang="th">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>KUB Cafe - Member App V.3.3</title>
+  <title>KUB Cafe</title>
   
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
   
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;600;700&display=swap');
     
-    :root { --bg-cream: #FDFCF0; --matcha: #A3B18A; --matcha-dark: #7A8B62; --text-main: #4A3F35; --text-light: #B0A69D; --border: #E8E2D9; --unsafe-bottom: max(20px, env(safe-area-inset-bottom)); }
-    body, html { margin: 0; padding: 0; width: 100%; height: 100vh; font-family: 'Prompt', sans-serif; background-color: var(--bg-cream); overflow-x: hidden; display: flex; flex-direction: column; color: var(--text-main); -webkit-user-select: none; }
+    :root { --bg-cream: #FDFCF0; --matcha: #A3B18A; --matcha-dark: #7A8B62; --text-main: #4A3F35; --text-light: #B0A69D; --border: #E8E2D9; }
+    body, html { margin: 0; padding: 0; width: 100%; height: 100vh; font-family: 'Prompt', sans-serif; background-color: var(--bg-cream); overflow-x: hidden; display: flex; flex-direction: column; color: var(--text-main); }
     
     #loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-cream); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; color: var(--matcha-dark); transition: opacity 0.3s; }
     .spinner { border: 3px solid var(--border); border-left-color: var(--matcha-dark); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-bottom: 15px; }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-    .app-content { flex: 1; overflow-y: auto; padding: 15px 15px calc(30px + var(--unsafe-bottom)) 15px; }
-    .view-section { display: none; animation: fadeIn 0.4s ease; padding-bottom: 20px; }
+    .app-content { flex: 1; overflow-y: auto; padding: 20px; }
+    .view-section { display: none; animation: fadeIn 0.4s ease; padding-bottom: 30px; }
     .view-section.active { display: block; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-    .header-title { font-size: 20px; font-weight: 700; margin: 0 0 15px 0; color: var(--matcha-dark); text-align: center; display: flex; align-items: center; justify-content: center; gap: 8px; }
+    .header-title { font-size: 22px; font-weight: 700; margin: 0 0 20px 0; color: var(--matcha-dark); text-align: center; }
     
-    .member-card { background: linear-gradient(135deg, #A3B18A, #8b9d70); border-radius: 20px; padding: 25px 20px; color: white; text-align: center; box-shadow: 0 10px 25px rgba(163, 177, 138, 0.25); margin-bottom: 15px; position: relative; overflow: hidden; }
-    .profile-pic { width: 65px; height: 65px; border-radius: 50%; border: 3px solid white; object-fit: cover; margin-bottom: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
-    .points-number { font-size: 52px; font-weight: 700; line-height: 1; margin: 5px 0; }
+    .member-card { background: linear-gradient(135deg, #A3B18A, #8b9d70); border-radius: 24px; padding: 30px 20px; color: white; text-align: center; box-shadow: 0 15px 30px rgba(163, 177, 138, 0.3); margin-bottom: 20px; position: relative; overflow: hidden; }
+    .profile-pic { width: 70px; height: 70px; border-radius: 50%; border: 3px solid white; object-fit: cover; margin-bottom: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+    .points-number { font-size: 56px; font-weight: 700; line-height: 1; margin: 5px 0; }
     
-    .action-box { background: white; padding: 18px 10px; border-radius: 18px; text-align: center; border: 1px solid var(--border); box-shadow: 0 8px 20px rgba(140, 122, 107, 0.05); cursor: pointer; transition: 0.2s; }
+    .action-box { background: white; padding: 20px; border-radius: 20px; text-align: center; border: 1px solid var(--border); box-shadow: 0 8px 20px rgba(0,0,0,0.02); cursor: pointer; transition: 0.2s; }
     .action-box:active { transform: scale(0.97); }
 
-    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 15px; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+    .card-box { background: white; border-radius: 20px; padding: 20px 15px; text-align: center; border: 1px solid var(--border); box-shadow: 0 8px 20px rgba(0,0,0,0.02); margin-bottom: 15px; }
+    .card-icon { font-size: 45px; margin-bottom: 10px; }
     
-    .card-box { background: white; border-radius: 18px; padding: 12px 10px 15px 10px; text-align: center; border: 1px solid var(--border); box-shadow: 0 8px 20px rgba(140, 122, 107, 0.05); transition: transform 0.2s; position: relative; overflow: hidden; display: flex; flex-direction: column; align-items: center; gap: 5px; }
-    .card-box:active { transform: scale(0.98); }
-    .card-icon-area { background-color: var(--bg-cream); width: 100%; aspect-ratio: 1/1; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 45px; border: 1px solid var(--border); margin-bottom: 5px; }
-    .card-reward-name { font-weight: 600; font-size: 14px; color: var(--text-main); width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .card-points-req { font-size: 11px; color: var(--matcha-dark); font-weight: bold; background: #EAF0E4; padding: 2px 8px; border-radius: 10px; display: inline-flex; align-items: center; gap: 3px; }
-    
-    .btn-matcha { background: var(--matcha); color: white; border: none; padding: 8px 12px; border-radius: 10px; font-weight: 600; font-family: 'Prompt'; margin-top: 5px; width: auto; min-width: 70px; cursor: pointer; transition: 0.2s; font-size: 12px; display: inline-flex; align-items: center; justify-content: center; gap: 4px; box-shadow: 0 4px 10px rgba(163, 177, 138, 0.2); }
-    .btn-matcha:active { transform: translateY(1px); box-shadow: 0 2px 5px rgba(163, 177, 138, 0.2); }
-    .btn-matcha:disabled { background: #E8E2D9; color: var(--text-light); cursor: not-allowed; transform: none; box-shadow: none; }
+    .btn-matcha { background: var(--matcha); color: white; border: none; padding: 10px; border-radius: 14px; font-weight: 600; font-family: 'Prompt'; margin-top: 15px; width: 100%; cursor: pointer; transition: 0.2s; font-size: 14px; }
+    .btn-matcha:active { transform: scale(0.95); }
+    .btn-matcha:disabled { background: #E8E2D9; color: var(--text-light); cursor: not-allowed; transform: none; }
 
-    .list-container { background: white; border-radius: 18px; border: 1px solid var(--border); overflow: hidden; box-shadow: 0 8px 20px rgba(140, 122, 107, 0.05); margin-bottom: 15px; }
-    .list-item { padding: 15px 18px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+    .list-container { background: white; border-radius: 20px; border: 1px solid var(--border); overflow: hidden; box-shadow: 0 8px 20px rgba(0,0,0,0.02); margin-bottom: 15px; }
+    .list-item { padding: 18px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
     .list-item:last-child { border-bottom: none; }
 
-    .coming-soon-box { background: white; border-radius: 20px; padding: 40px 15px; text-align: center; border: 2px dashed var(--border); color: var(--matcha-dark); margin-bottom: 15px; box-shadow: 0 8px 20px rgba(140, 122, 107, 0.02); }
+    .coming-soon-box { background: white; border-radius: 24px; padding: 50px 20px; text-align: center; border: 2px dashed var(--border); color: var(--matcha-dark); margin-bottom: 15px; box-shadow: 0 8px 20px rgba(0,0,0,0.01); }
 
-    .btn-close-app { background: #E8E2D9; color: var(--text-main); border: none; padding: 15px; border-radius: 16px; font-weight: 600; font-family: 'Prompt'; margin-top: 15px; width: 100%; cursor: pointer; transition: 0.2s; font-size: 14px; box-shadow: 0 5px 15px rgba(0,0,0,0.03); display: flex; align-items: center; justify-content: center; gap: 6px; }
-    .btn-close-app:active { transform: scale(0.97); background-color: #D6CFBE; }
+    .btn-close-app { background: #E8E2D9; color: var(--text-main); border: none; padding: 15px; border-radius: 16px; font-weight: 600; font-family: 'Prompt'; margin-top: 15px; width: 100%; cursor: pointer; transition: 0.2s; font-size: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.03); }
+    .btn-close-app:active { transform: scale(0.97); }
 
-    /* 🚀 สไตล์ Popup แจ้งแต้มแบบสั้น (Vertically Compact) 🚀 */
     .swal2-container { z-index: 10000 !important; }
-    .swal2-popup { border-radius: 24px !important; font-family: 'Prompt', sans-serif !important; border: 2px solid var(--border) !important; background-color: white !important; padding: 15px !important; width: 280px !important; }
-    .swal2-title { color: var(--text-main) !important; font-size: 18px !important; padding: 0 !important; margin-top: 5px !important; }
-    .swal2-html-container { color: var(--text-light) !important; font-size: 14px !important; margin: 10px 0 !important; padding: 0 !important; }
-    .swal2-confirm { background-color: var(--matcha) !important; border-radius: 12px !important; font-weight: bold !important; font-family: 'Prompt' !important; color: white !important; padding: 8px 20px !important; font-size: 14px !important; margin-top: 5px !important; }
-    .swal2-cancel { background-color: #E8E2D9 !important; border-radius: 12px !important; font-weight: bold !important; font-family: 'Prompt' !important; color: var(--text-main) !important; padding: 8px 20px !important; font-size: 14px !important; margin-top: 5px !important; }
-    .swal2-confirm:active, .swal2-cancel:active { transform: scale(0.97); }
-    .swal2-icon { scale: 0.7 !important; margin: 0 auto !important; }
+    .swal2-popup { border-radius: 24px !important; font-family: 'Prompt', sans-serif !important; }
+    .swal2-confirm, .swal2-cancel { border-radius: 12px !important; font-weight: bold !important; font-family: 'Prompt' !important; }
   </style>
 </head>
 <body>
 
-  <audio id="success-sound" src="https://beenancy.github.io/kubcafe/line_chime.mp3" preload="auto" playsinline></audio>
-
   <div id="loading-overlay">
     <div class="spinner"></div>
-    <div style="font-size: 13px;">กำลังเข้าสู่ระบบ KUB Cafe...</div>
+    <div style="font-size: 14px;">กำลังเข้าสู่ระบบ...</div>
   </div>
 
   <div class="app-content">
     
     <div id="view-home" class="view-section active">
-      <h2 class="header-title" id="txt-home-title"><i class="fas fa-certificate"></i> เช็กแต้ม</h2>
+      <h2 class="header-title" id="txt-home-title">เช็กแต้ม</h2>
       <div class="member-card">
         <img id="userProfilePic" class="profile-pic" src="https://via.placeholder.com/70" alt="Profile">
         <div class="points-number"><span id="userPoints">0</span></div>
-        <div style="font-size: 15px; margin-bottom: 5px;" id="txt-pts-label">คะแนนสะสม</div>
-        <div style="font-size: 12px; opacity: 0.8;" id="txt-welcome">สวัสดีคุณ <span id="userName" style="font-weight: bold;">...</span></div>
+        <div style="font-size: 16px; margin-bottom: 5px;" id="txt-pts-label">คะแนนสะสม</div>
+        <div style="font-size: 13px; opacity: 0.8;" id="txt-welcome">ยินดีต้อนรับคุณ <span id="userName">...</span></div>
       </div>
       
       <div class="grid-2">
         <div class="action-box" onclick="openQRScanner()">
-          <div style="font-size: 30px; margin-bottom: 5px;">📷</div>
-          <div style="font-weight: 600; font-size: 13px; color: var(--matcha-dark);" id="txt-scan-btn">สแกนรับแต้ม</div>
+          <div style="font-size: 36px; margin-bottom: 5px;">📷</div>
+          <div style="font-weight: 600; font-size: 14px; color: var(--matcha-dark);" id="txt-scan-btn">สแกนรับแต้ม</div>
         </div>
         <div class="action-box" onclick="switchTab('rewards')">
-          <div style="font-size: 30px; margin-bottom: 5px;">🎁</div>
-          <div style="font-weight: 600; font-size: 13px; color: #C57B57;" id="txt-go-reward-btn">แลกของรางวัล</div>
+          <div style="font-size: 36px; margin-bottom: 5px;">🎁</div>
+          <div style="font-weight: 600; font-size: 14px; color: #C57B57;" id="txt-go-reward-btn">แลกของรางวัล</div>
         </div>
       </div>
 
       <div style="margin-top: 10px;">
-        <h3 style="font-size: 15px; font-weight: 700; margin-bottom: 10px; color: var(--text-main);" id="txt-recent-history"><i class="fas fa-clock-rotate-left"></i> ประวัติล่าสุด</h3>
+        <h3 style="font-size: 16px; font-weight: 700; margin-bottom: 12px; color: var(--text-main);" id="txt-recent-history">ประวัติล่าสุด</h3>
         <div class="list-container" id="recentHistoryContainer"></div>
       </div>
 
-      <button class="btn-close-app text-close-app-btn" onclick="liff.closeWindow()"><i class="fas fa-times"></i> ปิดหน้าต่าง</button>
+      <button class="btn-close-app text-close-btn" onclick="liff.closeWindow()">OK</button>
     </div>
 
     <div id="view-rewards" class="view-section">
-      <h2 class="header-title" id="txt-reward-title"><i class="fas fa-gift"></i> แลกของรางวัล</h2>
+      <h2 class="header-title" id="txt-reward-title">แลกของรางวัล</h2>
       <div class="grid-2" id="rewardGridContainer"></div>
-      <button class="btn-close-app text-close-app-btn" onclick="switchTab('home')"><i class="fas fa-arrow-left"></i> กลับหน้าหลัก</button>
+      <button class="btn-close-app text-close-btn" onclick="liff.closeWindow()">OK</button>
     </div>
 
     <div id="view-history" class="view-section">
-      <h2 class="header-title" id="txt-history-title"><i class="fas fa-history"></i> ประวัติการใช้งาน</h2>
+      <h2 class="header-title" id="txt-history-title">ประวัติการใช้งาน</h2>
       <div class="list-container" id="historyContainer"></div>
-      <button class="btn-close-app text-close-app-btn" onclick="liff.closeWindow()"><i class="fas fa-times"></i> ปิดหน้าต่าง</button>
+      <button class="btn-close-app text-close-btn" onclick="liff.closeWindow()">OK</button>
     </div>
 
     <div id="view-menu" class="view-section">
-      <h2 class="header-title" id="txt-menu-title"><i class="fas fa-coffee"></i> เมนูเครื่องดื่ม</h2>
+      <h2 class="header-title" id="txt-menu-title">เมนูเครื่องดื่ม</h2>
       <div class="coming-soon-box">
-        <div style="font-size: 50px; margin-bottom: 12px;">🥤</div>
-        <h3 style="margin: 0 0 5px 0; font-size: 18px;">Coming Soon</h3>
-        <p style="font-size: 13px; margin: 0; color: var(--text-light);" id="txt-cs-1">เตรียมพบกับเมนูใหม่เร็วๆ นี้</p>
+        <div style="font-size: 55px; margin-bottom: 15px;">🥤</div>
+        <h3 style="margin: 0 0 5px 0; font-size: 20px;">Coming Soon</h3>
+        <p style="font-size: 14px; margin: 0; color: var(--text-light);" id="txt-cs-1">เตรียมพบกับเมนูใหม่เร็วๆ นี้</p>
       </div>
-      <button class="btn-close-app text-close-app-btn" onclick="liff.closeWindow()"><i class="fas fa-times"></i> ปิดหน้าต่าง</button>
+      <button class="btn-close-app text-close-btn" onclick="liff.closeWindow()">OK</button>
     </div>
 
     <div id="view-promo" class="view-section">
-      <h2 class="header-title" id="txt-promo-title"><i class="fas fa-bullhorn"></i> โปรโมชั่นพิเศษ</h2>
+      <h2 class="header-title" id="txt-promo-title">โปรโมชั่นพิเศษ</h2>
       <div class="coming-soon-box">
-        <div style="font-size: 50px; margin-bottom: 12px;">📢</div>
-        <h3 style="margin: 0 0 5px 0; font-size: 18px;">Coming Soon</h3>
-        <p style="font-size: 13px; margin: 0; color: var(--text-light);" id="txt-cs-2">โปรโมชั่นเด็ดๆ กำลังมา</p>
+        <div style="font-size: 55px; margin-bottom: 15px;">📢</div>
+        <h3 style="margin: 0 0 5px 0; font-size: 20px;">Coming Soon</h3>
+        <p style="font-size: 14px; margin: 0; color: var(--text-light);" id="txt-cs-2">โปรโมชั่นเด็ดๆ กำลังมา</p>
       </div>
-      <button class="btn-close-app text-close-app-btn" onclick="liff.closeWindow()"><i class="fas fa-times"></i> ปิดหน้าต่าง</button>
+      <button class="btn-close-app text-close-btn" onclick="liff.closeWindow()">OK</button>
     </div>
 
   </div>
 
   <script>
     const API_URL = "https://kub-backend.nan23082526.workers.dev";
-    const LIFF_ID = "2010206186-p1vWfgui"; // KUB Cafe Store Line OA
+    const LIFF_ID = "2010206186-p1vWfgui"; 
 
     let globalUserId = ""; let globalUserName = ""; let globalTotalPoints = 0; let globalLang = "TH";
 
     const i18n = {
       TH: {
-        homeTitle: "เช็กแต้ม", ptsLabel: "คะแนนสะสม", welcome: "สวัสดีคุณ ", 
+        homeTitle: "เช็กแต้ม", ptsLabel: "คะแนนสะสม", welcome: "ยินดีต้อนรับคุณ ", 
         scanBtn: "สแกนรับแต้ม", goRewardBtn: "แลกของรางวัล", recentHistory: "ประวัติล่าสุด",
         rewardTitle: "แลกของรางวัล", btnRedeem: "แลกเลย", btnNoPts: "แต้มไม่พอ", 
         historyTitle: "ประวัติการใช้งาน", noHistory: "ไม่มีประวัติการใช้งาน",
         menuTitle: "เมนูเครื่องดื่ม", promoTitle: "โปรโมชั่นพิเศษ", 
-        txtEarn: "ได้รับแต้ม", txtRedeem: "แลกรางวัล", txtEdit: "ปรับปรุงแต้ม", 
+        txtEarn: "ได้รับแต้ม", txtRedeem: "แลกรางวัล", txtEdit: "ปรับปรุงแต้ม", closeBtn: "OK",
         comingSoon1: "เตรียมพบกับเมนูใหม่เร็วๆ นี้", comingSoon2: "โปรโมชั่นเด็ดๆ กำลังมา",
-        txtCancel: "ยกเลิก", txtConfirmTitle: "ยืนยันแลกรางวัล", txtProcessing: "กำลังดำเนินการ...",
-        txtPtsAddedTitle: "ได้รับแต้ม!", txtPtsAddedDesc: "คุณได้รับ +{pts} แต้ม",
         rewards: [
-          { icon: "☕", name: "ส่วนลด 50% 1 แก้ว", req: "ใช้ 10 แต้ม", cost: 10, logName: "ส่วนลด 50% 1 แก้ว" },
-          { icon: "🎁", name: "ฟรี! เครื่องดื่ม 1 แก้ว", req: "ใช้ 10 แต้ม", cost: 10, logName: "ฟรี! เครื่องดื่ม 1 แก้ว" }
+          { icon: "☕", name: "ส่วนลด 50%", req: "ใช้ 10 แต้ม", cost: 10, logName: "ส่วนลด 50% 1 แก้ว" }
         ]
       },
       EN: {
-        homeTitle: "Points Balance", ptsLabel: "Points Balance", welcome: "Welcome, ", 
-        scanBtn: "Scan QR", goRewardBtn: "Redeem Rewards", recentHistory: "Recent Activity",
-        rewardTitle: "Redeem Rewards", btnRedeem: "Redeem", btnNoPts: "Not Enough", 
-        historyTitle: "Transaction History", noHistory: "No transaction yet",
-        menuTitle: "Beverage Menu", promoTitle: "Special Offers", 
-        txtEarn: "Points Earned", txtRedeem: "Reward Redeemed", txtEdit: "Points Edited", 
+        homeTitle: "Check Points", ptsLabel: "Total Points", welcome: "Welcome, ", 
+        scanBtn: "Scan QR", goRewardBtn: "Redeem Rewards", recentHistory: "Recent History",
+        rewardTitle: "Redeem Rewards", btnRedeem: "Redeem", btnNoPts: "Not enough", 
+        historyTitle: "Transaction History", noHistory: "No transactions yet",
+        menuTitle: "Beverage Menu", promoTitle: "Special Promo", 
+        txtEarn: "Points Earned", txtRedeem: "Redeemed", txtEdit: "Points Edited", closeBtn: "OK",
         comingSoon1: "New menus are coming very soon", comingSoon2: "Stay tuned for special offers",
-        txtCancel: "Cancel", txtConfirmTitle: "Confirm Redemption", txtProcessing: "Processing...",
-        txtPtsAddedTitle: "Points Added!", txtPtsAddedDesc: "You received +{pts} PTS",
         rewards: [
-          { icon: "☕", name: "50% Discount (1 glass)", req: "10 Pts req.", cost: 10, logName: "ส่วนลด 50% 1 แก้ว" },
-          { icon: "🎁", name: "Free! Drink (1 glass)", req: "10 Pts req.", cost: 10, logName: "ฟรี! เครื่องดื่ม 1 แก้ว" }
+          { icon: "☕", name: "50% Discount", req: "10 Pts req.", cost: 10, logName: "ส่วนลด 50% 1 แก้ว" }
         ]
       }
     };
 
-    function safeSetText(id, text) { const el = document.getElementById(id); if (el) el.innerHTML = text; }
+    function safeSetText(id, text) {
+      const el = document.getElementById(id);
+      if (el) el.innerHTML = text;
+    }
 
     async function initApp() {
       try {
         await liff.init({ liffId: LIFF_ID });
-        if (!liff.isLoggedIn()) { liff.login({ redirectUri: location.href }); return; }
+        if (!liff.isLoggedIn()) { liff.login(); return; }
 
         const profile = await liff.getProfile();
         globalUserId = profile.userId; globalUserName = profile.displayName;
         document.getElementById('userProfilePic').src = profile.pictureUrl || "https://via.placeholder.com/70";
 
-        // 🚀 ตรวจสอบภาษาใน DB ก่อนเพื่อใช้ใน Popup สแกนแต้ม
-        await fetchMemberData();
-
-        const currentUrl = new URL(window.location.href);
-        const params = currentUrl.searchParams;
-        const ptsToAdd = params.get('points_added');
-
-        // 🚀 แก้ข้อ 2: ลอจิกแสดง Popup แจ้งแต้มแบบ centered และสั้นกระชับ 🚀
-        if (ptsToAdd && !sessionStorage.getItem(' kub_pts_shown')) {
-          playSuccessSound();
-          const t = i18n[globalLang];
-          Swal.fire({
-            icon: 'success',
-            title: t.txtPtsAddedTitle,
-            text: t.txtPtsAddedDesc.replace('{pts}', ptsToAdd),
-            confirmButtonColor: '#A3B18A',
-            confirmButtonText: 'OK'
-          });
-          sessionStorage.setItem('kub_pts_shown', 'true'); // ป้องกันแสดงซ้ำตอนรีเฟรช
-        }
-
+        const currentUrl = window.location.href.toLowerCase();
         let targetTab = 'home'; 
-        const tabParam = params.get('tab');
-        if (tabParam === 'rewards') targetTab = 'rewards';
-        else if (tabParam === 'history') targetTab = 'history';
-        else if (tabParam === 'menu') targetTab = 'menu';
-        else if (tabParam === 'promo') targetTab = 'promo';
+        if (currentUrl.includes('tab=rewards')) targetTab = 'rewards';
+        else if (currentUrl.includes('tab=history')) targetTab = 'history';
+        else if (currentUrl.includes('tab=menu') || currentUrl.includes('tab=more')) targetTab = 'menu';
+        else if (currentUrl.includes('tab=promo')) targetTab = 'promo';
         
         switchTab(targetTab); 
+        await fetchMemberData();
 
         document.getElementById('loading-overlay').style.opacity = "0";
         setTimeout(() => document.getElementById('loading-overlay').style.display = "none", 400);
@@ -228,13 +192,24 @@
 
     async function fetchMemberData() {
       try {
-        const res = await fetch(`${API_URL}/api/get-member?userId=${globalUserId}&t=${Date.now()}`, { method: 'POST' }); 
+        const fetchUrl = `${API_URL}/api/get-member?userId=${globalUserId}&t=${Date.now()}`;
+        const res = await fetch(fetchUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ bypassCache: true })
+        }); 
         const result = await res.json();
+        
         if (result.status === "success") {
-          globalTotalPoints = result.data.totalPoints; globalLang = result.data.lang || "TH"; 
+          globalTotalPoints = result.data.totalPoints;
+          globalLang = result.data.lang || "TH"; 
           document.getElementById('userPoints').innerText = globalTotalPoints;
+          
           let historyData = result.data.history || [];
-          renderHistory(historyData); applyLanguage();
+          historyData.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+
+          applyLanguage(); 
+          renderHistory(historyData); 
         }
       } catch (err) { console.error("Fetch Data Error:", err); }
     }
@@ -242,18 +217,22 @@
     function applyLanguage() {
       try {
         const t = i18n[globalLang];
-        safeSetText('txt-home-title', `<i class="fas fa-certificate"></i> ${t.homeTitle}`);
+        safeSetText('txt-home-title', t.homeTitle);
         safeSetText('txt-pts-label', t.ptsLabel);
         safeSetText('txt-welcome', `${t.welcome} <span style="font-weight:bold;">${globalUserName}</span>`);
         safeSetText('txt-scan-btn', t.scanBtn);
         safeSetText('txt-go-reward-btn', t.goRewardBtn);
-        safeSetText('txt-recent-history', `<i class="fas fa-clock-rotate-left"></i> ${t.recentHistory}`);
+        safeSetText('txt-recent-history', t.recentHistory);
         
-        safeSetText('txt-reward-title', `<i class="fas fa-gift"></i> ${t.rewardTitle}`);
-        safeSetText('txt-history-title', `<i class="fas fa-history"></i> ${t.historyTitle}`);
-        safeSetText('txt-menu-title', `<i class="fas fa-coffee"></i> ${t.menuTitle}`);
-        safeSetText('txt-promo-title', `<i class="fas fa-bullhorn"></i> ${t.promoTitle}`);
-        safeSetText('txt-cs-1', t.comingSoon1); safeSetText('txt-cs-2', t.comingSoon2); 
+        safeSetText('txt-reward-title', t.rewardTitle);
+        safeSetText('txt-history-title', t.historyTitle);
+        safeSetText('txt-menu-title', t.menuTitle);
+        safeSetText('txt-promo-title', t.promoTitle);
+
+        safeSetText('txt-cs-1', t.comingSoon1); 
+        safeSetText('txt-cs-2', t.comingSoon2); 
+        
+        document.querySelectorAll('.text-close-btn').forEach(el => el.innerText = t.closeBtn);
         
         let rewardHtml = "";
         t.rewards.forEach(rw => {
@@ -264,9 +243,9 @@
           
           rewardHtml += `
             <div class="card-box">
-              <div class="card-icon-area">${rw.icon}</div>
-              <div class="card-reward-name">${rw.name}</div>
-              <div class="card-points-req"><i class="fas fa-coins"></i> ${rw.req}</div>
+              <div class="card-icon">${rw.icon}</div>
+              <div style="font-weight: 600; font-size: 15px;">${rw.name}</div>
+              <div style="font-size: 12px; color: var(--text-light); margin-top: 5px;">${rw.req}</div>
               <button class="${btnClass}" ${btnAttr}>${btnText}</button>
             </div>
           `;
@@ -282,52 +261,59 @@
         const t = i18n[globalLang];
         
         if (!historyArr || historyArr.length === 0) {
-          const emptyHtml = `<div style="padding: 30px; text-align: center; color: var(--text-light); font-size:13px;">${t.noHistory}</div>`;
-          fullContainer.innerHTML = emptyHtml; if(recentContainer) recentContainer.innerHTML = emptyHtml;
+          const emptyHtml = `<div style="padding: 30px; text-align: center; color: var(--text-light); font-size:14px;">${t.noHistory}</div>`;
+          fullContainer.innerHTML = emptyHtml;
+          if(recentContainer) recentContainer.innerHTML = emptyHtml;
           return;
         }
 
-        let fullHtml = ""; let recentHtml = "";
+        let fullHtml = "";
+        let recentHtml = "";
+
         historyArr.forEach((item, index) => {
           const d = new Date(item.timestamp);
           const dateStr = d.toLocaleDateString('th-TH', { day: '2-digit', month: '2-digit', year: '2-digit' }) + ' ' + d.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
           
-          let icon = "✅"; let title = t.txtEarn; let ptsText = `+${item.points}`; let ptsColor = "#A3B18A";
-          if (item.type === "redeem") { icon = "🎁"; title = rwlogNameFind(item.logName); ptsText = `-${item.points}`; ptsColor = "#C57B57"; }
+          let icon = "☕"; let title = t.txtEarn; let ptsText = `+${item.points}`; let ptsColor = "#A3B18A";
+          if (item.type === "redeem") { icon = "🎁"; title = t.txtRedeem; ptsText = `-${item.points}`; ptsColor = "#C57B57"; }
           else if (item.type === "edit") { icon = "⚙️"; title = t.txtEdit; ptsText = item.points > 0 ? `+${item.points}` : item.points; }
 
           const itemHtml = `
             <div class="list-item">
-              <div><div style="font-weight:600; font-size:13px; color:var(--text-main);">${icon} ${title}</div><div style="font-size:10px; color:var(--text-light); margin-top:3px;">${dateStr}</div></div>
-              <div style="color: ${ptsColor}; font-weight: 700; font-size: 16px;">${ptsText}</div>
+              <div><div style="font-weight:600; font-size:14px; color:var(--text-main);">${icon} ${title}</div><div style="font-size:11px; color:var(--text-light); margin-top:3px;">${dateStr}</div></div>
+              <div style="color: ${ptsColor}; font-weight: 700; font-size: 18px;">${ptsText}</div>
             </div>
           `;
-          fullHtml += itemHtml; if(index < 3) recentHtml += itemHtml;
+          
+          fullHtml += itemHtml;
+          
+          if(index < 3) {
+            recentHtml += itemHtml;
+          }
         });
-        fullContainer.innerHTML = fullHtml; if(recentContainer) recentContainer.innerHTML = recentHtml;
+        
+        fullContainer.innerHTML = fullHtml;
+        if(recentContainer) recentContainer.innerHTML = recentHtml;
+
       } catch (err) { console.error(err); }
-    }
-    
-    function rwlogNameFind(logName) {
-        const t = i18n[globalLang];
-        const match = t.rewards.find(rw => rw.logName === logName);
-        return match ? match.name : t.txtRedeem;
     }
 
     async function redeemPoints(pointsNeeded, logName, displayRewardName) {
       if (globalTotalPoints < pointsNeeded) return;
-      const t = i18n[globalLang];
-      const txtConfirm = globalLang === "EN" ? `Redeem ${pointsNeeded} PTS for "${displayRewardName}"?` : `ใช้ ${pointsNeeded} แต้ม เพื่อแลก "${displayRewardName}"?`;
+      
+      const txtConfirm = globalLang === "EN" ? `Confirm to use ${pointsNeeded} PTS for ${displayRewardName}?` : `ยืนยันใช้ ${pointsNeeded} แต้ม เพื่อแลก ${displayRewardName}?`;
       const txtYes = globalLang === "EN" ? "Yes, Redeem" : "ยืนยันแลกเลย";
+      const txtNo = globalLang === "EN" ? "Cancel" : "ยกเลิก";
 
       const confirmResult = await Swal.fire({
-        title: t.txtConfirmTitle, text: txtConfirm, icon: 'question',
+        title: globalLang === "EN" ? 'Confirm?' : 'ยืนยันการแลก?', text: txtConfirm, icon: 'question',
         showCancelButton: true, confirmButtonColor: '#A3B18A', cancelButtonColor: '#E8E2D9',
-        confirmButtonText: txtYes, cancelButtonText: t.txtCancel, reverseButtons: true
+        confirmButtonText: txtYes, cancelButtonText: `<span style="color:#4A3F35">${txtNo}</span>`, reverseButtons: true
       });
 
       if (!confirmResult.isConfirmed) return;
-      Swal.fire({ title: t.txtProcessing, allowOutsideClick: false, didOpen: () => { Swal.showLoading() } });
+
+      Swal.fire({ title: globalLang === "EN" ? 'Processing...' : 'กำลังดำเนินการ...', allowOutsideClick: false, didOpen: () => { Swal.showLoading() } });
 
       try {
         const res = await fetch(`${API_URL}/api/redeem-reward`, {
@@ -339,36 +325,27 @@
         if (data.status === "success") {
           Swal.fire({
             icon: 'success', title: globalLang === "EN" ? 'Success!' : 'แลกรางวัลสำเร็จ!',
-            text: globalLang === "EN" ? `Ref: ${data.refCode}` : `Ref: ${data.refCode}`,
-            confirmButtonColor: '#A3B18A', confirmButtonText: 'OK'
+            text: globalLang === "EN" ? `Ref: ${data.refCode}\nPlease show this to staff.` : `รหัสอ้างอิง: ${data.refCode}\nโปรดแสดงหน้าจอนี้ให้พนักงาน`,
+            confirmButtonColor: '#A3B18A'
           }).then(() => {
             switchTab('home'); 
           });
           await fetchMemberData(); 
-        } else { Swal.fire({ icon: 'error', title: 'Failed', text: data.message }); }
-      } catch (err) { Swal.fire({ icon: 'error', title: 'Network Error' }); }
+        } else { Swal.fire({ icon: 'error', title: 'Failed', text: data.message, confirmButtonColor: '#C57B57' }); }
+      } catch (err) { Swal.fire({ icon: 'error', title: 'Network Error', confirmButtonColor: '#C57B57' }); }
     }
 
     function switchTab(tabId) {
       document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
       const targetView = document.getElementById('view-' + tabId);
-      if (targetView) { targetView.classList.add('active'); } else { document.getElementById('view-home').classList.add('active'); }
+      if (targetView) { targetView.classList.add('active'); } 
+      else { document.getElementById('view-home').classList.add('active'); }
       window.scrollTo(0, 0); 
     }
 
     function openQRScanner() {
-      if (liff.isApiAvailable('scanCodeV2')) { 
-        liff.scanCodeV2().then(result => {
-        }); 
-      } else { window.location.href = "https://line.me/R/nv/QRCodeReader"; }
-    }
-
-    function playSuccessSound() {
-      const sound = document.getElementById('success-sound');
-      if (sound) {
-        sound.currentTime = 0;
-        sound.play().catch(err => console.log("Sound autoplay blocked"));
-      }
+      if (liff.isApiAvailable('scanCodeV2')) { liff.scanCodeV2().then(result => {}); } 
+      else { window.location.href = "https://line.me/R/nv/QRCodeReader"; }
     }
 
     window.onload = initApp;
