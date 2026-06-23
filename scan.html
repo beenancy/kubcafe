@@ -30,14 +30,13 @@
     const API_URL = "https://kub-backend.nan23082526.workers.dev";
     const SCAN_LIFF_ID = "2010206186-u1XRJldq"; 
 
-    function redirectToMemberApp() {
-      // 🚀 ส่งผู้ใช้ไปหน้าเช็กแต้ม (app.html) อัตโนมัติ พร้อมแนบ State ให้ระเบิด Deep Link ขาออก
-      window.location.replace("https://beenancy.github.io/kubcafe/app.html?tab=home&from=scan&return=lineoa&nocache=" + new Date().getTime());
-    }
-
-    function closeLiffAndReturnToChat() {
-      if (liff.isInClient()) { liff.closeWindow(); } 
-      else { window.location.href = "https://line.me/R/ti/p/@848dmzja"; }
+    // 🚀 ฟังก์ชันกระชากเข้า LINE OA แบบตรงไปตรงมา
+    function closeAppAndGoToLINE() {
+      if (typeof liff !== "undefined" && liff.isInClient()) {
+        liff.closeWindow();
+      } else {
+        window.location.href = "https://line.me/R/ti/p/@848dmzja";
+      }
     }
 
     async function showAlert(title, text, icon, btnText, isWarning = false) {
@@ -48,7 +47,7 @@
         customClass: { popup: 'custom-swal-popup', title: 'custom-swal-title', htmlContainer: 'custom-swal-html', confirmButton: isWarning ? 'matcha-btn warning-btn' : 'matcha-btn' },
         allowOutsideClick: false, confirmButtonText: btnText, buttonsStyling: false 
       });
-      closeLiffAndReturnToChat(); 
+      closeAppAndGoToLINE(); 
     }
 
     async function showCooldownCountdown(remainSec, lang) {
@@ -72,7 +71,7 @@
         },
         willClose: () => { clearInterval(countdownInterval); }
       });
-      closeLiffAndReturnToChat(); 
+      closeAppAndGoToLINE(); 
     }
 
     async function processPoints() {
@@ -80,9 +79,9 @@
         if (!navigator.onLine) { await showAlert('ไม่มีเน็ต', 'กรุณาเช็กอินเทอร์เน็ตค่ะ', 'error', 'ตกลง', true); return; }
         await liff.init({ liffId: SCAN_LIFF_ID });
 
-        // 🛡️ ปลั๊กอินบล็อก Desktop PC บังคับสแกนผ่าน 4 ช่องทางบนมือถือเท่านั้น
+        // 🛡️ ป้องกันแฮกเกอร์ใช้ PC
         if (liff.getOS() === "web") {
-          await showAlert('ปฏิเสธการเข้าถึง', '❌ กรุณาสแกนคิวอาร์โค้ดผ่านสมาร์ทโฟนเท่านั้นค่ะ', 'error', 'ตกลง', true);
+          await showAlert('ปฏิเสธการเข้าถึง', '❌ กรุณาสแกนผ่านมือถือเท่านั้นค่ะ', 'error', 'ตกลง', true);
           return;
         }
 
@@ -93,10 +92,9 @@
         if (!shopCode) { await showAlert('ไม่พบข้อมูล', '❌ สแกนผิดวิธีค่ะ', 'error', 'ตกลง', true); return; }
         
         const profile = await liff.getProfile();
-        const idToken = liff.getIDToken(); // ดึงบัตรผ่านดิจิทัลไปตรวจสอบหลังบ้าน
+        const idToken = liff.getIDToken(); 
         const cleanedName = encodeURIComponent((profile.displayName || '').replace(/[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF]/g, ''));
         
-        // ส่งคำขอแบบเข้ารหัสความปลอดภัยด้วย idToken ป้องกัน IDOR บิดเบือนข้อมูล
         const response = await fetch(`${API_URL}?action=scanAddPoint&userId=${profile.userId}&idToken=${idToken || ''}&name=${cleanedName}&shopCode=${encodeURIComponent(shopCode)}`);
         const data = await response.json();
         const isEN = data.lang === "EN";
@@ -106,18 +104,34 @@
 
           const ptsText = `<div style="font-size:26px; font-weight:900; color:#A3B18A; margin:8px 0; line-height: 1;">+${data.ptsAdded} ${isEN ? 'PTS' : 'แต้ม'} ☕</div>`;
           const totalText = `<div style="font-size:14px; color:#4A3F35; font-weight:bold; margin-bottom:12px;">${isEN ? 'Total:' : 'สะสมรวม:'} <span style="color:#E65100; font-size:20px; font-weight:900;">${data.totalPts}</span> ${isEN ? 'PTS' : 'แต้ม'}</div>`;
-          const remarkLabel = isEN ? 'Loading Member App...' : 'กำลังพาท่านเข้าสู่หน้าเช็กแต้ม...';
-          const remark = `<div style="font-size:12px; font-weight:600; color:#A3B18A; border-top: 1px dashed #E8E2D9; padding-top: 12px; margin-top: 5px;">${remarkLabel}</div>`;
+          const remark = `<div style="font-size:12px; font-weight:600; color:#A3B18A; border-top: 1px dashed #E8E2D9; padding-top: 12px; margin-top: 5px;">${isEN ? 'Returning to chat in <b>5</b>s...' : 'กำลังพากลับห้องแชทใน <b>5</b> วิ...'}</div>`;
           
           document.getElementById('spinner').style.display = 'none';
           document.getElementById('statusText').style.display = 'none';
           
+          let timerInterval;
           Swal.fire({
-            icon: 'success', title: isEN ? 'SUCCESS!' : 'รับแต้มสำเร็จ', html: ptsText + totalText + remark,
-            showConfirmButton: true, confirmButtonText: isEN ? 'Go to App' : 'เข้าสู่หน้าเช็กแต้ม',
+            icon: 'success', 
+            title: isEN ? 'SUCCESS!' : 'รับแต้มสำเร็จ', 
+            html: ptsText + totalText + remark,
+            showConfirmButton: true, 
+            confirmButtonText: isEN ? 'Go to Chat' : 'เข้าห้องแชทเลย',
             customClass: { popup: 'custom-swal-popup', title: 'custom-swal-title', htmlContainer: 'custom-swal-html', confirmButton: 'matcha-btn' },
-            buttonsStyling: false, timer: 2500, timerProgressBar: true
-          }).then(() => { redirectToMemberApp(); });
+            buttonsStyling: false, 
+            timer: 5000, // ⏱️ ตั้งเวลาไว้ที่ 5 วินาที
+            timerProgressBar: true,
+            allowOutsideClick: false,
+            didOpen: () => {
+              const b = Swal.getHtmlContainer().querySelector('b');
+              timerInterval = setInterval(() => {
+                if(b) b.textContent = Math.ceil(Swal.getTimerLeft() / 1000);
+              }, 100);
+            },
+            willClose: () => { clearInterval(timerInterval); }
+          }).then(() => { 
+            // เมื่อหมดเวลา 5 วิ หรือลูกค้ากดปุ่ม ให้ดีดเข้าแชท OA เลย
+            closeAppAndGoToLINE(); 
+          });
 
         } else if (data.status === "cooldown") {
           await showCooldownCountdown(data.remain || 30, data.lang);
