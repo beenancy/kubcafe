@@ -1,3 +1,14 @@
+Ran command: `Get-Content -Path app.html -Raw`
+Ran command: `Copy-Item app.html app.txt`
+Viewed app.txt:1-300
+Viewed app.txt:301-684
+Ran command: `Remove-Item app.txt`
+
+นี่คือซอร์สโค้ดฉบับเต็มของไฟล์ [app.html](file:///c:/Users/X270/Desktop/KUB_Cafe_Core/app.html) ที่ได้รับการปรับแต่งดีไซน์ตามหน้าตาของภาพจำลองเรียบร้อยแล้ว โดยยังรักษาฟังก์ชัน โครงสร้างตัวแปรของ LINE LIFF SDK, SweetAlert2 และ API Endpoint ของระบบจริงไว้อย่างสมบูรณ์ครบถ้วนครับ
+
+คุณสามารถกดปุ่มคัดลอก (Copy) ที่มุมขวาบนของกล่องโค้ดด้านล่างนี้ เพื่อนำไปวางทับไฟล์งานและอัปโหลดขึ้น GitHub ได้ทันทีครับ:
+
+```html
 <!DOCTYPE html>
 <html lang="th">
 <head>
@@ -14,62 +25,292 @@
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;600;700&display=swap');
     
-    :root { --bg-cream: #FDFCF0; --matcha: #A3B18A; --matcha-dark: #7A8B62; --text-main: #4A3F35; --text-light: #B0A69D; --border: #E8E2D9; }
+    :root {
+      --bg-cream: #FDFCF0;
+      --matcha: #A3B18A;
+      --matcha-dark: #7A8B62;
+      --text-main: #4A3F35;
+      --text-light: #B0A69D;
+      --border: #E8E2D9;
+    }
     
-    body, html { margin: 0; padding: 0; width: 100%; height: 100vh; font-family: 'Prompt', sans-serif; background-color: var(--bg-cream); overflow: hidden; display: flex; flex-direction: column; color: var(--text-main); }
+    body, html {
+      margin: 0; padding: 0;
+      width: 100%; height: 100vh;
+      font-family: 'Prompt', sans-serif;
+      background-color: var(--bg-cream);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      color: var(--text-main);
+    }
     
-    #loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-cream); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; color: var(--matcha-dark); transition: opacity 0.3s; }
-    .spinner { border: 3px solid var(--border); border-left-color: var(--matcha-dark); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-bottom: 15px; }
+    #loading-overlay {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: var(--bg-cream);
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      color: var(--matcha-dark);
+      transition: opacity 0.3s;
+    }
+    
+    .spinner {
+      border: 3px solid var(--border);
+      border-left-color: var(--matcha-dark);
+      border-radius: 50%;
+      width: 40px; height: 40px;
+      animation: spin 1s linear infinite;
+      margin-bottom: 15px;
+    }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-    .app-content { flex: 1; display: flex; flex-direction: column; height: 100%; overflow: hidden; }
+    .app-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      overflow: hidden;
+    }
     
-    .view-section { display: none; height: 100%; flex-direction: column; padding: 15px 15px 10px 15px; box-sizing: border-box; overflow: hidden; }
-    .view-section.active { display: flex; animation: fadeIn 0.3s ease; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+    .view-section {
+      display: none;
+      height: 100%;
+      flex-direction: column;
+      padding: 20px 20px 12px 20px;
+      box-sizing: border-box;
+      overflow: hidden;
+    }
+    .view-section.active {
+      display: flex;
+      animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 
-    .header-title { font-size: 20px; font-weight: 700; margin: 0 0 12px 0; color: var(--matcha-dark); text-align: center; flex-shrink: 0; }
+    .header-title {
+      font-size: 22px;
+      font-weight: 700;
+      margin: 0 0 14px 0;
+      color: var(--matcha-dark);
+      text-align: center;
+      flex-shrink: 0;
+      letter-spacing: 0.5px;
+    }
     
-    .member-card { background: linear-gradient(135deg, #A3B18A, #8b9d70); border-radius: 20px; padding: 18px 15px; color: white; text-align: center; box-shadow: 0 10px 20px rgba(163, 177, 138, 0.2); margin-bottom: 12px; flex-shrink: 0; }
-    .profile-pic { width: 55px; height: 55px; border-radius: 50%; border: 2.5px solid white; object-fit: cover; margin-bottom: 6px; }
-    .points-number { font-size: 42px; font-weight: 700; line-height: 1; margin: 2px 0; }
-    
-    .action-box { background: white; padding: 12px; border-radius: 16px; text-align: center; border: 1px solid var(--border); box-shadow: 0 4px 10px rgba(0,0,0,0.01); cursor: pointer; transition: 0.2s; }
-    .action-box:active { transform: scale(0.97); }
+    .member-card {
+      background: linear-gradient(135deg, #7A8B62 0%, #52633C 100%);
+      border-radius: 24px;
+      padding: 22px 20px;
+      color: white;
+      text-align: center;
+      box-shadow: 0 12px 30px rgba(82, 99, 60, 0.25);
+      margin-bottom: 16px;
+      flex-shrink: 0;
+      position: relative;
+      overflow: hidden;
+      border: none;
+    }
 
-    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; flex-shrink: 0; }
-    
-    .scroll-body { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; margin-bottom: 10px; }
-    
-    /* 🎨 Colorful Reward Card */
-    .card-box { background: linear-gradient(135deg, #FFFAF0, #FFF0D4); border-radius: 16px; padding: 15px 12px; text-align: center; border: 1px solid #FFE0A3; box-shadow: 0 4px 10px rgba(230, 81, 0, 0.05); margin-bottom: 10px; }
-    .card-icon { font-size: 40px; margin-bottom: 5px; }
-    
-    .btn-matcha { background: var(--matcha); color: white; border: none; padding: 8px; border-radius: 12px; font-weight: 600; font-family: 'Prompt'; margin-top: 10px; width: 100%; cursor: pointer; transition: 0.2s; font-size: 13px; }
-    .btn-matcha:active { transform: scale(0.95); }
-    .btn-matcha:disabled { background: #E8E2D9; color: var(--text-light); cursor: not-allowed; transform: none; }
+    .member-card::after {
+      content: '';
+      position: absolute;
+      top: -30%;
+      right: -20%;
+      width: 180px;
+      height: 180px;
+      background: rgba(255, 255, 255, 0.06);
+      border-radius: 50%;
+      pointer-events: none;
+    }
 
-    .list-header { display: flex; justify-content: space-between; padding: 10px 16px; font-size: 12px; color: var(--text-light); font-weight: 600; background: #FFFFFF; border: 1px solid var(--border); border-bottom: none; border-radius: 16px 16px 0 0; flex-shrink: 0; box-sizing: border-box; }
+    .profile-pic {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      border: 3px solid rgba(255, 255, 255, 0.9);
+      object-fit: cover;
+      margin-bottom: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+      position: relative;
+      z-index: 1;
+    }
+
+    .points-number {
+      font-size: 56px;
+      font-weight: 800;
+      line-height: 1;
+      margin: 4px 0;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      position: relative;
+      z-index: 1;
+    }
     
-    .list-container { background: white; border-radius: 16px; border: 1px solid var(--border); overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.01); }
-    .list-container.has-header { border-top-left-radius: 0 !important; border-top-right-radius: 0 !important; border-top: none !important; }
+    .action-box {
+      background: white;
+      padding: 16px 12px;
+      border-radius: 20px;
+      text-align: center;
+      border: 1px solid var(--border);
+      box-shadow: 0 10px 22px rgba(163, 177, 138, 0.08);
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      box-sizing: border-box;
+    }
+    .action-box:active {
+      transform: scale(0.95);
+      box-shadow: 0 4px 10px rgba(163, 177, 138, 0.04);
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 16px;
+      flex-shrink: 0;
+    }
     
-    .list-item { padding: 14px 16px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+    .scroll-body {
+      flex: 1;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      margin-bottom: 10px;
+      padding-right: 2px;
+    }
+    
+    .card-box {
+      background: linear-gradient(135deg, #FFFAF0 0%, #FFF4DF 100%);
+      border-radius: 20px;
+      padding: 20px 15px;
+      text-align: center;
+      border: 1px solid #FFDB99;
+      box-shadow: 0 8px 20px rgba(197, 123, 87, 0.06);
+      transition: all 0.2s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      box-sizing: border-box;
+    }
+    .card-icon { font-size: 44px; margin-bottom: 6px; }
+    
+    .btn-matcha {
+      background: var(--matcha);
+      color: white;
+      border: none;
+      padding: 10px;
+      border-radius: 12px;
+      font-weight: 700;
+      font-family: 'Prompt', sans-serif;
+      margin-top: 12px;
+      width: 100%;
+      cursor: pointer;
+      box-shadow: 0 6px 12px rgba(163, 177, 138, 0.3);
+      transition: all 0.2s;
+      font-size: 13px;
+    }
+    .btn-matcha:active {
+      transform: scale(0.95);
+      box-shadow: 0 2px 4px rgba(163, 177, 138, 0.1);
+    }
+    .btn-matcha:disabled {
+      background: #E8E2D9;
+      color: var(--text-light);
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .list-header {
+      display: flex;
+      justify-content: space-between;
+      padding: 12px 20px;
+      font-size: 12px;
+      color: var(--text-light);
+      font-weight: 700;
+      background: #FFFFFF;
+      border: 1px solid var(--border);
+      border-bottom: none;
+      border-radius: 20px 20px 0 0;
+      flex-shrink: 0;
+      box-sizing: border-box;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .list-container {
+      background: white;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      overflow: hidden;
+      box-shadow: 0 10px 22px rgba(163, 177, 138, 0.05);
+    }
+    .list-container.has-header {
+      border-top-left-radius: 0 !important;
+      border-top-right-radius: 0 !important;
+      border-top: none !important;
+    }
+    
+    .list-item {
+      padding: 16px 20px;
+      border-bottom: 1px solid #F4F1EC;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: background-color 0.2s;
+    }
     .list-item:last-child { border-bottom: none; }
 
-    .coming-soon-box { background: white; border-radius: 20px; padding: 40px 15px; text-align: center; border: 2px dashed var(--border); color: var(--matcha-dark); box-shadow: 0 4px 10px rgba(0,0,0,0.01); }
+    .coming-soon-box {
+      background: white;
+      border-radius: 24px;
+      padding: 40px 20px;
+      text-align: center;
+      border: 2px dashed var(--border);
+      color: var(--matcha-dark);
+      box-shadow: 0 10px 22px rgba(163, 177, 138, 0.04);
+    }
 
-    .footer-area { width: 100%; flex-shrink: 0; margin-top: auto; display: flex; flex-direction: column; gap: 8px; background-color: var(--bg-cream); padding-top: 4px; }
-    .btn-close-app { background: #E8E2D9; color: var(--text-main); border: none; padding: 12px; border-radius: 14px; font-weight: 600; font-family: 'Prompt'; width: 100%; cursor: pointer; transition: 0.2s; font-size: 14px; box-shadow: 0 4px 10px rgba(0,0,0,0.02); box-sizing: border-box; }
+    .footer-area {
+      width: 100%;
+      flex-shrink: 0;
+      margin-top: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      background-color: var(--bg-cream);
+      padding-top: 6px;
+    }
+    .btn-close-app {
+      background: #E8E2D9;
+      color: var(--text-main);
+      border: none;
+      padding: 14px;
+      border-radius: 16px;
+      font-weight: 700;
+      font-family: 'Prompt';
+      width: 100%;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 14px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.02);
+      box-sizing: border-box;
+    }
     .btn-close-app:active { transform: scale(0.97); }
-    .btn-back-home { background: var(--matcha); color: white; }
+    .btn-back-home { background: var(--matcha); color: white; box-shadow: 0 6px 12px rgba(163, 177, 138, 0.3); }
 
-    /* 🎨 Extreme Minimal Popup Styles สำหรับหน้าแอป */
     .swal2-container { z-index: 10000 !important; }
-    .swal2-popup { border-radius: 20px !important; font-family: 'Prompt', sans-serif !important; padding: 1.2em 1em !important; }
-    .custom-swal-popup { width: 75% !important; max-width: 280px !important; background-color: #FFFFFF !important; box-shadow: 0 10px 25px rgba(140, 122, 107, 0.15) !important; overflow: hidden; }
-    .swal-btn-confirm { font-size: 14px !important; padding: 10px 20px !important; border-radius: 12px !important; font-weight: 600 !important; background-color: var(--matcha) !important; color: #ffffff !important; border: none !important; margin: 0 5px !important; }
-    .swal-btn-cancel { font-size: 14px !important; padding: 10px 20px !important; border-radius: 12px !important; font-weight: 600 !important; background-color: #E8E2D9 !important; color: var(--text-main) !important; border: none !important; margin: 0 5px !important; }
+    .swal2-popup { border-radius: 24px !important; font-family: 'Prompt', sans-serif !important; padding: 1.5em 1.2em !important; }
+    .custom-swal-popup { width: 78% !important; max-width: 290px !important; background-color: #FFFFFF !important; box-shadow: 0 15px 35px rgba(140, 122, 107, 0.2) !important; overflow: hidden; }
+    .swal-btn-confirm { font-size: 14px !important; padding: 10px 24px !important; border-radius: 12px !important; font-weight: 700; background-color: var(--matcha) !important; color: #ffffff !important; border: none !important; margin: 0 5px !important; cursor: pointer; }
+    .swal-btn-cancel { font-size: 14px !important; padding: 10px 24px !important; border-radius: 12px !important; font-weight: 700; background-color: #E8E2D9 !important; color: var(--text-main) !important; border: none !important; margin: 0 5px !important; cursor: pointer; }
   </style>
 </head>
 <body>
@@ -301,10 +542,10 @@
           
           // 🎨 ออกแบบการ์ดของรางวัลให้มีสีสันสดใส
           rewardHtml += `
-            <div class="card-box" style="margin-bottom: 0;">
+            <div class="card-box">
               <div class="card-icon">${rw.icon}</div>
-              <div style="font-weight: 700; font-size: 14px; color: #D97706;">${rw.name}</div>
-              <div style="font-size: 11px; color: #92400E; margin-top: 3px; font-weight: 600;">${rw.req}</div>
+              <div style="font-weight: 700; font-size: 14px; color: var(--accent-brick);">${rw.name}</div>
+              <div style="font-size: 11px; color: var(--text-light); margin-top: 3px; font-weight: 600;">${rw.req}</div>
               <button class="${btnClass}" ${btnAttr}>${btnText}</button>
             </div>
           `;
@@ -451,3 +692,4 @@
   </script>
 </body>
 </html>
+```
