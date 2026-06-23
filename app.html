@@ -211,37 +211,6 @@
 
           applyLanguage(); 
           renderHistory(historyData); 
-
-          // 🚀 ระบบ Auto-Pilot: เช็กว่าเพิ่งสแกนรับแต้มมาหรือไม่
-          const urlParams = new URLSearchParams(window.location.search);
-          if (urlParams.get('from') === 'scan') {
-            // ลบพารามิเตอร์ทิ้ง ป้องกันการรีเฟรชแล้วเด้งซ้ำ
-            window.history.replaceState({}, document.title, window.location.pathname + "?tab=home");
-            
-            let timerInterval;
-            const isEN = globalLang === "EN";
-            Swal.fire({
-              title: isEN ? 'Points Updated!' : 'อัปเดตแต้มล่าสุด!',
-              html: isEN ? `Total: <span style="color:#E65100; font-size:24px; font-weight:900;">${globalTotalPoints}</span> PTS<br><br><span style="font-size:14px;color:#7A8B62;">Returning to chat in <b>3</b>s...</span>` : `คะแนนรวม: <span style="color:#E65100; font-size:24px; font-weight:900;">${globalTotalPoints}</span> แต้ม<br><br><span style="font-size:14px;color:#7A8B62;">กำลังพากลับห้องแชทใน <b>3</b> วิ...</span>`,
-              icon: 'success',
-              timer: 3500, // หน่วงเวลาให้ลูกค้าดูแต้ม 3.5 วินาที
-              timerProgressBar: true,
-              showConfirmButton: true,
-              confirmButtonText: isEN ? 'Go to Chat' : 'เข้าห้องแชทเลย',
-              confirmButtonColor: '#A3B18A',
-              allowOutsideClick: false,
-              didOpen: () => {
-                const b = Swal.getHtmlContainer().querySelector('b');
-                timerInterval = setInterval(() => {
-                  if(b) b.textContent = Math.ceil(Swal.getTimerLeft() / 1000);
-                }, 100);
-              },
-              willClose: () => { clearInterval(timerInterval); }
-            }).then(() => {
-              // ดีดลูกค้าเข้าแชท LINE OA ทันทีที่หมดเวลา หรือกดปุ่ม
-              closeAppAndGoToLINE();
-            });
-          }
         }
       } catch (err) { console.error("Fetch Data Error:", err); }
     }
