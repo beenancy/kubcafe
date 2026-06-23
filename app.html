@@ -120,12 +120,12 @@
     .member-card {
       background: linear-gradient(135deg, #97A97C 0%, #6F8156 100%);
       border-radius: 24px;
-      padding: 38px 20px 20px 20px;
+      padding: 30px 16px 12px 16px;
       color: white;
       text-align: center;
-      box-shadow: 0 15px 35px rgba(111, 129, 86, 0.2);
-      margin-top: 48px; /* space for overlapping avatar */
-      margin-bottom: 20px;
+      box-shadow: 0 12px 28px rgba(111, 129, 86, 0.15);
+      margin-top: 36px; /* space for overlapping avatar */
+      margin-bottom: 12px;
       flex-shrink: 0;
       position: relative;
       overflow: visible; /* show overflowing avatar */
@@ -133,24 +133,24 @@
     }
 
     .profile-pic {
-      width: 76px;
-      height: 76px;
+      width: 66px;
+      height: 66px;
       border-radius: 50%;
-      border: 4px solid white;
+      border: 3px solid white;
       object-fit: cover;
-      box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+      box-shadow: 0 6px 14px rgba(0,0,0,0.12);
       position: absolute;
-      top: -38px; /* overlap halfway */
+      top: -33px; /* overlap halfway */
       left: 50%;
       transform: translateX(-50%);
       z-index: 5;
     }
 
     .points-number {
-      font-size: 58px;
+      font-size: 46px;
       font-weight: 800;
       line-height: 1;
-      margin: 4px 0;
+      margin: 2px 0;
       text-shadow: 0 2px 4px rgba(0,0,0,0.1);
       position: relative;
       z-index: 1;
@@ -158,11 +158,11 @@
     
     .action-box {
       background: white;
-      padding: 16px 12px;
+      padding: 11px 12px;
       border-radius: 20px;
       text-align: center;
       border: 1px solid var(--border);
-      box-shadow: 0 10px 22px rgba(163, 177, 138, 0.08);
+      box-shadow: 0 8px 18px rgba(163, 177, 138, 0.06);
       cursor: pointer;
       transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
       display: flex;
@@ -179,8 +179,8 @@
     .grid-2 {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 16px;
-      margin-bottom: 16px;
+      gap: 12px;
+      margin-bottom: 12px;
       flex-shrink: 0;
     }
     
@@ -266,7 +266,7 @@
     }
     
     .list-item {
-      padding: 16px 20px;
+      padding: 10px 16px;
       border-bottom: 1px solid #F4F1EC;
       display: flex;
       justify-content: space-between;
@@ -276,8 +276,8 @@
     .list-item:last-child { border-bottom: none; }
 
     .history-icon-wrapper {
-      width: 36px;
-      height: 36px;
+      width: 32px;
+      height: 32px;
       border-radius: 50%;
       display: flex;
       justify-content: center;
@@ -300,28 +300,36 @@
       flex-shrink: 0;
       margin-top: auto;
       display: flex;
-      flex-direction: column;
-      gap: 10px;
-      background-color: var(--bg-cream);
-      padding-top: 6px;
+      justify-content: center;
+      background-color: transparent;
+      padding-top: 8px;
+      padding-bottom: 4px;
     }
     .btn-close-app {
-      background: #E8E2D9;
-      color: var(--text-main);
-      border: none;
-      padding: 14px;
-      border-radius: 16px;
+      background: transparent;
+      color: var(--matcha-dark);
+      border: 1.5px solid var(--matcha-dark);
+      padding: 6px 28px;
+      border-radius: 20px;
       font-weight: 700;
       font-family: 'Prompt';
-      width: 100%;
       cursor: pointer;
       transition: all 0.2s;
-      font-size: 14px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.02);
+      font-size: 13px;
       box-sizing: border-box;
+      display: inline-block;
+      width: auto;
     }
-    .btn-close-app:active { transform: scale(0.97); }
-    .btn-back-home { background: var(--matcha); color: white; box-shadow: 0 6px 12px rgba(163, 177, 138, 0.3); }
+    .btn-close-app:active { transform: scale(0.95); background: rgba(122, 139, 98, 0.08); }
+    .btn-back-home { 
+      background: var(--matcha) !important; 
+      color: white !important; 
+      box-shadow: 0 6px 12px rgba(163, 177, 138, 0.3) !important; 
+      border: none !important; 
+      width: 100% !important; 
+      padding: 12px !important; 
+      border-radius: 16px !important;
+    }
 
     .swal2-container { z-index: 10000 !important; }
     .swal2-popup { border-radius: 24px !important; font-family: 'Prompt', sans-serif !important; padding: 1.5em 1.2em !important; }
@@ -337,17 +345,10 @@
     <div style="font-size: 14px;">กำลังเข้าสู่ระบบ...</div>
   </div>
 
-  <!-- 📱 Integrated Mockup Header -->
-  <div class="app-header">
-    <span class="back-icon" onclick="closeAppAndGoToLINE()">&#10094;</span>
-    <span class="app-title">KUB Cafe</span>
-    <span style="visibility: hidden;">&#10094;</span>
-  </div>
-
   <div class="app-content">
     
-    <div id="view-home" class="view-section active">
-      <h2 class="header-title" id="txt-home-title">เช็กแต้ม</h2>
+    <div id="view-home" class="view-section active" style="padding-top: 24px;">
+      <h2 class="header-title" id="txt-home-title" style="display: none;">เช็กแต้ม</h2>
       
       <div class="member-card">
         <!-- Profile Pic Overlapping Card Border -->
@@ -359,8 +360,8 @@
       
       <div class="grid-2">
         <div class="action-box" onclick="openQRScanner()">
-          <div style="margin-bottom: 6px; display: flex; align-items: center; justify-content: center;">
-            <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="#4A3F35" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <div style="margin-bottom: 4px; display: flex; align-items: center; justify-content: center;">
+            <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#4A3F35" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
               <circle cx="12" cy="13" r="4"></circle>
             </svg>
@@ -368,8 +369,8 @@
           <div style="font-weight: 700; font-size: 13px; color: var(--text-main);" id="txt-scan-btn">สแกนรับแต้ม</div>
         </div>
         <div class="action-box" onclick="switchTab('rewards')">
-          <div style="margin-bottom: 6px; display: flex; align-items: center; justify-content: center;">
-            <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="#4A3F35" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <div style="margin-bottom: 4px; display: flex; align-items: center; justify-content: center;">
+            <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#4A3F35" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
               <polyline points="20 12 20 22 4 22 4 12"></polyline>
               <rect x="2" y="7" width="20" height="5"></rect>
               <line x1="12" y1="22" x2="12" y2="7"></line>
@@ -381,8 +382,8 @@
         </div>
       </div>
 
-      <div style="display: flex; flex-direction: column; overflow: hidden; flex: 1; margin-top: 10px;">
-        <h3 style="font-size: 15px; font-weight: 700; margin: 0 0 10px 0; color: var(--text-main);" id="txt-recent-history">ประวัติล่าสุด</h3>
+      <div style="display: flex; flex-direction: column; overflow: hidden; flex: 1; margin-top: 4px;">
+        <h3 style="font-size: 14px; font-weight: 700; margin: 0 0 8px 0; color: var(--text-main);" id="txt-recent-history">ประวัติล่าสุด</h3>
         <div class="list-container" id="recentHistoryContainer" style="overflow: hidden;"></div>
       </div>
 
