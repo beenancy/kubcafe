@@ -10,7 +10,6 @@
   
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;600;700&display=swap');
     
@@ -21,6 +20,7 @@
       --text-main: #4A3F35;
       --text-light: #B0A69D;
       --border: #E8E2D9;
+      --accent-brick: #C57B57;
     }
     
     body, html {
@@ -80,6 +80,29 @@
     }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 
+    /* 📱 integrated header styled like mockup */
+    .app-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 20px;
+      background-color: var(--bg-cream);
+      font-size: 16px;
+      color: var(--text-main);
+      flex-shrink: 0;
+      border-bottom: 1px solid rgba(232, 226, 217, 0.5);
+    }
+    .back-icon {
+      font-size: 18px;
+      cursor: pointer;
+      color: var(--text-main);
+      padding: 5px;
+    }
+    .app-title {
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+
     .header-title {
       font-size: 22px;
       font-weight: 700;
@@ -89,47 +112,42 @@
       flex-shrink: 0;
       letter-spacing: 0.5px;
     }
+
+    #view-home .header-title {
+      display: none;
+    }
     
     .member-card {
-      background: linear-gradient(135deg, #7A8B62 0%, #52633C 100%);
+      background: linear-gradient(135deg, #97A97C 0%, #6F8156 100%);
       border-radius: 24px;
-      padding: 22px 20px;
+      padding: 38px 20px 20px 20px;
       color: white;
       text-align: center;
-      box-shadow: 0 12px 30px rgba(82, 99, 60, 0.25);
-      margin-bottom: 16px;
+      box-shadow: 0 15px 35px rgba(111, 129, 86, 0.2);
+      margin-top: 48px; /* space for overlapping avatar */
+      margin-bottom: 20px;
       flex-shrink: 0;
       position: relative;
-      overflow: hidden;
+      overflow: visible; /* show overflowing avatar */
       border: none;
     }
 
-    .member-card::after {
-      content: '';
-      position: absolute;
-      top: -30%;
-      right: -20%;
-      width: 180px;
-      height: 180px;
-      background: rgba(255, 255, 255, 0.06);
-      border-radius: 50%;
-      pointer-events: none;
-    }
-
     .profile-pic {
-      width: 60px;
-      height: 60px;
+      width: 76px;
+      height: 76px;
       border-radius: 50%;
-      border: 3px solid rgba(255, 255, 255, 0.9);
+      border: 4px solid white;
       object-fit: cover;
-      margin-bottom: 8px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.12);
-      position: relative;
-      z-index: 1;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+      position: absolute;
+      top: -38px; /* overlap halfway */
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 5;
     }
 
     .points-number {
-      font-size: 56px;
+      font-size: 58px;
       font-weight: 800;
       line-height: 1;
       margin: 4px 0;
@@ -257,6 +275,16 @@
     }
     .list-item:last-child { border-bottom: none; }
 
+    .history-icon-wrapper {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
     .coming-soon-box {
       background: white;
       border-radius: 24px;
@@ -309,30 +337,52 @@
     <div style="font-size: 14px;">กำลังเข้าสู่ระบบ...</div>
   </div>
 
+  <!-- 📱 Integrated Mockup Header -->
+  <div class="app-header">
+    <span class="back-icon" onclick="closeAppAndGoToLINE()">&#10094;</span>
+    <span class="app-title">KUB Cafe</span>
+    <span style="visibility: hidden;">&#10094;</span>
+  </div>
+
   <div class="app-content">
     
     <div id="view-home" class="view-section active">
       <h2 class="header-title" id="txt-home-title">เช็กแต้ม</h2>
+      
       <div class="member-card">
+        <!-- Profile Pic Overlapping Card Border -->
         <img id="userProfilePic" class="profile-pic" src="https://via.placeholder.com/70" alt="Profile">
+        <div style="font-size: 13px; font-weight: 700; opacity: 0.95; margin-top: 15px; letter-spacing: 0.5px;" id="txt-welcome">Member <span id="userName">...</span></div>
+        <div style="font-size: 11px; opacity: 0.8; margin-top: 4px; text-transform: uppercase; letter-spacing: 1px;" id="txt-pts-label">แต้มสะสม</div>
         <div class="points-number"><span id="userPoints">0</span></div>
-        <div style="font-size: 14px; margin-bottom: 2px;" id="txt-pts-label">คะแนนสะสม</div>
-        <div style="font-size: 12px; opacity: 0.8;" id="txt-welcome">ยินดีต้อนรับคุณ <span id="userName">...</span></div>
       </div>
       
       <div class="grid-2">
         <div class="action-box" onclick="openQRScanner()">
-          <div style="font-size: 28px; margin-bottom: 3px;">&#128247;</div>
-          <div style="font-weight: 600; font-size: 13px; color: var(--matcha-dark);" id="txt-scan-btn">สแกนรับแต้ม</div>
+          <div style="margin-bottom: 6px; display: flex; align-items: center; justify-content: center;">
+            <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="#4A3F35" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+              <circle cx="12" cy="13" r="4"></circle>
+            </svg>
+          </div>
+          <div style="font-weight: 700; font-size: 13px; color: var(--text-main);" id="txt-scan-btn">สแกนรับแต้ม</div>
         </div>
         <div class="action-box" onclick="switchTab('rewards')">
-          <div style="font-size: 28px; margin-bottom: 3px;">&#127873;</div>
-          <div style="font-weight: 600; font-size: 13px; color: #C57B57;" id="txt-go-reward-btn">แลกของรางวัล</div>
+          <div style="margin-bottom: 6px; display: flex; align-items: center; justify-content: center;">
+            <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="#4A3F35" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 12 20 22 4 22 4 12"></polyline>
+              <rect x="2" y="7" width="20" height="5"></rect>
+              <line x1="12" y1="22" x2="12" y2="7"></line>
+              <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"></path>
+              <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"></path>
+            </svg>
+          </div>
+          <div style="font-weight: 700; font-size: 13px; color: var(--text-main);" id="txt-go-reward-btn">แลกของรางวัล</div>
         </div>
       </div>
 
-      <div style="display: flex; flex-direction: column; overflow: hidden; flex: 1;">
-        <h3 style="font-size: 15px; font-weight: 700; margin: 0 0 8px 0; color: var(--text-main);" id="txt-recent-history">ประวัติล่าสุด</h3>
+      <div style="display: flex; flex-direction: column; overflow: hidden; flex: 1; margin-top: 10px;">
+        <h3 style="font-size: 15px; font-weight: 700; margin: 0 0 10px 0; color: var(--text-main);" id="txt-recent-history">ประวัติล่าสุด</h3>
         <div class="list-container" id="recentHistoryContainer" style="overflow: hidden;"></div>
       </div>
 
@@ -408,12 +458,12 @@
     // 🚀 อัปเดตพจนานุกรม: แก้ชื่อของรางวัลให้ระบุ (1 แก้ว)
     const i18n = {
       TH: {
-        homeTitle: "เช็กแต้ม", ptsLabel: "คะแนนสะสม", welcome: "ยินดีต้อนรับคุณ ", 
+        homeTitle: "เช็กแต้ม", ptsLabel: "แต้มสะสม", welcome: "Member ", 
         scanBtn: "สแกนรับแต้ม", goRewardBtn: "แลกของรางวัล", recentHistory: "ประวัติล่าสุด",
         rewardTitle: "แลกของรางวัล", btnRedeem: "แลกเลย", btnNoPts: "แต้มไม่พอ", 
         historyTitle: "ประวัติการใช้งาน", noHistory: "ไม่มีประวัติการใช้งาน",
         menuTitle: "เมนูเครื่องดื่ม", promoTitle: "โปรโมชั่นพิเศษ", 
-        txtEarn: "ได้รับแต้ม", txtRedeem: "แลกรางวัล", txtEdit: "ปรับปรุงแต้ม", closeBtn: "OK",
+        txtEarn: "ซื้อเครื่องดื่ม", txtRedeem: "แลกของรางวัล", txtEdit: "ปรับปรุงคะแนน", closeBtn: "OK",
         comingSoon1: "เตรียมพบกับเมนูใหม่เร็วๆ นี้", comingSoon2: "โปรโมชั่นเด็ดๆ กำลังมา",
         colActivity: "รายการ / วันเวลา", colPoints: "จำนวนแต้ม",
         rewards: [
@@ -421,12 +471,12 @@
         ]
       },
       EN: {
-        homeTitle: "Check Points", ptsLabel: "Total Points", welcome: "Welcome, ", 
+        homeTitle: "Check Points", ptsLabel: "Total Points", welcome: "Member ", 
         scanBtn: "Scan QR", goRewardBtn: "Redeem Rewards", recentHistory: "Recent History",
         rewardTitle: "Redeem Rewards", btnRedeem: "Redeem", btnNoPts: "Not enough", 
         historyTitle: "Transaction History", noHistory: "No transactions yet",
         menuTitle: "Beverage Menu", promoTitle: "Special Promo", 
-        txtEarn: "Points Earned", txtRedeem: "Redeemed", txtEdit: "Points Edited", closeBtn: "OK",
+        txtEarn: "Buy Drink", txtRedeem: "Redeem Reward", txtEdit: "Points Adjustment", closeBtn: "OK",
         comingSoon1: "New menus are coming very soon", comingSoon2: "Stay tuned for special offers",
         colActivity: "Activity / Date", colPoints: "Points",
         rewards: [
@@ -551,8 +601,8 @@
         
         if (!historyArr || historyArr.length === 0) {
           const emptyHtml = `<div style="padding: 20px; text-align: center; color: var(--text-light); font-size:13px;">${t.noHistory}</div>`;
-          fullContainer.innerHTML = emptyHtml;
-          if(recentContainer) recentContainer.innerHTML = emptyHtml;
+          if (fullContainer) fullContainer.innerHTML = emptyHtml;
+          if (recentContainer) recentContainer.innerHTML = emptyHtml;
           return;
         }
 
@@ -561,24 +611,89 @@
 
         historyArr.forEach((item, index) => {
           const d = new Date(item.timestamp);
-          const dateStr = d.toLocaleDateString('th-TH', { day: '2-digit', month: '2-digit', year: '2-digit' }) + ' ' + d.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+          let dateStr = "";
+          if (globalLang === "TH") {
+            const monthsTH = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
+            const dateVal = d.getDate();
+            const monthVal = monthsTH[d.getMonth()];
+            const timeVal = d.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', hour12: false });
+            dateStr = `${dateVal} ${monthVal} ${timeVal}`;
+          } else {
+            const monthsEN = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+            const dateVal = d.getDate();
+            const monthVal = monthsEN[d.getMonth()];
+            const timeVal = d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+            dateStr = `${monthVal} ${dateVal} ${timeVal}`;
+          }
           
-          let icon = "&#9749;"; let title = t.txtEarn; let ptsText = `+${item.points}`; let ptsColor = "#A3B18A";
-          if (item.type === "redeem") { icon = "&#127873;"; title = t.txtRedeem; ptsText = `-${item.points}`; ptsColor = "#C57B57"; }
-          else if (item.type === "edit") { icon = "&#9881;&#65039;"; title = t.txtEdit; ptsText = item.points > 0 ? `+${item.points}` : item.points; }
+          let iconHtml = ""; 
+          let title = t.txtEarn; 
+          let ptsText = ""; 
+          let ptsColor = "#7A8B62";
+          const unit = globalLang === "TH" ? " แต้ม" : " PTS";
+
+          if (item.type === "redeem") {
+            title = t.txtRedeem;
+            ptsText = `-${item.points}${unit}`;
+            ptsColor = "#C57B57";
+            iconHtml = `
+              <div class="history-icon-wrapper" style="background-color: #FDF4E9;">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#C57B57" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="20 12 20 22 4 22 4 12"></polyline>
+                  <rect x="2" y="7" width="20" height="5"></rect>
+                  <line x1="12" y1="22" x2="12" y2="7"></line>
+                  <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"></path>
+                  <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"></path>
+                </svg>
+              </div>
+            `;
+          } else if (item.type === "edit") {
+            title = t.txtEdit;
+            ptsText = (item.points >= 0 ? `+${item.points}` : `${item.points}`) + unit;
+            ptsColor = item.points >= 0 ? "#7A8B62" : "#C57B57";
+            iconHtml = `
+              <div class="history-icon-wrapper" style="background-color: #E2E8F0;">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#4A3F35" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="3"></circle>
+                  <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                </svg>
+              </div>
+            `;
+          } else {
+            title = t.txtEarn;
+            ptsText = `+${item.points}${unit}`;
+            ptsColor = "#7A8B62";
+            iconHtml = `
+              <div class="history-icon-wrapper" style="background-color: #EAE5DB;">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#4A3F35" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M18 8h1a4 4 0 0 1 0 8h-1"></path>
+                  <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path>
+                  <line x1="6" y1="2" x2="6" y2="4"></line>
+                  <line x1="10" y1="2" x2="10" y2="4"></line>
+                  <line x1="14" y1="2" x2="14" y2="4"></line>
+                </svg>
+              </div>
+            `;
+          }
 
           const itemHtml = `
             <div class="list-item">
-              <div><div style="font-weight:600; font-size:13px; color:var(--text-main);">${icon} ${title}</div><div style="font-size:11px; color:var(--text-light); margin-top:2px;">${dateStr}</div></div>
-              <div style="color: ${ptsColor}; font-weight: 700; font-size: 16px;">${ptsText}</div>
+              <div style="display: flex; align-items: center; gap: 12px;">
+                ${iconHtml}
+                <div>
+                  <div style="font-weight: 600; font-size: 13px; color: var(--text-main);">${title}</div>
+                  <div style="font-size: 11px; color: var(--text-light); margin-top: 1px;">${dateStr}</div>
+                </div>
+              </div>
+              <div style="color: ${ptsColor}; font-weight: 700; font-size: 15px;">${ptsText}</div>
             </div>
           `;
           fullHtml += itemHtml;
-          if(index < 2) recentHtml += itemHtml;
+          if (index < 3) recentHtml += itemHtml;
         });
         
-        fullContainer.innerHTML = fullHtml;
-        if(recentContainer) recentContainer.innerHTML = recentHtml;
+        if (fullContainer) fullContainer.innerHTML = fullHtml;
+        if (recentContainer) recentContainer.innerHTML = recentHtml;
 
       } catch (err) { console.error(err); }
     }
