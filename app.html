@@ -1,9 +1,3 @@
-<!-- 
-======================================================
-KUB Cafe - Member Application Frontend (V.5.16 MASTER)
-Changelog: Fix Navigation Trap with "Back to Home" button, Restore Standard closeWindow, idToken Security
-======================================================
--->
 <!DOCTYPE html>
 <html lang="th">
 <head>
@@ -21,46 +15,63 @@ Changelog: Fix Navigation Trap with "Back to Home" button, Restore Standard clos
     @import url('https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;600;700&display=swap');
     
     :root { --bg-cream: #FDFCF0; --matcha: #A3B18A; --matcha-dark: #7A8B62; --text-main: #4A3F35; --text-light: #B0A69D; --border: #E8E2D9; }
-    body, html { margin: 0; padding: 0; width: 100%; height: 100vh; font-family: 'Prompt', sans-serif; background-color: var(--bg-cream); overflow-x: hidden; display: flex; flex-direction: column; color: var(--text-main); }
+    
+    /* 🎨 ล็อกหน้าจอความสูง 100% พอดีจอ และห้ามเลื่อนขอบนอกเด็ดขาด */
+    body, html { margin: 0; padding: 0; width: 100%; height: 100vh; font-family: 'Prompt', sans-serif; background-color: var(--bg-cream); overflow: hidden; display: flex; flex-direction: column; color: var(--text-main); }
     
     #loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-cream); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; color: var(--matcha-dark); transition: opacity 0.3s; }
     .spinner { border: 3px solid var(--border); border-left-color: var(--matcha-dark); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-bottom: 15px; }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-    .app-content { flex: 1; overflow-y: auto; padding: 20px; }
-    .view-section { display: none; animation: fadeIn 0.4s ease; padding-bottom: 30px; }
-    .view-section.active { display: block; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    /* บริหารจัดการพื้นที่เนื้อหาหลัก */
+    .app-content { flex: 1; display: flex; flex-direction: column; height: 100%; overflow: hidden; }
+    
+    /* ทุกหน้าย่อยต้องจัดโครงสร้างเป็น Flexbox เพื่อดันปุ่มลงด้านล่างเสมอ */
+    .view-section { display: none; height: 100%; flex-direction: column; padding: 15px 15px 10px 15px; box-sizing: border-box; overflow: hidden; }
+    .view-section.active { display: flex; animation: fadeIn 0.3s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
-    .header-title { font-size: 22px; font-weight: 700; margin: 0 0 20px 0; color: var(--matcha-dark); text-align: center; }
+    .header-title { font-size: 20px; font-weight: 700; margin: 0 0 12px 0; color: var(--matcha-dark); text-align: center; flex-shrink: 0; }
     
-    .member-card { background: linear-gradient(135deg, #A3B18A, #8b9d70); border-radius: 24px; padding: 30px 20px; color: white; text-align: center; box-shadow: 0 15px 30px rgba(163, 177, 138, 0.3); margin-bottom: 20px; position: relative; overflow: hidden; }
-    .profile-pic { width: 70px; height: 70px; border-radius: 50%; border: 3px solid white; object-fit: cover; margin-bottom: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
-    .points-number { font-size: 56px; font-weight: 700; line-height: 1; margin: 5px 0; }
+    /* ปรับขนาดการ์ดให้กระชับขึ้นเพื่อประหยัดพื้นที่แนวตั้ง */
+    .member-card { background: linear-gradient(135deg, #A3B18A, #8b9d70); border-radius: 20px; padding: 18px 15px; color: white; text-align: center; box-shadow: 0 10px 20px rgba(163, 177, 138, 0.2); margin-bottom: 12px; flex-shrink: 0; }
+    .profile-pic { width: 55px; height: 55px; border-radius: 50%; border: 2.5px solid white; object-fit: cover; margin-bottom: 6px; }
+    .points-number { font-size: 42px; font-weight: 700; line-height: 1; margin: 2px 0; }
     
-    .action-box { background: white; padding: 20px; border-radius: 20px; text-align: center; border: 1px solid var(--border); box-shadow: 0 8px 20px rgba(0,0,0,0.02); cursor: pointer; transition: 0.2s; }
+    .action-box { background: white; padding: 12px; border-radius: 16px; text-align: center; border: 1px solid var(--border); box-shadow: 0 4px 10px rgba(0,0,0,0.01); cursor: pointer; transition: 0.2s; }
     .action-box:active { transform: scale(0.97); }
 
-    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
-    .card-box { background: white; border-radius: 20px; padding: 20px 15px; text-align: center; border: 1px solid var(--border); box-shadow: 0 8px 20px rgba(0,0,0,0.02); margin-bottom: 15px; }
-    .card-icon { font-size: 45px; margin-bottom: 10px; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; flex-shrink: 0; }
     
-    .btn-matcha { background: var(--matcha); color: white; border: none; padding: 10px; border-radius: 14px; font-weight: 600; font-family: 'Prompt'; margin-top: 15px; width: 100%; cursor: pointer; transition: 0.2s; font-size: 14px; }
+    /* 📜 กล่องข้อมูลแบบเลื่อนสไลด์ดูได้เฉพาะด้านในเว็บ (Internal Scroll) */
+    .scroll-body { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; margin-bottom: 10px; }
+    
+    .card-box { background: white; border-radius: 16px; padding: 15px 12px; text-align: center; border: 1px solid var(--border); box-shadow: 0 4px 10px rgba(0,0,0,0.01); margin-bottom: 10px; }
+    .card-icon { font-size: 36px; margin-bottom: 5px; }
+    
+    .btn-matcha { background: var(--matcha); color: white; border: none; padding: 8px; border-radius: 12px; font-weight: 600; font-family: 'Prompt'; margin-top: 10px; width: 100%; cursor: pointer; transition: 0.2s; font-size: 13px; }
     .btn-matcha:active { transform: scale(0.95); }
     .btn-matcha:disabled { background: #E8E2D9; color: var(--text-light); cursor: not-allowed; transform: none; }
 
-    .list-container { background: white; border-radius: 20px; border: 1px solid var(--border); overflow: hidden; box-shadow: 0 8px 20px rgba(0,0,0,0.02); margin-bottom: 15px; }
-    .list-item { padding: 18px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+    /* 📌 สถาปัตยกรรมแถบหัวตารางล็อกอยู่กับที่ (Sticky List Header) */
+    .list-header { display: flex; justify-content: space-between; padding: 10px 16px; font-size: 12px; color: var(--text-light); font-weight: 600; background: #FFFFFF; border: 1px solid var(--border); border-bottom: none; border-radius: 16px 16px 0 0; flex-shrink: 0; box-sizing: border-box; }
+    
+    .list-container { background: white; border-radius: 16px; border: 1px solid var(--border); overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.01); }
+    .list-container.has-header { border-top-left-radius: 0 !important; border-top-right-radius: 0 !important; border-top: none !important; }
+    
+    .list-item { padding: 14px 16px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
     .list-item:last-child { border-bottom: none; }
 
-    .coming-soon-box { background: white; border-radius: 24px; padding: 50px 20px; text-align: center; border: 2px dashed var(--border); color: var(--matcha-dark); margin-bottom: 15px; box-shadow: 0 8px 20px rgba(0,0,0,0.01); }
+    .coming-soon-box { background: white; border-radius: 20px; padding: 40px 15px; text-align: center; border: 2px dashed var(--border); color: var(--matcha-dark); box-shadow: 0 4px 10px rgba(0,0,0,0.01); }
 
-    .btn-close-app { background: #E8E2D9; color: var(--text-main); border: none; padding: 15px; border-radius: 16px; font-weight: 600; font-family: 'Prompt'; margin-top: 15px; width: 100%; cursor: pointer; transition: 0.2s; font-size: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.03); }
+    /* 📌 ตรึงพื้นที่ปุ่มกดไว้ด้านล่างสุดของหน้าจอเสมอ (Fixed Footer Area) */
+    .footer-area { width: 100%; flex-shrink: 0; margin-top: auto; display: flex; flex-direction: column; gap: 8px; background-color: var(--bg-cream); padding-top: 4px; }
+    .btn-close-app { background: #E8E2D9; color: var(--text-main); border: none; padding: 12px; border-radius: 14px; font-weight: 600; font-family: 'Prompt'; width: 100%; cursor: pointer; transition: 0.2s; font-size: 14px; box-shadow: 0 4px 10px rgba(0,0,0,0.02); box-sizing: border-box; }
     .btn-close-app:active { transform: scale(0.97); }
+    .btn-back-home { background: var(--matcha); color: white; }
 
     .swal2-container { z-index: 10000 !important; }
     .swal2-popup { border-radius: 24px !important; font-family: 'Prompt', sans-serif !important; }
-    .swal2-confirm, .swal2-cancel { border-radius: 12px !important; font-weight: bold !important; font-family: 'Prompt' !important; }
   </style>
 </head>
 <body>
@@ -77,64 +88,88 @@ Changelog: Fix Navigation Trap with "Back to Home" button, Restore Standard clos
       <div class="member-card">
         <img id="userProfilePic" class="profile-pic" src="https://via.placeholder.com/70" alt="Profile">
         <div class="points-number"><span id="userPoints">0</span></div>
-        <div style="font-size: 16px; margin-bottom: 5px;" id="txt-pts-label">คะแนนสะสม</div>
-        <div style="font-size: 13px; opacity: 0.8;" id="txt-welcome">ยินดีต้อนรับคุณ <span id="userName">...</span></div>
+        <div style="font-size: 14px; margin-bottom: 2px;" id="txt-pts-label">คะแนนสะสม</div>
+        <div style="font-size: 12px; opacity: 0.8;" id="txt-welcome">ยินดีต้อนรับคุณ <span id="userName">...</span></div>
       </div>
       
       <div class="grid-2">
         <div class="action-box" onclick="openQRScanner()">
-          <div style="font-size: 36px; margin-bottom: 5px;">&#128247;</div>
-          <div style="font-weight: 600; font-size: 14px; color: var(--matcha-dark);" id="txt-scan-btn">สแกนรับแต้ม</div>
+          <div style="font-size: 28px; margin-bottom: 3px;">&#128247;</div>
+          <div style="font-weight: 600; font-size: 13px; color: var(--matcha-dark);" id="txt-scan-btn">สแกนรับแต้ม</div>
         </div>
         <div class="action-box" onclick="switchTab('rewards')">
-          <div style="font-size: 36px; margin-bottom: 5px;">&#127873;</div>
-          <div style="font-weight: 600; font-size: 14px; color: #C57B57;" id="txt-go-reward-btn">แลกของรางวัล</div>
+          <div style="font-size: 28px; margin-bottom: 3px;">&#127873;</div>
+          <div style="font-weight: 600; font-size: 13px; color: #C57B57;" id="txt-go-reward-btn">แลกของรางวัล</div>
         </div>
       </div>
 
-      <div style="margin-top: 10px;">
-        <h3 style="font-size: 16px; font-weight: 700; margin-bottom: 12px; color: var(--text-main);" id="txt-recent-history">ประวัติล่าสุด</h3>
-        <div class="list-container" id="recentHistoryContainer"></div>
+      <div style="display: flex; flex-direction: column; overflow: hidden; flex: 1;">
+        <h3 style="font-size: 15px; font-weight: 700; margin: 0 0 8px 0; color: var(--text-main);" id="txt-recent-history">ประวัติล่าสุด</h3>
+        <div class="list-container" id="recentHistoryContainer" style="overflow: hidden;"></div>
       </div>
 
-      <button class="btn-close-app text-close-btn" onclick="closeAppAndGoToLINE()">OK</button>
+      <div class="footer-area">
+        <button class="btn-close-app text-close-btn" onclick="closeAppAndGoToLINE()">OK</button>
+      </div>
     </div>
 
-    <!-- 🛠️ ปลดล็อก UX Trap: เพิ่มปุ่ม กลับหน้าหลัก ในแท็บย่อยทั้งหมด -->
     <div id="view-rewards" class="view-section">
       <h2 class="header-title" id="txt-reward-title">แลกของรางวัล</h2>
-      <div class="grid-2" id="rewardGridContainer"></div>
-      <button class="btn-close-app" style="background: var(--matcha); color: white; margin-bottom: 10px;" onclick="switchTab('home')">&#9664; กลับหน้าหลัก</button>
-      <button class="btn-close-app text-close-btn" onclick="closeAppAndGoToLINE()">OK</button>
+      <div class="scroll-body">
+        <div class="grid-2" id="rewardGridContainer" style="margin-bottom: 0;"></div>
+      </div>
+      <div class="footer-area">
+        <button class="btn-close-app btn-back-home" onclick="switchTab('home')">&#9664; กลับหน้าหลัก</button>
+        <button class="btn-close-app text-close-btn" onclick="closeAppAndGoToLINE()">OK</button>
+      </div>
     </div>
 
     <div id="view-history" class="view-section">
       <h2 class="header-title" id="txt-history-title">ประวัติการใช้งาน</h2>
-      <div class="list-container" id="historyContainer"></div>
-      <button class="btn-close-app" style="background: var(--matcha); color: white; margin-bottom: 10px;" onclick="switchTab('home')">&#9664; กลับหน้าหลัก</button>
-      <button class="btn-close-app text-close-btn" onclick="closeAppAndGoToLINE()">OK</button>
+      
+      <div class="list-header" id="txt-list-header">
+        <span>รายการ / วันเวลา</span>
+        <span>จำนวนแต้ม</span>
+      </div>
+      
+      <div class="scroll-body" style="border-radius: 0 0 16px 16px; background: white; border: 1px solid var(--border); border-top: none;">
+        <div class="list-container has-header" id="historyContainer"></div>
+      </div>
+      
+      <div class="footer-area">
+        <button class="btn-close-app btn-back-home" onclick="switchTab('home')">&#9664; กลับหน้าหลัก</button>
+        <button class="btn-close-app text-close-btn" onclick="closeAppAndGoToLINE()">OK</button>
+      </div>
     </div>
 
     <div id="view-menu" class="view-section">
       <h2 class="header-title" id="txt-menu-title">เมนูเครื่องดื่ม</h2>
-      <div class="coming-soon-box">
-        <div style="font-size: 55px; margin-bottom: 15px;">&#129380;</div>
-        <h3 style="margin: 0 0 5px 0; font-size: 20px;">Coming Soon</h3>
-        <p style="font-size: 14px; margin: 0; color: var(--text-light);" id="txt-cs-1">เตรียมพบกับเมนูใหม่เร็วๆ นี้</p>
+      <div class="scroll-body" style="display: flex; justify-content: center; align-items: center;">
+        <div class="coming-soon-box" style="width: 100%;">
+          <div style="font-size: 45px; margin-bottom: 10px;">&#129380;</div>
+          <h3 style="margin: 0 0 5px 0; font-size: 18px;">Coming Soon</h3>
+          <p style="font-size: 13px; margin: 0; color: var(--text-light);" id="txt-cs-1">เตรียมพบกับเมนูใหม่เร็วๆ นี้</p>
+        </div>
       </div>
-      <button class="btn-close-app" style="background: var(--matcha); color: white; margin-bottom: 10px;" onclick="switchTab('home')">&#9664; กลับหน้าหลัก</button>
-      <button class="btn-close-app text-close-btn" onclick="closeAppAndGoToLINE()">OK</button>
+      <div class="footer-area">
+        <button class="btn-close-app btn-back-home" onclick="switchTab('home')">&#9664; กลับหน้าหลัก</button>
+        <button class="btn-close-app text-close-btn" onclick="closeAppAndGoToLINE()">OK</button>
+      </div>
     </div>
 
     <div id="view-promo" class="view-section">
       <h2 class="header-title" id="txt-promo-title">โปรโมชั่นพิเศษ</h2>
-      <div class="coming-soon-box">
-        <div style="font-size: 55px; margin-bottom: 15px;">&#128226;</div>
-        <h3 style="margin: 0 0 5px 0; font-size: 20px;">Coming Soon</h3>
-        <p style="font-size: 14px; margin: 0; color: var(--text-light);" id="txt-cs-2">โปรโมชั่นเด็ดๆ กำลังมา</p>
+      <div class="scroll-body" style="display: flex; justify-content: center; align-items: center;">
+        <div class="coming-soon-box" style="width: 100%;">
+          <div style="font-size: 45px; margin-bottom: 10px;">&#128226;</div>
+          <h3 style="margin: 0 0 5px 0; font-size: 18px;">Coming Soon</h3>
+          <p style="font-size: 13px; margin: 0; color: var(--text-light);" id="txt-cs-2">โปรโมชั่นเด็ดๆ กำลังมา</p>
+        </div>
       </div>
-      <button class="btn-close-app" style="background: var(--matcha); color: white; margin-bottom: 10px;" onclick="switchTab('home')">&#9664; กลับหน้าหลัก</button>
-      <button class="btn-close-app text-close-btn" onclick="closeAppAndGoToLINE()">OK</button>
+      <div class="footer-area">
+        <button class="btn-close-app btn-back-home" onclick="switchTab('home')">&#9664; กลับหน้าหลัก</button>
+        <button class="btn-close-app text-close-btn" onclick="closeAppAndGoToLINE()">OK</button>
+      </div>
     </div>
 
   </div>
@@ -154,6 +189,7 @@ Changelog: Fix Navigation Trap with "Back to Home" button, Restore Standard clos
         menuTitle: "เมนูเครื่องดื่ม", promoTitle: "โปรโมชั่นพิเศษ", 
         txtEarn: "ได้รับแต้ม", txtRedeem: "แลกรางวัล", txtEdit: "ปรับปรุงแต้ม", closeBtn: "OK",
         comingSoon1: "เตรียมพบกับเมนูใหม่เร็วๆ นี้", comingSoon2: "โปรโมชั่นเด็ดๆ กำลังมา",
+        colActivity: "รายการ / วันเวลา", colPoints: "จำนวนแต้ม", // 🚀 ภาษาไทยสำหรับหัวตาราง
         rewards: [
           { icon: "&#9749;", name: "ส่วนลด 50%", req: "ใช้ 10 แต้ม", cost: 10, logName: "ส่วนลด 50% 1 แก้ว" }
         ]
@@ -166,6 +202,7 @@ Changelog: Fix Navigation Trap with "Back to Home" button, Restore Standard clos
         menuTitle: "Beverage Menu", promoTitle: "Special Promo", 
         txtEarn: "Points Earned", txtRedeem: "Redeemed", txtEdit: "Points Edited", closeBtn: "OK",
         comingSoon1: "New menus are coming very soon", comingSoon2: "Stay tuned for special offers",
+        colActivity: "Activity / Date", colPoints: "Points", // 🚀 ภาษาอังกฤษสำหรับหัวตาราง
         rewards: [
           { icon: "&#9749;", name: "50% Discount", req: "10 Pts req.", cost: 10, logName: "ส่วนลด 50% 1 แก้ว" }
         ]
@@ -244,6 +281,9 @@ Changelog: Fix Navigation Trap with "Back to Home" button, Restore Standard clos
         safeSetText('txt-cs-1', t.comingSoon1); 
         safeSetText('txt-cs-2', t.comingSoon2); 
         
+        // 🚀 อัปเดตภาษาของหัวตารางตามตัวแปรภาษาปัจจุบัน
+        safeSetText('txt-list-header', `<span>${t.colActivity}</span><span>${t.colPoints}</span>`);
+        
         document.querySelectorAll('.text-close-btn').forEach(el => el.innerText = t.closeBtn);
         
         let rewardHtml = "";
@@ -254,10 +294,10 @@ Changelog: Fix Navigation Trap with "Back to Home" button, Restore Standard clos
           const btnText = isEnough ? t.btnRedeem : t.btnNoPts;
           
           rewardHtml += `
-            <div class="card-box">
+            <div class="card-box" style="margin-bottom: 0;">
               <div class="card-icon">${rw.icon}</div>
-              <div style="font-weight: 600; font-size: 15px;">${rw.name}</div>
-              <div style="font-size: 12px; color: var(--text-light); margin-top: 5px;">${rw.req}</div>
+              <div style="font-weight: 600; font-size: 14px;">${rw.name}</div>
+              <div style="font-size: 11px; color: var(--text-light); margin-top: 3px;">${rw.req}</div>
               <button class="${btnClass}" ${btnAttr}>${btnText}</button>
             </div>
           `;
@@ -273,7 +313,7 @@ Changelog: Fix Navigation Trap with "Back to Home" button, Restore Standard clos
         const t = i18n[globalLang];
         
         if (!historyArr || historyArr.length === 0) {
-          const emptyHtml = `<div style="padding: 30px; text-align: center; color: var(--text-light); font-size:14px;">${t.noHistory}</div>`;
+          const emptyHtml = `<div style="padding: 20px; text-align: center; color: var(--text-light); font-size:13px;">${t.noHistory}</div>`;
           fullContainer.innerHTML = emptyHtml;
           if(recentContainer) recentContainer.innerHTML = emptyHtml;
           return;
@@ -292,14 +332,15 @@ Changelog: Fix Navigation Trap with "Back to Home" button, Restore Standard clos
 
           const itemHtml = `
             <div class="list-item">
-              <div><div style="font-weight:600; font-size:14px; color:var(--text-main);">${icon} ${title}</div><div style="font-size:11px; color:var(--text-light); margin-top:3px;">${dateStr}</div></div>
-              <div style="color: ${ptsColor}; font-weight: 700; font-size: 18px;">${ptsText}</div>
+              <div><div style="font-weight:600; font-size:13px; color:var(--text-main);">${icon} ${title}</div><div style="font-size:11px; color:var(--text-light); margin-top:2px;">${dateStr}</div></div>
+              <div style="color: ${ptsColor}; font-weight: 700; font-size: 16px;">${ptsText}</div>
             </div>
           `;
           
           fullHtml += itemHtml;
           
-          if(index < 3) {
+          // 🚀 จำกัดประวัติหน้าแรกให้ดึงแค่ 2 รายการเพื่อประหยัดพื้นที่ไม่ให้ทะลุจอ
+          if(index < 2) {
             recentHtml += itemHtml;
           }
         });
@@ -338,7 +379,7 @@ Changelog: Fix Navigation Trap with "Back to Home" button, Restore Standard clos
         if (data.status === "success") {
           Swal.fire({
             icon: 'success', title: globalLang === "EN" ? 'Success!' : 'แลกรางวัลสำเร็จ!',
-            text: globalLang === "EN" ? `Ref: ${data.refCode}\nPlease show this to staff.` : `รหัสอ้างอิง: ${data.refCode}\nโปรดแสดงหน้าจอนี้ให้พนักงาน`,
+            text: globalLang === "EN" ? `Ref: ${data.refCode}\\nPlease show this to staff.` : `รหัสอ้างอิง: ${data.refCode}\\nโปรดแสดงหน้าจอนี้ให้พนักงาน`,
             confirmButtonColor: '#A3B18A'
           }).then(() => {
             switchTab('home'); 
@@ -376,7 +417,6 @@ Changelog: Fix Navigation Trap with "Back to Home" button, Restore Standard clos
       }
     }
 
-    // ปุ่ม OK ทำหน้าที่สไลด์ปิดหน้าต่าง LIFF ลงตามปกติอย่างนุ่มนวล
     function closeAppAndGoToLINE() {
       if (typeof liff !== "undefined" && liff.isInClient()) {
         liff.closeWindow();
