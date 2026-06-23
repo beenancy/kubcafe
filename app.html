@@ -1,3 +1,9 @@
+<!-- 
+======================================================
+KUB Cafe - Member Application Frontend (V.5.16 MASTER)
+Changelog: Fix Navigation Trap with "Back to Home" button, Restore Standard closeWindow, idToken Security
+======================================================
+-->
 <!DOCTYPE html>
 <html lang="th">
 <head>
@@ -77,11 +83,11 @@
       
       <div class="grid-2">
         <div class="action-box" onclick="openQRScanner()">
-          <div style="font-size: 36px; margin-bottom: 5px;">📷</div>
+          <div style="font-size: 36px; margin-bottom: 5px;">&#128247;</div>
           <div style="font-weight: 600; font-size: 14px; color: var(--matcha-dark);" id="txt-scan-btn">สแกนรับแต้ม</div>
         </div>
         <div class="action-box" onclick="switchTab('rewards')">
-          <div style="font-size: 36px; margin-bottom: 5px;">🎁</div>
+          <div style="font-size: 36px; margin-bottom: 5px;">&#127873;</div>
           <div style="font-weight: 600; font-size: 14px; color: #C57B57;" id="txt-go-reward-btn">แลกของรางวัล</div>
         </div>
       </div>
@@ -94,35 +100,40 @@
       <button class="btn-close-app text-close-btn" onclick="closeAppAndGoToLINE()">OK</button>
     </div>
 
+    <!-- 🛠️ ปลดล็อก UX Trap: เพิ่มปุ่ม กลับหน้าหลัก ในแท็บย่อยทั้งหมด -->
     <div id="view-rewards" class="view-section">
       <h2 class="header-title" id="txt-reward-title">แลกของรางวัล</h2>
       <div class="grid-2" id="rewardGridContainer"></div>
+      <button class="btn-close-app" style="background: var(--matcha); color: white; margin-bottom: 10px;" onclick="switchTab('home')">&#9664; กลับหน้าหลัก</button>
       <button class="btn-close-app text-close-btn" onclick="closeAppAndGoToLINE()">OK</button>
     </div>
 
     <div id="view-history" class="view-section">
       <h2 class="header-title" id="txt-history-title">ประวัติการใช้งาน</h2>
       <div class="list-container" id="historyContainer"></div>
+      <button class="btn-close-app" style="background: var(--matcha); color: white; margin-bottom: 10px;" onclick="switchTab('home')">&#9664; กลับหน้าหลัก</button>
       <button class="btn-close-app text-close-btn" onclick="closeAppAndGoToLINE()">OK</button>
     </div>
 
     <div id="view-menu" class="view-section">
       <h2 class="header-title" id="txt-menu-title">เมนูเครื่องดื่ม</h2>
       <div class="coming-soon-box">
-        <div style="font-size: 55px; margin-bottom: 15px;">🥤</div>
+        <div style="font-size: 55px; margin-bottom: 15px;">&#129380;</div>
         <h3 style="margin: 0 0 5px 0; font-size: 20px;">Coming Soon</h3>
         <p style="font-size: 14px; margin: 0; color: var(--text-light);" id="txt-cs-1">เตรียมพบกับเมนูใหม่เร็วๆ นี้</p>
       </div>
+      <button class="btn-close-app" style="background: var(--matcha); color: white; margin-bottom: 10px;" onclick="switchTab('home')">&#9664; กลับหน้าหลัก</button>
       <button class="btn-close-app text-close-btn" onclick="closeAppAndGoToLINE()">OK</button>
     </div>
 
     <div id="view-promo" class="view-section">
       <h2 class="header-title" id="txt-promo-title">โปรโมชั่นพิเศษ</h2>
       <div class="coming-soon-box">
-        <div style="font-size: 55px; margin-bottom: 15px;">📢</div>
+        <div style="font-size: 55px; margin-bottom: 15px;">&#128226;</div>
         <h3 style="margin: 0 0 5px 0; font-size: 20px;">Coming Soon</h3>
         <p style="font-size: 14px; margin: 0; color: var(--text-light);" id="txt-cs-2">โปรโมชั่นเด็ดๆ กำลังมา</p>
       </div>
+      <button class="btn-close-app" style="background: var(--matcha); color: white; margin-bottom: 10px;" onclick="switchTab('home')">&#9664; กลับหน้าหลัก</button>
       <button class="btn-close-app text-close-btn" onclick="closeAppAndGoToLINE()">OK</button>
     </div>
 
@@ -144,7 +155,7 @@
         txtEarn: "ได้รับแต้ม", txtRedeem: "แลกรางวัล", txtEdit: "ปรับปรุงแต้ม", closeBtn: "OK",
         comingSoon1: "เตรียมพบกับเมนูใหม่เร็วๆ นี้", comingSoon2: "โปรโมชั่นเด็ดๆ กำลังมา",
         rewards: [
-          { icon: "☕", name: "ส่วนลด 50%", req: "ใช้ 10 แต้ม", cost: 10, logName: "ส่วนลด 50% 1 แก้ว" }
+          { icon: "&#9749;", name: "ส่วนลด 50%", req: "ใช้ 10 แต้ม", cost: 10, logName: "ส่วนลด 50% 1 แก้ว" }
         ]
       },
       EN: {
@@ -156,7 +167,7 @@
         txtEarn: "Points Earned", txtRedeem: "Redeemed", txtEdit: "Points Edited", closeBtn: "OK",
         comingSoon1: "New menus are coming very soon", comingSoon2: "Stay tuned for special offers",
         rewards: [
-          { icon: "☕", name: "50% Discount", req: "10 Pts req.", cost: 10, logName: "ส่วนลด 50% 1 แก้ว" }
+          { icon: "&#9749;", name: "50% Discount", req: "10 Pts req.", cost: 10, logName: "ส่วนลด 50% 1 แก้ว" }
         ]
       }
     };
@@ -275,9 +286,9 @@
           const d = new Date(item.timestamp);
           const dateStr = d.toLocaleDateString('th-TH', { day: '2-digit', month: '2-digit', year: '2-digit' }) + ' ' + d.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
           
-          let icon = "☕"; let title = t.txtEarn; let ptsText = `+${item.points}`; let ptsColor = "#A3B18A";
-          if (item.type === "redeem") { icon = "🎁"; title = t.txtRedeem; ptsText = `-${item.points}`; ptsColor = "#C57B57"; }
-          else if (item.type === "edit") { icon = "⚙️"; title = t.txtEdit; ptsText = item.points > 0 ? `+${item.points}` : item.points; }
+          let icon = "&#9749;"; let title = t.txtEarn; let ptsText = `+${item.points}`; let ptsColor = "#A3B18A";
+          if (item.type === "redeem") { icon = "&#127873;"; title = t.txtRedeem; ptsText = `-${item.points}`; ptsColor = "#C57B57"; }
+          else if (item.type === "edit") { icon = "&#9881;&#65039;"; title = t.txtEdit; ptsText = item.points > 0 ? `+${item.points}` : item.points; }
 
           const itemHtml = `
             <div class="list-item">
@@ -365,7 +376,7 @@
       }
     }
 
-    // 🚀 ปุ่ม OK ปรับกลับเป็นแบบปกติ (Standard Close) ปิดหน้าต่าง LIFF ทันทีอย่างนุ่มนวล
+    // ปุ่ม OK ทำหน้าที่สไลด์ปิดหน้าต่าง LIFF ลงตามปกติอย่างนุ่มนวล
     function closeAppAndGoToLINE() {
       if (typeof liff !== "undefined" && liff.isInClient()) {
         liff.closeWindow();
