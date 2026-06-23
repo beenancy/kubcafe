@@ -30,13 +30,19 @@
     const API_URL = "https://kub-backend.nan23082526.workers.dev";
     const SCAN_LIFF_ID = "2010206186-u1XRJldq"; 
 
-    // 🚀 ฟังก์ชันกระชากเข้า LINE OA แบบตรงไปตรงมา
+    // 🚀 ฟังก์ชันกระชากเข้า LINE OA แบบบังคับ 100%
     function closeAppAndGoToLINE() {
-      if (typeof liff !== "undefined" && liff.isInClient()) {
-        liff.closeWindow();
-      } else {
-        window.location.href = "https://line.me/R/ti/p/@848dmzja";
-      }
+      // 1. บังคับเปลี่ยนหน้าไปยัง LINE OA ทุกกรณี
+      window.location.href = "https://line.me/R/ti/p/@848dmzja";
+      
+      // 2. Fallback: หากเปิดใน LIFF อยู่แล้ว ให้ระบบช่วยปิดหน้าต่างซ้อนทับอีกชั้นเพื่อความเนียน
+      setTimeout(() => {
+        try {
+          if (typeof liff !== "undefined" && liff.isInClient()) {
+            liff.closeWindow();
+          }
+        } catch (e) {}
+      }, 1200);
     }
 
     async function showAlert(title, text, icon, btnText, isWarning = false) {
@@ -129,7 +135,7 @@
             },
             willClose: () => { clearInterval(timerInterval); }
           }).then(() => { 
-            // เมื่อหมดเวลา 5 วิ หรือลูกค้ากดปุ่ม ให้ดีดเข้าแชท OA เลย
+            // 🚀 เมื่อหมดเวลา 5 วิ หรือลูกค้ากดปุ่ม ระบบจะยิงฟังก์ชันดีดเข้าแชททันที
             closeAppAndGoToLINE(); 
           });
 
