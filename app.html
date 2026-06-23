@@ -192,7 +192,7 @@
 
     async function fetchMemberData() {
       try {
-        const idToken = liff.getIDToken(); // 🛡️ แนบ idToken ป้องกัน IDOR สวมรอยส่องแต้มผู้อื่น
+        const idToken = liff.getIDToken(); 
         const fetchUrl = `${API_URL}/api/get-member?userId=${globalUserId}&idToken=${idToken || ''}&t=${Date.now()}`;
         const res = await fetch(fetchUrl, {
           method: 'POST',
@@ -211,6 +211,37 @@
 
           applyLanguage(); 
           renderHistory(historyData); 
+
+          // 🚀 ระบบ Auto-Pilot: เช็กว่าเพิ่งสแกนรับแต้มมาหรือไม่
+          const urlParams = new URLSearchParams(window.location.search);
+          if (urlParams.get('from') === 'scan') {
+            // ลบพารามิเตอร์ทิ้ง ป้องกันการรีเฟรชแล้วเด้งซ้ำ
+            window.history.replaceState({}, document.title, window.location.pathname + "?tab=home");
+            
+            let timerInterval;
+            const isEN = globalLang === "EN";
+            Swal.fire({
+              title: isEN ? 'Points Updated!' : 'อัปเดตแต้มล่าสุด!',
+              html: isEN ? `Total: <span style="color:#E65100; font-size:24px; font-weight:900;">${globalTotalPoints}</span> PTS<br><br><span style="font-size:14px;color:#7A8B62;">Returning to chat in <b>3</b>s...</span>` : `คะแนนรวม: <span style="color:#E65100; font-size:24px; font-weight:900;">${globalTotalPoints}</span> แต้ม<br><br><span style="font-size:14px;color:#7A8B62;">กำลังพากลับห้องแชทใน <b>3</b> วิ...</span>`,
+              icon: 'success',
+              timer: 3500, // หน่วงเวลาให้ลูกค้าดูแต้ม 3.5 วินาที
+              timerProgressBar: true,
+              showConfirmButton: true,
+              confirmButtonText: isEN ? 'Go to Chat' : 'เข้าห้องแชทเลย',
+              confirmButtonColor: '#A3B18A',
+              allowOutsideClick: false,
+              didOpen: () => {
+                const b = Swal.getHtmlContainer().querySelector('b');
+                timerInterval = setInterval(() => {
+                  if(b) b.textContent = Math.ceil(Swal.getTimerLeft() / 1000);
+                }, 100);
+              },
+              willClose: () => { clearInterval(timerInterval); }
+            }).then(() => {
+              // ดีดลูกค้าเข้าแชท LINE OA ทันทีที่หมดเวลา หรือกดปุ่ม
+              closeAppAndGoToLINE();
+            });
+          }
         }
       } catch (err) { console.error("Fetch Data Error:", err); }
     }
@@ -317,7 +348,7 @@
       Swal.fire({ title: globalLang === "EN" ? 'Processing...' : 'กำลังดำเนินการ...', allowOutsideClick: false, didOpen: () => { Swal.showLoading() } });
 
       try {
-        const idToken = liff.getIDToken(); // 🛡️ ส่งกุญแจ Token ไปยืนยันสิทธิ์ตัดแต้ม ป้องกันแฮกตัดแต้มคนอื่น
+        const idToken = liff.getIDToken();
         const res = await fetch(`${API_URL}/api/redeem-reward`, {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ userId: globalUserId, idToken: idToken, customerName: globalUserName, pointsUsed: pointsNeeded, rewardName: logName })
@@ -345,20 +376,17 @@
       window.scrollTo(0, 0); 
     }
 
-    // 🚀 ปรับปรุงลอจิกตัวเปิดกล้องในแอปให้ประมวลผลค่า QR Code และโยนไป scan.html ได้สมบูรณ์แบบ
     function openQRScanner() {
       if (liff.isApiAvailable('scanCodeV2')) {
         liff.scanCodeV2().then(result => {
           const value = result && result.value ? result.value : "";
           if (!value) return;
 
-          // หากคิวอาร์เป็นลิงก์เว็บตรงอยู่แล้ว ให้ทำการ Redirect ไปทันที
           if (value.startsWith("http")) {
             window.location.href = value;
             return;
           }
 
-          // หากเป็น Code ตัวอักษร ให้ผูกพารามิเตอร์ส่งเข้า scan.html หลังบ้าน
           window.location.href = `https://beenancy.github.io/kubcafe/scan.html?code=${encodeURIComponent(value)}`;
         }).catch(() => {
           window.location.href = "https://line.me/R/nv/QRCodeReader";
@@ -368,14 +396,9 @@
       }
     }
 
-    // 🚀 ฟังก์ชัน Smart Hybrid Router: บังคับยิงเปิดหน้าแชท LINE OA ก่อน และหน่วงเวลาเคลียร์ปิดแท็บหน้าต่าง LIFF ซ้อนท้ายแบบนุ่มๆ
     function closeAppAndGoToLINE() {
       const lineOaUrl = "https://line.me/R/ti/p/@848dmzja";
-      
-      // บังคับเปลี่ยนหน้าไปยัง LINE OA ทุกกรณี
       window.location.href = lineOaUrl;
-
-      // ทำลายแท็บหน้าต่าง LIFF เก่าทิ้งเบื้องหลังอย่างนุ่มนวล
       setTimeout(() => {
         try {
           if (typeof liff !== "undefined" && liff.isInClient()) {
