@@ -13,10 +13,10 @@
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     .text { color: #A3B18A; font-weight: bold; font-size: 16px; }
     
-    /* 🎨 Minimalist Popup Styling */
-    .swal2-popup { border-radius: 24px !important; font-family: 'Prompt', sans-serif !important; padding: 2em 1.5em !important; }
-    .custom-swal-popup { width: 80% !important; max-width: 300px !important; background-color: #FFFFFF !important; box-shadow: 0 10px 25px rgba(140, 122, 107, 0.15) !important; overflow: hidden; }
-    .matcha-btn { font-size: 14px !important; padding: 12px 24px !important; border-radius: 14px !important; font-weight: 600 !important; background-color: #A3B18A !important; color: #ffffff !important; border: none !important; width: 100% !important; margin-top: 10px !important;}
+    /* 🎨 Extreme Minimal Popup Styling */
+    .swal2-popup { border-radius: 20px !important; font-family: 'Prompt', sans-serif !important; padding: 1.2em 1em !important; }
+    .custom-swal-popup { width: 75% !important; max-width: 280px !important; background-color: #FFFFFF !important; box-shadow: 0 10px 25px rgba(140, 122, 107, 0.15) !important; overflow: hidden; }
+    .matcha-btn { font-size: 14px !important; padding: 12px 24px !important; border-radius: 12px !important; font-weight: 600 !important; background-color: #A3B18A !important; color: #ffffff !important; border: none !important; width: 100% !important; margin-top: 10px !important;}
     .warning-btn { background-color: #C57B57 !important; }
   </style>
 </head>
@@ -30,9 +30,12 @@
     const API_URL = "https://kub-backend.nan23082526.workers.dev";
     const SCAN_LIFF_ID = "2010206186-u1XRJldq"; 
 
-    // 🚀 ฟังก์ชันกระชากเข้า LINE OA
+    // 🚀 ฟังก์ชันกระชากเข้า LINE OA แบบบังคับ 100%
     function closeAppAndGoToLINE() {
+      // 1. บังคับเปลี่ยนหน้าไปยัง LINE OA ทุกกรณี
       window.location.href = "https://line.me/R/ti/p/@848dmzja";
+      
+      // 2. Fallback: หากเปิดใน LIFF อยู่แล้ว ให้ระบบช่วยปิดหน้าต่างซ้อนทับอีกชั้นเพื่อความเนียน
       setTimeout(() => {
         try {
           if (typeof liff !== "undefined" && liff.isInClient()) {
@@ -105,15 +108,16 @@
         if (data.status === "success") {
           try { document.getElementById('dingSound').play().catch(()=>{}); } catch(e) {}
 
-          // ✨ Minimalist Custom HTML (ไม่มี Title/Icon ดั้งเดิมของ Swal)
+          // ✨ Extreme Minimal Custom HTML (Tight Compact layout)
           const minimalHtml = `
-            <div style="padding-top: 5px;">
-              <div style="font-size: 42px; margin-bottom: 5px; line-height: 1;">☕</div>
-              <div style="color: #A3B18A; font-size: 56px; font-weight: 900; line-height: 1; margin-bottom: 5px;">+${data.ptsAdded}</div>
-              <div style="color: #B0A69D; font-size: 13px; font-weight: 600; letter-spacing: 1px; margin-bottom: 25px;">${isEN ? 'POINTS EARNED' : 'แต้มที่ได้รับ'}</div>
-              
-              <div style="background: #FDFCF0; border: 1px solid #E8E2D9; border-radius: 30px; padding: 8px 20px; display: inline-block; font-size: 14px; color: #4A3F35; box-shadow: 0 4px 10px rgba(0,0,0,0.02);">
-                ${isEN ? 'Total:' : 'สะสมรวม:'} <span style="color: #E65100; font-size: 18px; font-weight: 800; margin-left: 5px;">${data.totalPts}</span>
+            <div style="text-align: center; padding: 10px 0 5px 0;">
+              <div style="display: flex; align-items: flex-end; justify-content: center; gap: 5px; margin-bottom: 15px;">
+                <span style="font-size: 32px; line-height: 1; margin-bottom: -4px;">☕</span>
+                <span style="color: #A3B18A; font-size: 56px; font-weight: 900; line-height: 1;">+${data.ptsAdded}</span>
+                <span style="color: #A3B18A; font-size: 14px; font-weight: 600; padding-bottom: 5px;">${isEN ? 'PTS' : 'แต้ม'}</span>
+              </div>
+              <div style="background: #FDFCF0; border: 1px solid #E8E2D9; border-radius: 12px; padding: 8px 12px; display: inline-block; font-size: 14px; color: #4A3F35; margin-bottom: 10px;">
+                ${isEN ? 'Total Points:' : 'คะแนนสะสมรวม:'} <span style="color: #E65100; font-size: 17px; font-weight: 900; margin-left: 4px;">${data.totalPts}</span>
               </div>
             </div>
           `;
@@ -128,7 +132,7 @@
             confirmButtonText: isEN ? 'Chat (5)' : 'เข้าห้องแชท (5)',
             customClass: { popup: 'custom-swal-popup', confirmButton: 'matcha-btn' },
             buttonsStyling: false, 
-            timer: 5000,
+            timer: 5000, // ⏱️ ตั้งเวลาไว้ที่ 5 วินาที
             timerProgressBar: false, // ❌ ปิดหลอดเวลา ให้ดูคลีน
             allowOutsideClick: false,
             didOpen: () => {
@@ -141,6 +145,7 @@
             },
             willClose: () => { clearInterval(timerInterval); }
           }).then(() => { 
+            // เมื่อหมดเวลา 5 วิ หรือลูกค้ากดปุ่ม ระบบจะยิงฟังก์ชันดีดเข้าแชท OA เลย
             closeAppAndGoToLINE(); 
           });
 
