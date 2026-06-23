@@ -192,7 +192,7 @@
 
     async function fetchMemberData() {
       try {
-        const idToken = liff.getIDToken();
+        const idToken = liff.getIDToken(); // 🛡️ แนบ idToken ป้องกัน IDOR สวมรอยส่องแต้มผู้อื่น
         const fetchUrl = `${API_URL}/api/get-member?userId=${globalUserId}&idToken=${idToken || ''}&t=${Date.now()}`;
         const res = await fetch(fetchUrl, {
           method: 'POST',
@@ -317,7 +317,7 @@
       Swal.fire({ title: globalLang === "EN" ? 'Processing...' : 'กำลังดำเนินการ...', allowOutsideClick: false, didOpen: () => { Swal.showLoading() } });
 
       try {
-        const idToken = liff.getIDToken();
+        const idToken = liff.getIDToken(); // 🛡️ ส่งกุญแจ Token ไปยืนยันสิทธิ์ตัดแต้ม ป้องกันแฮกตัดแต้มคนอื่น
         const res = await fetch(`${API_URL}/api/redeem-reward`, {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ userId: globalUserId, idToken: idToken, customerName: globalUserName, pointsUsed: pointsNeeded, rewardName: logName })
@@ -345,18 +345,44 @@
       window.scrollTo(0, 0); 
     }
 
+    // 🚀 ปรับปรุงลอจิกตัวเปิดกล้องในแอปให้ประมวลผลค่า QR Code และโยนไป scan.html ได้สมบูรณ์แบบ
     function openQRScanner() {
-      if (liff.isApiAvailable('scanCodeV2')) { liff.scanCodeV2().then(result => {}); } 
-      else { window.location.href = "https://line.me/R/nv/QRCodeReader"; }
+      if (liff.isApiAvailable('scanCodeV2')) {
+        liff.scanCodeV2().then(result => {
+          const value = result && result.value ? result.value : "";
+          if (!value) return;
+
+          // หากคิวอาร์เป็นลิงก์เว็บตรงอยู่แล้ว ให้ทำการ Redirect ไปทันที
+          if (value.startsWith("http")) {
+            window.location.href = value;
+            return;
+          }
+
+          // หากเป็น Code ตัวอักษร ให้ผูกพารามิเตอร์ส่งเข้า scan.html หลังบ้าน
+          window.location.href = `https://beenancy.github.io/kubcafe/scan.html?code=${encodeURIComponent(value)}`;
+        }).catch(() => {
+          window.location.href = "https://line.me/R/nv/QRCodeReader";
+        });
+      } else {
+        window.location.href = "https://line.me/R/nv/QRCodeReader";
+      }
     }
 
-    // 🚀 Smart Router: เช็กบริบทแวดล้อมเพื่อสร้าง UX ที่ดีที่สุด (Smooth Close vs Force Deep Link)
+    // 🚀 ฟังก์ชัน Smart Hybrid Router: บังคับยิงเปิดหน้าแชท LINE OA ก่อน และหน่วงเวลาเคลียร์ปิดแท็บหน้าต่าง LIFF ซ้อนท้ายแบบนุ่มๆ
     function closeAppAndGoToLINE() {
-      if (liff.isInClient()) {
-        liff.closeWindow(); 
-      } else {
-        window.location.href = "https://line.me/R/ti/p/@848dmzja"; 
-      }
+      const lineOaUrl = "https://line.me/R/ti/p/@848dmzja";
+      
+      // บังคับเปลี่ยนหน้าไปยัง LINE OA ทุกกรณี
+      window.location.href = lineOaUrl;
+
+      // ทำลายแท็บหน้าต่าง LIFF เก่าทิ้งเบื้องหลังอย่างนุ่มนวล
+      setTimeout(() => {
+        try {
+          if (typeof liff !== "undefined" && liff.isInClient()) {
+            liff.closeWindow();
+          }
+        } catch (e) {}
+      }, 1200);
     }
 
     window.onload = initApp;
