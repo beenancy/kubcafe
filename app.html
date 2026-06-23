@@ -195,7 +195,7 @@
     .card-box {
       background: linear-gradient(135deg, #FFFAF0 0%, #FFF4DF 100%);
       border-radius: 20px;
-      padding: 20px 15px;
+      padding: 16px 12px;
       text-align: center;
       border: 1px solid #FFDB99;
       box-shadow: 0 8px 20px rgba(197, 123, 87, 0.06);
@@ -205,6 +205,9 @@
       align-items: center;
       justify-content: space-between;
       box-sizing: border-box;
+      max-width: 160px;
+      width: 100%;
+      margin: 0 auto;
     }
     .card-icon { font-size: 44px; margin-bottom: 6px; }
     
@@ -301,6 +304,8 @@
       margin-top: auto;
       display: flex;
       justify-content: center;
+      align-items: center;
+      gap: 12px;
       background-color: transparent;
       padding-top: 8px;
       padding-bottom: 4px;
@@ -324,11 +329,18 @@
     .btn-back-home { 
       background: var(--matcha) !important; 
       color: white !important; 
-      box-shadow: 0 6px 12px rgba(163, 177, 138, 0.3) !important; 
+      box-shadow: 0 4px 10px rgba(163, 177, 138, 0.15) !important; 
       border: none !important; 
-      width: 100% !important; 
-      padding: 12px !important; 
-      border-radius: 16px !important;
+      width: auto !important; 
+      padding: 6px 20px !important; 
+      border-radius: 20px !important;
+      font-size: 13px !important;
+      font-weight: 700 !important;
+      display: inline-block !important;
+      cursor: pointer !important;
+    }
+    .btn-back-home:active {
+      transform: scale(0.95) !important;
     }
 
     .swal2-container { z-index: 10000 !important; }
