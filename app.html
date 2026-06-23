@@ -365,16 +365,11 @@
       }
     }
 
+    // 🚀 ปุ่ม OK ปรับกลับเป็นแบบปกติ (Standard Close) ปิดหน้าต่าง LIFF ทันทีอย่างนุ่มนวล
     function closeAppAndGoToLINE() {
-      const lineOaUrl = "https://line.me/R/ti/p/@848dmzja";
-      window.location.href = lineOaUrl;
-      setTimeout(() => {
-        try {
-          if (typeof liff !== "undefined" && liff.isInClient()) {
-            liff.closeWindow();
-          }
-        } catch (e) {}
-      }, 1200);
+      if (typeof liff !== "undefined" && liff.isInClient()) {
+        liff.closeWindow();
+      }
     }
 
     window.onload = initApp;
