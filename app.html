@@ -345,9 +345,11 @@
 
     .swal2-container { z-index: 10000 !important; }
     .swal2-popup { border-radius: 24px !important; font-family: 'Prompt', sans-serif !important; padding: 1.5em 1.2em !important; }
-    .custom-swal-popup { width: 78% !important; max-width: 290px !important; background-color: #FFFFFF !important; box-shadow: 0 15px 35px rgba(140, 122, 107, 0.2) !important; overflow: hidden; }
-    .swal-btn-confirm { font-size: 14px !important; padding: 10px 24px !important; border-radius: 12px !important; font-weight: 700; background-color: var(--matcha) !important; color: #ffffff !important; border: none !important; margin: 0 5px !important; cursor: pointer; }
-    .swal-btn-cancel { font-size: 14px !important; padding: 10px 24px !important; border-radius: 12px !important; font-weight: 700; background-color: #E8E2D9 !important; color: var(--text-main) !important; border: none !important; margin: 0 5px !important; cursor: pointer; }
+    .custom-swal-popup { width: 80% !important; max-width: 290px !important; background-color: #FFFFFF !important; box-shadow: 0 15px 35px rgba(140, 122, 107, 0.2) !important; overflow: hidden; }
+    .swal-btn-confirm { font-size: 13px !important; padding: 9px 22px !important; border-radius: 20px !important; font-weight: 700; background-color: var(--matcha) !important; color: #ffffff !important; border: none !important; margin: 0 6px !important; cursor: pointer; box-shadow: 0 4px 10px rgba(163, 177, 138, 0.25) !important; transition: all 0.2s; }
+    .swal-btn-confirm:active { transform: scale(0.97); }
+    .swal-btn-cancel { font-size: 13px !important; padding: 9px 22px !important; border-radius: 20px !important; font-weight: 700; background-color: #F4F1EC !important; color: var(--text-main) !important; border: none !important; margin: 0 6px !important; cursor: pointer; transition: all 0.2s; }
+    .swal-btn-cancel:active { transform: scale(0.97); }
   </style>
 </head>
 <body>
@@ -504,9 +506,35 @@
     }
 
     async function showMinimalAlert(iconEmoji, title, text, btnText, isError = false) {
+      let svgHtml = "";
+      if (isError) {
+        svgHtml = `
+          <div style="display: flex; justify-content: center; margin-bottom: 14px;">
+            <div style="width: 56px; height: 56px; border-radius: 50%; background: #FCEBE6; display: flex; justify-content: center; align-items: center;">
+              <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#C57B57" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </div>
+          </div>
+        `;
+      } else {
+        svgHtml = `
+          <div style="display: flex; justify-content: center; margin-bottom: 14px;">
+            <div style="width: 56px; height: 56px; border-radius: 50%; background: #EAF0E4; display: flex; justify-content: center; align-items: center;">
+              <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#7A8B62" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="8" x2="12" y2="12"></line>
+                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+              </svg>
+            </div>
+          </div>
+        `;
+      }
+
       const html = `
         <div style="text-align: center; padding: 10px 0 5px 0;">
-          <div style="font-size: 42px; margin-bottom: 10px; line-height: 1;">${iconEmoji}</div>
+          ${svgHtml}
           <div style="color: ${isError ? '#C57B57' : '#A3B18A'}; font-size: 18px; font-weight: 800; margin-bottom: 6px;">${title}</div>
           <div style="color: #6B705C; font-size: 14px; line-height: 1.4; margin-bottom: 5px;">${text}</div>
         </div>
@@ -714,15 +742,23 @@
     async function redeemPoints(pointsNeeded, logName, displayRewardName) {
       if (globalTotalPoints < pointsNeeded) return;
       
-      const txtConfirm = globalLang === "EN" ? `Confirm to use <b style="color:#E65100">${pointsNeeded} PTS</b><br>for ${displayRewardName}?` : `ยืนยันใช้ <b style="color:#E65100">${pointsNeeded} แต้ม</b><br>เพื่อแลก ${displayRewardName}?`;
+      const txtConfirm = globalLang === "EN" ? `Confirm to use <b style="color:#C57B57">${pointsNeeded} PTS</b><br>for ${displayRewardName}?` : `ยืนยันใช้ <b style="color:#C57B57">${pointsNeeded} แต้ม</b><br>เพื่อแลก ${displayRewardName}?`;
       const txtYes = globalLang === "EN" ? "Yes" : "ยืนยันแลก";
       const txtNo = globalLang === "EN" ? "Cancel" : "ยกเลิก";
 
-      // 🎨 1. เปลี่ยนหน้าต่างยืนยันให้เป็น Extreme Minimal
+      // 🎨 1. เปลี่ยนหน้าต่างยืนยันให้เป็น Extreme Minimal + SVG Icon
       const confirmHtml = `
         <div style="text-align: center; padding: 10px 0 5px 0;">
-          <div style="font-size: 42px; margin-bottom: 10px; line-height: 1;">&#10067;</div>
-          <div style="color: #4A3F35; font-size: 18px; font-weight: 800; margin-bottom: 6px;">${globalLang === "EN" ? 'Confirm?' : 'ยืนยันการแลก?'}</div>
+          <div style="display: flex; justify-content: center; margin-bottom: 14px;">
+            <div style="width: 56px; height: 56px; border-radius: 50%; background: #FFF5EB; display: flex; justify-content: center; align-items: center;">
+              <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#C57B57" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+              </svg>
+            </div>
+          </div>
+          <div style="color: #4A3F35; font-size: 17px; font-weight: 800; margin-bottom: 6px;">${globalLang === "EN" ? 'Confirm?' : 'ยืนยันการแลก?'}</div>
           <div style="color: #6B705C; font-size: 14px; line-height: 1.4; margin-bottom: 5px;">${txtConfirm}</div>
         </div>
       `;
@@ -749,13 +785,19 @@
         
         if (data.status === "success") {
           
-          // 🎨 2. เปลี่ยนหน้าต่างแลกสำเร็จให้เป็น Extreme Minimal + กรอบไฮไลท์รหัส
+          // 🎨 2. เปลี่ยนหน้าต่างแลกสำเร็จให้เป็น Extreme Minimal + SVG Icon + กรอบไฮไลท์รหัส
           const successHtml = `
             <div style="text-align: center; padding: 10px 0 5px 0;">
-              <div style="font-size: 42px; margin-bottom: 10px; line-height: 1;">&#127881;</div>
-              <div style="color: #A3B18A; font-size: 18px; font-weight: 800; margin-bottom: 6px;">${globalLang === "EN" ? 'Success!' : 'แลกรางวัลสำเร็จ!'}</div>
+              <div style="display: flex; justify-content: center; margin-bottom: 14px;">
+                <div style="width: 56px; height: 56px; border-radius: 50%; background: #EAF0E4; display: flex; justify-content: center; align-items: center;">
+                  <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#7A8B62" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg>
+                </div>
+              </div>
+              <div style="color: #7A8B62; font-size: 17px; font-weight: 800; margin-bottom: 6px;">${globalLang === "EN" ? 'Success!' : 'แลกรางวัลสำเร็จ!'}</div>
               <div style="color: #6B705C; font-size: 13px; line-height: 1.4; margin-bottom: 15px;">${globalLang === "EN" ? 'Please show this screen to staff.' : 'โปรดแสดงหน้าจอนี้ให้พนักงาน'}</div>
-              <div style="background: #FDFCF0; border: 1.5px dashed #A3B18A; border-radius: 12px; padding: 10px; color: #4A3F35; font-weight: 800; font-size: 16px; letter-spacing: 1px;">
+              <div style="background: #FFFBF5; border: 1.5px dashed #A3B18A; border-radius: 12px; padding: 12px; color: #4A3F35; font-weight: 800; font-size: 18px; letter-spacing: 1px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);">
                 ${data.refCode}
               </div>
             </div>
