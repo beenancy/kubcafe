@@ -595,6 +595,13 @@
       font-family: 'Prompt', sans-serif !important;
       border: 1px solid var(--border) !important;
     }
+    
+    /* Custom Minimal SWAL classes matching app.html */
+    .custom-swal-popup { width: 80% !important; max-width: 290px !important; background-color: #FFFFFF !important; box-shadow: 0 15px 35px rgba(140, 122, 107, 0.2) !important; overflow: hidden; }
+    .swal-btn-confirm { font-size: 13px !important; padding: 9px 22px !important; border-radius: 20px !important; font-weight: 700; background-color: var(--matcha) !important; color: #ffffff !important; border: none !important; margin: 0 6px !important; cursor: pointer; box-shadow: 0 4px 10px rgba(163, 177, 138, 0.25) !important; transition: all 0.2s; }
+    .swal-btn-confirm:active { transform: scale(0.97); }
+    .swal-btn-cancel { font-size: 13px !important; padding: 9px 22px !important; border-radius: 20px !important; font-weight: 700; background-color: #F4F1EC !important; color: var(--text-main) !important; border: none !important; margin: 0 6px !important; cursor: pointer; transition: all 0.2s; }
+    .swal-btn-cancel:active { transform: scale(0.97); }
   </style>
 </head>
 <body>
@@ -873,15 +880,35 @@
       const txtYes = globalLang === "EN" ? "Yes, Redeem" : "ยืนยันแลกเลย";
       const txtNo = globalLang === "EN" ? "Cancel" : "ยกเลิก";
 
+      const confirmHtml = `
+        <div style="text-align: center; padding: 10px 0 5px 0;">
+          <div style="display: flex; justify-content: center; margin-bottom: 14px;">
+            <div style="width: 56px; height: 56px; border-radius: 50%; background: #FFF5EB; display: flex; justify-content: center; align-items: center;">
+              <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="#C57B57" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 12 20 22 4 22 4 12"></polyline>
+                <rect x="2" y="7" width="20" height="5"></rect>
+                <line x1="12" y1="22" x2="12" y2="7"></line>
+                <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"></path>
+                <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"></path>
+              </svg>
+            </div>
+          </div>
+          <div style="color: #4A3F35; font-size: 17px; font-weight: 800; margin-bottom: 6px;">${globalLang === "EN" ? 'Confirm?' : 'ยืนยันการแลก?'}</div>
+          <div style="color: #6B705C; font-size: 14px; line-height: 1.4; margin-bottom: 5px;">${txtConfirm}</div>
+        </div>
+      `;
+
       const confirmResult = await Swal.fire({
-        title: globalLang === "EN" ? 'Confirm?' : 'ยืนยันการแลก?', text: txtConfirm, icon: 'question',
-        showCancelButton: true, confirmButtonColor: '#A3B18A', cancelButtonColor: '#E8E2D9',
-        confirmButtonText: txtYes, cancelButtonText: `<span style="color:#4A3F35">${txtNo}</span>`, reverseButtons: true
+        html: confirmHtml,
+        showCancelButton: true,
+        confirmButtonText: txtYes, cancelButtonText: txtNo, reverseButtons: true,
+        customClass: { popup: 'custom-swal-popup', confirmButton: 'swal-btn-confirm', cancelButton: 'swal-btn-cancel' },
+        buttonsStyling: false
       });
 
       if (!confirmResult.isConfirmed) return;
 
-      Swal.fire({ title: globalLang === "EN" ? 'Processing...' : 'กำลังดำเนินการ...', allowOutsideClick: false, didOpen: () => { Swal.showLoading() } });
+      Swal.fire({ title: globalLang === "EN" ? 'Processing...' : 'กำลังดำเนินการ...', allowOutsideClick: false, didOpen: () => { Swal.showLoading() }, customClass: { popup: 'custom-swal-popup' } });
 
       try {
         const res = await fetch(`${API_URL}/api/redeem-reward`, {
@@ -891,10 +918,27 @@
         const data = await res.json();
         
         if (data.status === "success") {
+          const successHtml = `
+            <div style="text-align: center; padding: 10px 0 5px 0;">
+              <div style="display: flex; justify-content: center; margin-bottom: 14px;">
+                <div style="width: 56px; height: 56px; border-radius: 50%; background: #EAF0E4; display: flex; justify-content: center; align-items: center;">
+                  <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#7A8B62" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg>
+                </div>
+              </div>
+              <div style="color: #7A8B62; font-size: 17px; font-weight: 800; margin-bottom: 6px;">${globalLang === "EN" ? 'Success!' : 'แลกรางวัลสำเร็จ!'}</div>
+              <div style="color: #6B705C; font-size: 13px; line-height: 1.4; margin-bottom: 15px;">${globalLang === "EN" ? 'Please show this screen to staff.' : 'โปรดแสดงหน้าจอนี้ให้พนักงาน'}</div>
+              <div style="background: #FFFBF5; border: 1.5px dashed #A3B18A; border-radius: 12px; padding: 12px; color: #4A3F35; font-weight: 800; font-size: 18px; letter-spacing: 1px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);">
+                ${data.refCode}
+              </div>
+            </div>
+          `;
+
           Swal.fire({
-            icon: 'success', title: globalLang === "EN" ? 'Success!' : 'แลกรางวัลสำเร็จ!',
-            text: globalLang === "EN" ? `Ref: ${data.refCode}\nPlease show this to staff.` : `รหัสอ้างอิง: ${data.refCode}\nโปรดแสดงหน้าจอนี้ให้พนักงาน`,
-            confirmButtonColor: '#A3B18A'
+            html: successHtml,
+            customClass: { popup: 'custom-swal-popup', confirmButton: 'swal-btn-confirm' },
+            buttonsStyling: false, confirmButtonText: 'OK'
           }).then(() => {
             switchTab('home'); 
           });
