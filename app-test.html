@@ -10,60 +10,34 @@
   
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&family=Quicksand:wght@400;500;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;600;700&display=swap');
     
     :root {
-      --bg-cream: #FAF6F0; /* Soft warm ivory/cream */
-      --matcha: #556B2F; /* Rich Matcha Green */
-      --matcha-light: #8FBC8F; /* Soft Sage Green */
-      --matcha-dark: #3B4B27; /* Dark Forest/Espresso Green */
-      --matcha-glow: rgba(85, 107, 47, 0.1); /* Soft green glow */
-      --text-main: #3C332D; /* Espresso charcoal */
-      --text-light: #9B8E85; /* Muted warm gray */
-      --border: #ECE6DC; /* Soft warm borders */
-      --card-bg: #FFFFFF;
-      --accent-caramel: #C68B59; /* Accent for rewards/redeem */
-      --accent-caramel-glow: rgba(198, 139, 89, 0.1);
-      
-      --shadow-sm: 0 4px 12px rgba(60, 51, 45, 0.03);
-      --shadow-md: 0 8px 24px rgba(60, 51, 45, 0.06);
-      --shadow-lg: 0 16px 36px rgba(60, 51, 45, 0.1);
+      --bg-cream: #FDFCF0;
+      --matcha: #A3B18A;
+      --matcha-dark: #7A8B62;
+      --text-main: #4A3F35;
+      --text-light: #B0A69D;
+      --border: #E8E2D9;
+      --accent-brick: #C57B57;
     }
     
     body, html {
-      margin: 0;
-      padding: 0;
-      width: 100%;
-      height: 100vh;
-      font-family: 'Prompt', 'Quicksand', sans-serif;
-      background-color: #EFECE6;
+      margin: 0; padding: 0;
+      width: 100%; height: 100vh;
+      font-family: 'Prompt', sans-serif;
+      background-color: var(--bg-cream);
       overflow: hidden;
       display: flex;
-      justify-content: center;
-      align-items: center;
+      flex-direction: column;
       color: var(--text-main);
     }
     
-    .app-container {
-      width: 100%;
-      max-width: 480px;
-      height: 100%;
-      background-color: var(--bg-cream);
-      display: flex;
-      flex-direction: column;
-      position: relative;
-      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
-      overflow: hidden;
-    }
-    
     #loading-overlay {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
       background: var(--bg-cream);
       z-index: 9999;
       display: flex;
@@ -71,532 +45,306 @@
       justify-content: center;
       align-items: center;
       color: var(--matcha-dark);
-      transition: opacity 0.4s ease, visibility 0.4s;
-    }
-    
-    .loading-logo {
-      font-size: 48px;
-      margin-bottom: 16px;
-      animation: bounce 2s infinite ease-in-out;
+      transition: opacity 0.3s;
     }
     
     .spinner {
-      border: 3px solid rgba(85, 107, 47, 0.1);
-      border-left-color: var(--matcha);
+      border: 3px solid var(--border);
+      border-left-color: var(--matcha-dark);
       border-radius: 50%;
-      width: 40px;
-      height: 40px;
-      animation: spin 0.8s cubic-bezier(0.5, 0, 0.5, 1) infinite;
-      margin-bottom: 20px;
+      width: 40px; height: 40px;
+      animation: spin 1s linear infinite;
+      margin-bottom: 15px;
     }
-    
-    .loading-text {
-      font-size: 14px;
-      font-weight: 500;
-      color: var(--text-light);
-      animation: pulse 1.5s infinite ease-in-out;
-      font-family: 'Prompt', sans-serif;
-    }
-    
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-    
-    @keyframes bounce {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-8px); }
-    }
-    
-    @keyframes pulse {
-      0%, 100% { opacity: 0.6; }
-      50% { opacity: 1; }
-    }
-    
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
     .app-content {
       flex: 1;
-      overflow-y: auto;
-      padding: 24px;
       display: flex;
       flex-direction: column;
-      -webkit-overflow-scrolling: touch;
+      height: 100%;
+      overflow: hidden;
     }
     
     .view-section {
       display: none;
-      animation: slideUpFade 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
-      padding-bottom: 24px;
+      height: 100%;
+      flex-direction: column;
+      padding: 20px 20px 12px 20px;
+      box-sizing: border-box;
+      overflow: hidden;
     }
-    
     .view-section.active {
       display: flex;
-      flex-direction: column;
+      animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     }
-    
-    @keyframes slideUpFade {
-      from {
-        opacity: 0;
-        transform: translateY(16px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* 📱 integrated header styled like mockup */
+    .app-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 20px;
+      background-color: var(--bg-cream);
+      font-size: 16px;
+      color: var(--text-main);
+      flex-shrink: 0;
+      border-bottom: 1px solid rgba(232, 226, 217, 0.5);
     }
-    
-    .header-title {
-      font-size: 24px;
+    .back-icon {
+      font-size: 18px;
+      cursor: pointer;
+      color: var(--text-main);
+      padding: 5px;
+    }
+    .app-title {
       font-weight: 700;
-      margin: 8px 0 20px 0;
+      letter-spacing: 0.5px;
+    }
+
+    .header-title {
+      font-size: 22px;
+      font-weight: 700;
+      margin: 0 0 14px 0;
       color: var(--matcha-dark);
       text-align: center;
-      letter-spacing: -0.5px;
+      flex-shrink: 0;
+      letter-spacing: 0.5px;
+    }
+
+    #view-home .header-title {
+      display: none;
     }
     
     .member-card {
-      background: linear-gradient(135deg, #3B4B27, #556B2F);
-      border-radius: 28px;
-      padding: 28px 24px;
+      background: linear-gradient(135deg, #97A97C 0%, #6F8156 100%);
+      border-radius: 24px;
+      padding: 30px 16px 12px 16px;
       color: white;
       text-align: center;
-      box-shadow: var(--shadow-lg), inset 0 1px 1px rgba(255,255,255,0.15);
-      margin-bottom: 24px;
-      position: relative;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-    
-    .member-card::before {
-      content: '';
-      position: absolute;
-      top: -50%;
-      left: -50%;
-      width: 200%;
-      height: 200%;
-      background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0) 70%);
-      pointer-events: none;
-    }
-    
-    .member-card::after {
-      content: 'KUB CAFE';
-      position: absolute;
-      bottom: 16px;
-      right: 24px;
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 2px;
-      opacity: 0.15;
-      font-family: 'Quicksand', sans-serif;
-    }
-    
-    .profile-pic {
-      width: 76px;
-      height: 76px;
-      border-radius: 50%;
-      border: 3px solid rgba(255, 255, 255, 0.95);
-      object-fit: cover;
+      box-shadow: 0 12px 28px rgba(111, 129, 86, 0.15);
+      margin-top: 36px; /* space for overlapping avatar */
       margin-bottom: 12px;
-      box-shadow: 0 8px 16px rgba(0,0,0,0.12);
-      transition: transform 0.3s ease;
+      flex-shrink: 0;
+      position: relative;
+      overflow: visible; /* show overflowing avatar */
+      border: none;
     }
-    
-    .profile-pic:hover {
-      transform: scale(1.05);
+
+    .profile-pic {
+      width: 66px;
+      height: 66px;
+      border-radius: 50%;
+      border: 3px solid white;
+      object-fit: cover;
+      box-shadow: 0 6px 14px rgba(0,0,0,0.12);
+      position: absolute;
+      top: -33px; /* overlap halfway */
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 5;
     }
-    
-    .welcome-msg {
-      font-size: 13px;
-      font-weight: 400;
-      color: rgba(255, 255, 255, 0.85);
-      margin-bottom: 14px;
-      line-height: 1.4;
-    }
-    
-    .welcome-msg span {
-      font-weight: 600;
-      color: #FFF;
-    }
-    
-    .points-container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-    
+
     .points-number {
-      font-family: 'Quicksand', sans-serif;
-      font-size: 60px;
-      font-weight: 700;
+      font-size: 46px;
+      font-weight: 800;
       line-height: 1;
-      margin: 0;
-      color: #FFF;
-      text-shadow: 0 4px 8px rgba(0,0,0,0.08);
-      letter-spacing: -1px;
-    }
-    
-    .points-label {
-      font-size: 13px;
-      font-weight: 500;
-      letter-spacing: 0.5px;
-      color: rgba(255, 255, 255, 0.75);
-      margin-top: 6px;
-    }
-    
-    .grid-2 {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 16px;
-      margin-bottom: 24px;
+      margin: 2px 0;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      position: relative;
+      z-index: 1;
     }
     
     .action-box {
-      background: var(--card-bg);
-      border: 1px solid var(--border);
-      border-radius: 24px;
-      padding: 24px 16px;
+      background: white;
+      padding: 11px 12px;
+      border-radius: 20px;
       text-align: center;
+      border: 1px solid var(--border);
+      box-shadow: 0 8px 18px rgba(163, 177, 138, 0.06);
       cursor: pointer;
-      transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
-      box-shadow: var(--shadow-sm);
+      transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
+      box-sizing: border-box;
     }
-    
-    .action-box:hover {
-      transform: translateY(-4px);
-      box-shadow: var(--shadow-md);
-    }
-    
     .action-box:active {
-      transform: translateY(-1px) scale(0.97);
-      box-shadow: var(--shadow-sm);
+      transform: scale(0.95);
+      box-shadow: 0 4px 10px rgba(163, 177, 138, 0.04);
     }
-    
-    .action-icon {
-      font-size: 38px;
-      margin-bottom: 8px;
-      transition: transform 0.3s ease;
-    }
-    
-    .action-box:hover .action-icon {
-      transform: scale(1.1) translateY(-2px);
-    }
-    
-    .action-text {
-      font-size: 14px;
-      font-weight: 600;
-      margin: 0;
-      letter-spacing: 0.1px;
-    }
-    
-    .action-box-scan {
-      border-color: rgba(85, 107, 47, 0.15);
-    }
-    .action-box-scan:hover {
-      background: #F3F6F1;
-    }
-    
-    .action-box-redeem {
-      border-color: rgba(198, 139, 89, 0.15);
-    }
-    .action-box-redeem:hover {
-      background: #FAF4EE;
-    }
-    
-    .section-container {
-      margin-top: 8px;
-    }
-    
-    .section-title {
-      font-size: 16px;
-      font-weight: 700;
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
       margin-bottom: 12px;
-      color: var(--text-main);
+      flex-shrink: 0;
+    }
+    
+    .scroll-body {
+      flex: 1;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      margin-bottom: 10px;
+      padding-right: 2px;
     }
     
     .card-box {
-      background: var(--card-bg);
-      border-radius: 24px;
-      padding: 24px 16px;
+      background: linear-gradient(135deg, #FFFAF0 0%, #FFF4DF 100%);
+      border-radius: 20px;
+      padding: 16px 12px;
       text-align: center;
-      border: 1px solid var(--border);
-      box-shadow: var(--shadow-sm);
-      transition: all 0.3s ease;
+      border: 1px solid #FFDB99;
+      box-shadow: 0 8px 20px rgba(197, 123, 87, 0.06);
+      transition: all 0.2s ease;
       display: flex;
       flex-direction: column;
       align-items: center;
+      justify-content: space-between;
+      box-sizing: border-box;
+      max-width: 160px;
+      width: 100%;
+      margin: 0 auto;
     }
-    
-    .card-box:hover {
-      transform: translateY(-4px);
-      box-shadow: var(--shadow-md);
-    }
-    
-    .card-icon {
-      font-size: 48px;
-      margin-bottom: 10px;
-      transition: transform 0.3s ease;
-    }
-    
-    .card-box:hover .card-icon {
-      transform: scale(1.1);
-    }
+    .card-icon { font-size: 44px; margin-bottom: 6px; }
     
     .btn-matcha {
       background: var(--matcha);
       color: white;
       border: none;
-      padding: 12px 18px;
-      border-radius: 16px;
-      font-weight: 600;
+      padding: 10px;
+      border-radius: 12px;
+      font-weight: 700;
       font-family: 'Prompt', sans-serif;
-      margin-top: 16px;
+      margin-top: 12px;
       width: 100%;
       cursor: pointer;
-      transition: all 0.2s ease;
-      font-size: 14px;
-      box-shadow: 0 4px 12px rgba(85, 107, 47, 0.15);
+      box-shadow: 0 6px 12px rgba(163, 177, 138, 0.3);
+      transition: all 0.2s;
+      font-size: 13px;
     }
-    
-    .btn-matcha:hover {
-      background: var(--matcha-dark);
-      box-shadow: 0 6px 16px rgba(85, 107, 47, 0.25);
-    }
-    
     .btn-matcha:active {
-      transform: scale(0.96);
+      transform: scale(0.95);
+      box-shadow: 0 2px 4px rgba(163, 177, 138, 0.1);
     }
-    
-    .btn-matcha.disabled, .btn-matcha:disabled {
-      background: #EAE5DE !important;
-      color: var(--text-light) !important;
+    .btn-matcha:disabled {
+      background: #E8E2D9;
+      color: var(--text-light);
       cursor: not-allowed;
-      transform: none !important;
-      box-shadow: none !important;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .list-header {
+      display: flex;
+      justify-content: space-between;
+      padding: 12px 20px;
+      font-size: 12px;
+      color: var(--text-light);
+      font-weight: 700;
+      background: #FFFFFF;
+      border: 1px solid var(--border);
+      border-bottom: none;
+      border-radius: 20px 20px 0 0;
+      flex-shrink: 0;
+      box-sizing: border-box;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
     
     .list-container {
-      background: var(--card-bg);
-      border-radius: 24px;
+      background: white;
+      border-radius: 20px;
       border: 1px solid var(--border);
       overflow: hidden;
-      box-shadow: var(--shadow-sm);
-      margin-bottom: 24px;
+      box-shadow: 0 10px 22px rgba(163, 177, 138, 0.05);
+    }
+    .list-container.has-header {
+      border-top-left-radius: 0 !important;
+      border-top-right-radius: 0 !important;
+      border-top: none !important;
     }
     
     .list-item {
-      padding: 16px 20px;
-      border-bottom: 1px solid var(--border);
+      padding: 10px 16px;
+      border-bottom: 1px solid #F4F1EC;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      transition: background-color 0.2s ease;
+      transition: background-color 0.2s;
     }
-    
-    .list-item:hover {
-      background-color: #FAF9F6;
+    .list-item:last-child { border-bottom: none; }
+
+    .history-icon-wrapper {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-shrink: 0;
     }
-    
-    .list-item:last-child {
-      border-bottom: none;
-    }
-    
-    /* Dynamic history styling overrides */
-    .list-item > div:last-child {
-      font-family: 'Quicksand', sans-serif !important;
-      font-weight: 700 !important;
-      font-size: 20px !important;
-    }
-    
-    .list-item > div[style*="#A3B18A"] {
-      color: var(--matcha) !important;
-    }
-    
-    .list-item > div[style*="#C57B57"] {
-      color: var(--accent-caramel) !important;
-    }
-    
+
     .coming-soon-box {
-      background: var(--card-bg);
-      border-radius: 28px;
-      padding: 48px 24px;
+      background: white;
+      border-radius: 24px;
+      padding: 40px 20px;
       text-align: center;
       border: 2px dashed var(--border);
       color: var(--matcha-dark);
-      margin-bottom: 24px;
-      box-shadow: var(--shadow-sm);
+      box-shadow: 0 10px 22px rgba(163, 177, 138, 0.04);
     }
-    
-    .coming-soon-icon {
-      font-size: 56px;
-      margin-bottom: 16px;
-      animation: rotateSlow 12s linear infinite;
-    }
-    
-    @keyframes rotateSlow {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-    
-    .coming-soon-title {
-      margin: 0 0 6px 0;
-      font-size: 20px;
-      font-weight: 700;
-      color: var(--matcha-dark);
-    }
-    
-    .coming-soon-subtitle {
-      font-size: 14px;
-      margin: 0;
-      color: var(--text-light);
-    }
-    
-    .btn-close-app {
-      background: #EFECE6;
-      color: var(--text-main);
-      border: 1px solid var(--border);
-      padding: 14px 20px;
-      border-radius: 18px;
-      font-weight: 600;
-      font-family: 'Prompt', sans-serif;
-      margin-top: 24px;
+
+    .footer-area {
       width: 100%;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      font-size: 15px;
-    }
-    
-    .btn-close-app:hover {
-      background: #E6E2DA;
-    }
-    
-    .btn-close-app:active {
-      transform: scale(0.97);
-    }
-    
-    /* Bottom Navigation Bar */
-    .bottom-nav {
-      background: var(--card-bg);
-      border-top: 1px solid var(--border);
+      flex-shrink: 0;
+      margin-top: auto;
       display: flex;
-      justify-content: space-around;
-      padding: 10px 10px calc(10px + env(safe-area-inset-bottom));
-      position: relative;
-      box-shadow: 0 -4px 16px rgba(0,0,0,0.02);
-      z-index: 100;
-    }
-    
-    .nav-item {
-      background: none;
-      border: none;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
       justify-content: center;
-      color: var(--text-light);
-      cursor: pointer;
-      padding: 4px 8px;
-      flex: 1;
-      transition: all 0.3s ease;
-      text-decoration: none;
-      outline: none;
-      -webkit-tap-highlight-color: transparent;
-    }
-    
-    .nav-icon-wrapper {
-      font-size: 20px;
-      width: 40px;
-      height: 40px;
-      border-radius: 12px;
-      display: flex;
       align-items: center;
-      justify-content: center;
-      margin-bottom: 4px;
-      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      gap: 12px;
+      background-color: transparent;
+      padding-top: 8px;
+      padding-bottom: 4px;
     }
-    
-    .nav-label {
-      font-size: 10px;
-      font-weight: 500;
-      font-family: 'Prompt', sans-serif;
-      transition: color 0.3s ease;
-    }
-    
-    /* Active states via parent container state */
-    .app-container:has(#view-home.active) .nav-home,
-    .app-container:has(#view-rewards.active) .nav-rewards,
-    .app-container:has(#view-history.active) .nav-history,
-    .app-container:has(#view-menu.active) .nav-menu,
-    .app-container:has(#view-promo.active) .nav-promo {
+    .btn-close-app {
+      background: transparent;
       color: var(--matcha-dark);
-    }
-    
-    .app-container:has(#view-home.active) .nav-home .nav-icon-wrapper,
-    .app-container:has(#view-rewards.active) .nav-rewards .nav-icon-wrapper,
-    .app-container:has(#view-history.active) .nav-history .nav-icon-wrapper,
-    .app-container:has(#view-menu.active) .nav-menu .nav-icon-wrapper,
-    .app-container:has(#view-promo.active) .nav-promo .nav-icon-wrapper {
-      background-color: var(--matcha-glow);
-      color: var(--matcha-dark);
-      transform: scale(1.1) translateY(-2px);
-    }
-    
-    .app-container:has(#view-home.active) .nav-home .nav-label,
-    .app-container:has(#view-rewards.active) .nav-rewards .nav-label,
-    .app-container:has(#view-history.active) .nav-history .nav-label,
-    .app-container:has(#view-menu.active) .nav-menu .nav-label,
-    .app-container:has(#view-promo.active) .nav-promo .nav-label {
+      border: 1.5px solid var(--matcha-dark);
+      padding: 6px 28px;
+      border-radius: 20px;
       font-weight: 700;
+      font-family: 'Prompt';
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 13px;
+      box-sizing: border-box;
+      display: inline-block;
+      width: auto;
     }
-    
-    /* SweetAlert2 Elegant Theme Override */
-    .swal2-container {
-      z-index: 10000 !important;
-    }
-    .swal2-popup {
-      border-radius: 28px !important;
-      background-color: var(--bg-cream) !important;
-      font-family: 'Prompt', sans-serif !important;
-      border: 1px solid var(--border) !important;
-      box-shadow: var(--shadow-lg) !important;
-      padding: 30px 20px !important;
-    }
-    .swal2-title {
-      color: var(--text-main) !important;
+    .btn-close-app:active { transform: scale(0.95); background: rgba(122, 139, 98, 0.08); }
+    .btn-back-home { 
+      background: var(--matcha) !important; 
+      color: white !important; 
+      box-shadow: 0 4px 10px rgba(163, 177, 138, 0.15) !important; 
+      border: none !important; 
+      width: auto !important; 
+      padding: 6px 20px !important; 
+      border-radius: 20px !important;
+      font-size: 13px !important;
       font-weight: 700 !important;
-      font-size: 20px !important;
+      display: inline-block !important;
+      cursor: pointer !important;
     }
-    .swal2-html-container {
-      color: var(--text-light) !important;
-      font-size: 14px !important;
-      line-height: 1.6 !important;
+    .btn-back-home:active {
+      transform: scale(0.95) !important;
     }
-    .swal2-confirm {
-      background-color: var(--matcha) !important;
-      border-radius: 16px !important;
-      font-weight: 600 !important;
-      padding: 12px 30px !important;
-      box-shadow: 0 4px 12px rgba(85, 107, 47, 0.2) !important;
-      font-family: 'Prompt', sans-serif !important;
-    }
-    .swal2-confirm:focus {
-      box-shadow: 0 0 0 3px rgba(85, 107, 47, 0.3) !important;
-    }
-    .swal2-cancel {
-      background-color: #EFECE6 !important;
-      color: var(--text-main) !important;
-      border-radius: 16px !important;
-      font-weight: 600 !important;
-      padding: 12px 30px !important;
-      font-family: 'Prompt', sans-serif !important;
-      border: 1px solid var(--border) !important;
-    }
-    
-    /* Custom Minimal SWAL classes matching app.html */
+
+    .swal2-container { z-index: 10000 !important; }
+    .swal2-popup { border-radius: 24px !important; font-family: 'Prompt', sans-serif !important; padding: 1.5em 1.2em !important; }
     .custom-swal-popup { width: 80% !important; max-width: 290px !important; background-color: #FFFFFF !important; box-shadow: 0 15px 35px rgba(140, 122, 107, 0.2) !important; overflow: hidden; }
     .swal-btn-confirm { font-size: 13px !important; padding: 9px 22px !important; border-radius: 20px !important; font-weight: 700; background-color: var(--matcha) !important; color: #ffffff !important; border: none !important; margin: 0 6px !important; cursor: pointer; box-shadow: 0 4px 10px rgba(163, 177, 138, 0.25) !important; transition: all 0.2s; }
     .swal-btn-confirm:active { transform: scale(0.97); }
@@ -608,100 +356,112 @@
 
   <div id="loading-overlay">
     <div class="spinner"></div>
-    <div class="loading-text">กำลังเข้าสู่ระบบ...</div>
+    <div style="font-size: 14px;">กำลังเข้าสู่ระบบ...</div>
   </div>
 
-  <div class="app-container">
-    <div class="app-content">
+  <div class="app-content">
+    
+    <div id="view-home" class="view-section active" style="padding-top: 24px;">
+      <h2 class="header-title" id="txt-home-title" style="display: none;">เช็กแต้ม</h2>
       
-      <div id="view-home" class="view-section active">
-        <h2 class="header-title" id="txt-home-title">เช็กแต้ม</h2>
-        
-        <div class="member-card">
-          <img id="userProfilePic" class="profile-pic" src="https://via.placeholder.com/70" alt="Profile">
-          <div class="welcome-msg" id="txt-welcome">ยินดีต้อนรับคุณ <span id="userName">...</span></div>
-          <div class="points-container">
-            <div class="points-number"><span id="userPoints">0</span></div>
-            <div class="points-label" id="txt-pts-label">คะแนนสะสม</div>
+      <div class="member-card">
+        <!-- Profile Pic Overlapping Card Border -->
+        <img id="userProfilePic" class="profile-pic" src="https://via.placeholder.com/70" alt="Profile">
+        <div style="font-size: 13px; font-weight: 700; opacity: 0.95; margin-top: 15px; letter-spacing: 0.5px;" id="txt-welcome">Member <span id="userName">...</span></div>
+        <div style="font-size: 11px; opacity: 0.8; margin-top: 4px; text-transform: uppercase; letter-spacing: 1px;" id="txt-pts-label">แต้มสะสม</div>
+        <div class="points-number"><span id="userPoints">0</span></div>
+      </div>
+      
+      <div class="grid-2">
+        <div class="action-box" onclick="openQRScanner()">
+          <div style="margin-bottom: 4px; display: flex; align-items: center; justify-content: center;">
+            <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#4A3F35" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+              <circle cx="12" cy="13" r="4"></circle>
+            </svg>
           </div>
+          <div style="font-weight: 700; font-size: 13px; color: var(--text-main);" id="txt-scan-btn">สแกนรับแต้ม</div>
         </div>
-        
-        <div class="grid-2">
-          <div class="action-box action-box-scan" onclick="openQRScanner()">
-            <div class="action-icon">📷</div>
-            <div class="action-text" style="color: var(--matcha-dark);" id="txt-scan-btn">สแกนรับแต้ม</div>
+        <div class="action-box" onclick="switchTab('rewards')">
+          <div style="margin-bottom: 4px; display: flex; align-items: center; justify-content: center;">
+            <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#4A3F35" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 12 20 22 4 22 4 12"></polyline>
+              <rect x="2" y="7" width="20" height="5"></rect>
+              <line x1="12" y1="22" x2="12" y2="7"></line>
+              <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"></path>
+              <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"></path>
+            </svg>
           </div>
-          <div class="action-box action-box-redeem" onclick="switchTab('rewards')">
-            <div class="action-icon">🎁</div>
-            <div class="action-text" style="color: var(--accent-caramel);" id="txt-go-reward-btn">แลกของรางวัล</div>
-          </div>
+          <div style="font-weight: 700; font-size: 13px; color: var(--text-main);" id="txt-go-reward-btn">แลกของรางวัล</div>
         </div>
-  
-        <div class="section-container">
-          <h3 class="section-title" id="txt-recent-history">ประวัติล่าสุด</h3>
-          <div class="list-container" id="recentHistoryContainer"></div>
-        </div>
-  
-        <button class="btn-close-app text-close-btn" onclick="liff.closeWindow()">กลับหน้าแชท (OK)</button>
       </div>
-  
-      <div id="view-rewards" class="view-section">
-        <h2 class="header-title" id="txt-reward-title">แลกของรางวัล</h2>
-        <div class="grid-2" id="rewardGridContainer"></div>
-        <button class="btn-close-app text-close-btn" onclick="liff.closeWindow()">กลับหน้าแชท (OK)</button>
+
+      <div style="display: flex; flex-direction: column; overflow: hidden; flex: 1; margin-top: 4px;">
+        <h3 style="font-size: 14px; font-weight: 700; margin: 0 0 8px 0; color: var(--text-main);" id="txt-recent-history">ประวัติล่าสุด</h3>
+        <div class="list-container" id="recentHistoryContainer" style="overflow: hidden;"></div>
       </div>
-  
-      <div id="view-history" class="view-section">
-        <h2 class="header-title" id="txt-history-title">ประวัติการใช้งาน</h2>
-        <div class="list-container" id="historyContainer"></div>
-        <button class="btn-close-app text-close-btn" onclick="liff.closeWindow()">กลับหน้าแชท (OK)</button>
+
+      <div class="footer-area">
+        <button class="btn-close-app text-close-btn" onclick="closeAppAndGoToLINE()">OK</button>
       </div>
-  
-      <div id="view-menu" class="view-section">
-        <h2 class="header-title" id="txt-menu-title">เมนูเครื่องดื่ม</h2>
-        <div class="coming-soon-box">
-          <div class="coming-soon-icon">🥤</div>
-          <h3 class="coming-soon-title">Coming Soon</h3>
-          <p class="coming-soon-subtitle" id="txt-cs-1">เตรียมพบกับเมนูใหม่เร็วๆ นี้</p>
-        </div>
-        <button class="btn-close-app text-close-btn" onclick="liff.closeWindow()">กลับหน้าแชท (OK)</button>
-      </div>
-  
-      <div id="view-promo" class="view-section">
-        <h2 class="header-title" id="txt-promo-title">โปรโมชั่นพิเศษ</h2>
-        <div class="coming-soon-box">
-          <div class="coming-soon-icon">📢</div>
-          <h3 class="coming-soon-title">Coming Soon</h3>
-          <p class="coming-soon-subtitle" id="txt-cs-2">โปรโมชั่นเด็ดๆ กำลังมา</p>
-        </div>
-        <button class="btn-close-app text-close-btn" onclick="liff.closeWindow()">กลับหน้าแชท (OK)</button>
-      </div>
-  
     </div>
 
-    <!-- Modern Bottom Navigation Bar -->
-    <nav class="bottom-nav">
-      <button class="nav-item nav-home" onclick="switchTab('home')">
-        <div class="nav-icon-wrapper">🏡</div>
-        <span class="nav-label">หน้าแรก</span>
-      </button>
-      <button class="nav-item nav-rewards" onclick="switchTab('rewards')">
-        <div class="nav-icon-wrapper">🎁</div>
-        <span class="nav-label">แลกรางวัล</span>
-      </button>
-      <button class="nav-item nav-history" onclick="switchTab('history')">
-        <div class="nav-icon-wrapper">📋</div>
-        <span class="nav-label">ประวัติ</span>
-      </button>
-      <button class="nav-item nav-menu" onclick="switchTab('menu')">
-        <div class="nav-icon-wrapper">🥤</div>
-        <span class="nav-label">เมนู</span>
-      </button>
-      <button class="nav-item nav-promo" onclick="switchTab('promo')">
-        <div class="nav-icon-wrapper">📢</div>
-        <span class="nav-label">โปรโมชั่น</span>
-      </button>
-    </nav>
+    <div id="view-rewards" class="view-section">
+      <h2 class="header-title" id="txt-reward-title">แลกของรางวัล</h2>
+      <div class="scroll-body">
+        <div class="grid-2" id="rewardGridContainer" style="margin-bottom: 0;"></div>
+      </div>
+      <div class="footer-area">
+        <button class="btn-close-app btn-back-home" onclick="switchTab('home')">&#9664; กลับหน้าหลัก</button>
+        <button class="btn-close-app text-close-btn" onclick="closeAppAndGoToLINE()">OK</button>
+      </div>
+    </div>
+
+    <div id="view-history" class="view-section">
+      <h2 class="header-title" id="txt-history-title">ประวัติการใช้งาน</h2>
+      <div class="list-header" id="txt-list-header">
+        <span>รายการ / วันเวลา</span>
+        <span>จำนวนแต้ม</span>
+      </div>
+      <div class="scroll-body" style="border-radius: 0 0 16px 16px; background: white; border: 1px solid var(--border); border-top: none;">
+        <div class="list-container has-header" id="historyContainer"></div>
+      </div>
+      <div class="footer-area">
+        <button class="btn-close-app btn-back-home" onclick="switchTab('home')">&#9664; กลับหน้าหลัก</button>
+        <button class="btn-close-app text-close-btn" onclick="closeAppAndGoToLINE()">OK</button>
+      </div>
+    </div>
+
+    <div id="view-menu" class="view-section">
+      <h2 class="header-title" id="txt-menu-title">เมนูเครื่องดื่ม</h2>
+      <div class="scroll-body" style="display: flex; justify-content: center; align-items: center;">
+        <div class="coming-soon-box" style="width: 100%;">
+          <div style="font-size: 45px; margin-bottom: 10px;">&#129380;</div>
+          <h3 style="margin: 0 0 5px 0; font-size: 18px;">Coming Soon</h3>
+          <p style="font-size: 13px; margin: 0; color: var(--text-light);" id="txt-cs-1">เตรียมพบกับเมนูใหม่เร็วๆ นี้</p>
+        </div>
+      </div>
+      <div class="footer-area">
+        <button class="btn-close-app btn-back-home" onclick="switchTab('home')">&#9664; กลับหน้าหลัก</button>
+        <button class="btn-close-app text-close-btn" onclick="closeAppAndGoToLINE()">OK</button>
+      </div>
+    </div>
+
+    <div id="view-promo" class="view-section">
+      <h2 class="header-title" id="txt-promo-title">โปรโมชั่นพิเศษ</h2>
+      <div class="scroll-body" style="display: flex; justify-content: center; align-items: center;">
+        <div class="coming-soon-box" style="width: 100%;">
+          <div style="font-size: 45px; margin-bottom: 10px;">&#128226;</div>
+          <h3 style="margin: 0 0 5px 0; font-size: 18px;">Coming Soon</h3>
+          <p style="font-size: 13px; margin: 0; color: var(--text-light);" id="txt-cs-2">โปรโมชั่นเด็ดๆ กำลังมา</p>
+        </div>
+      </div>
+      <div class="footer-area">
+        <button class="btn-close-app btn-back-home" onclick="switchTab('home')">&#9664; กลับหน้าหลัก</button>
+        <button class="btn-close-app text-close-btn" onclick="closeAppAndGoToLINE()">OK</button>
+      </div>
+    </div>
+
   </div>
 
   <script>
@@ -710,31 +470,32 @@
 
     let globalUserId = ""; let globalUserName = ""; let globalTotalPoints = 0; let globalLang = "TH";
 
+    // 🚀 อัปเดตพจนานุกรม: แก้ชื่อของรางวัลให้ระบุ (1 แก้ว)
     const i18n = {
       TH: {
-        homeTitle: "เช็กแต้ม", ptsLabel: "คะแนนสะสม", welcome: "ยินดีต้อนรับคุณ ", 
+        homeTitle: "เช็กแต้ม", ptsLabel: "แต้มสะสม", welcome: "Member ", 
         scanBtn: "สแกนรับแต้ม", goRewardBtn: "แลกของรางวัล", recentHistory: "ประวัติล่าสุด",
         rewardTitle: "แลกของรางวัล", btnRedeem: "แลกเลย", btnNoPts: "แต้มไม่พอ", 
         historyTitle: "ประวัติการใช้งาน", noHistory: "ไม่มีประวัติการใช้งาน",
         menuTitle: "เมนูเครื่องดื่ม", promoTitle: "โปรโมชั่นพิเศษ", 
-        txtEarn: "ได้รับแต้ม", txtRedeem: "แลกรางวัล", txtEdit: "ปรับปรุงแต้ม", closeBtn: "กลับหน้าแชท (OK)",
+        txtEarn: "ซื้อเครื่องดื่ม", txtRedeem: "แลกของรางวัล", txtEdit: "ปรับปรุงคะแนน", closeBtn: "OK",
         comingSoon1: "เตรียมพบกับเมนูใหม่เร็วๆ นี้", comingSoon2: "โปรโมชั่นเด็ดๆ กำลังมา",
+        colActivity: "รายการ / วันเวลา", colPoints: "จำนวนแต้ม",
         rewards: [
-          { icon: "☕", name: "ส่วนลด 50%", req: "ใช้ 10 แต้ม", cost: 10, logName: "ส่วนลด 50% 1 แก้ว" },
-          { icon: "🍰", name: "ฟรี เค้ก 1 ชิ้น", req: "ใช้ 20 แต้ม", cost: 20, logName: "ฟรีเค้ก 1 ชิ้น" }
+          { icon: "&#127865;", name: "ส่วนลด 50% (1 แก้ว)", req: "ใช้ 10 แต้ม", cost: 10, logName: "ส่วนลด 50% 1 แก้ว" }
         ]
       },
       EN: {
-        homeTitle: "Check Points", ptsLabel: "Total Points", welcome: "Welcome, ", 
+        homeTitle: "Check Points", ptsLabel: "Total Points", welcome: "Member ", 
         scanBtn: "Scan QR", goRewardBtn: "Redeem Rewards", recentHistory: "Recent History",
         rewardTitle: "Redeem Rewards", btnRedeem: "Redeem", btnNoPts: "Not enough", 
         historyTitle: "Transaction History", noHistory: "No transactions yet",
         menuTitle: "Beverage Menu", promoTitle: "Special Promo", 
-        txtEarn: "Points Earned", txtRedeem: "Redeemed", txtEdit: "Points Edited", closeBtn: "Back to Chat (OK)",
+        txtEarn: "Buy Drink", txtRedeem: "Redeem Reward", txtEdit: "Points Adjustment", closeBtn: "OK",
         comingSoon1: "New menus are coming very soon", comingSoon2: "Stay tuned for special offers",
+        colActivity: "Activity / Date", colPoints: "Points",
         rewards: [
-          { icon: "☕", name: "50% Discount", req: "10 Pts req.", cost: 10, logName: "ส่วนลด 50% 1 แก้ว" },
-          { icon: "🍰", name: "Free 1 Cake", req: "20 Pts req.", cost: 20, logName: "ฟรีเค้ก 1 ชิ้น" }
+          { icon: "&#127865;", name: "50% Discount (1 Cup)", req: "10 Pts req.", cost: 10, logName: "ส่วนลด 50% 1 แก้ว" }
         ]
       }
     };
@@ -742,6 +503,46 @@
     function safeSetText(id, text) {
       const el = document.getElementById(id);
       if (el) el.innerHTML = text;
+    }
+
+    async function showMinimalAlert(iconEmoji, title, text, btnText, isError = false) {
+      let svgHtml = "";
+      if (isError) {
+        svgHtml = `
+          <div style="display: flex; justify-content: center; margin-bottom: 14px;">
+            <div style="width: 56px; height: 56px; border-radius: 50%; background: #FCEBE6; display: flex; justify-content: center; align-items: center;">
+              <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#C57B57" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </div>
+          </div>
+        `;
+      } else {
+        svgHtml = `
+          <div style="display: flex; justify-content: center; margin-bottom: 14px;">
+            <div style="width: 56px; height: 56px; border-radius: 50%; background: #EAF0E4; display: flex; justify-content: center; align-items: center;">
+              <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#7A8B62" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="8" x2="12" y2="12"></line>
+                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+              </svg>
+            </div>
+          </div>
+        `;
+      }
+
+      const html = `
+        <div style="text-align: center; padding: 10px 0 5px 0;">
+          ${svgHtml}
+          <div style="color: ${isError ? '#C57B57' : '#A3B18A'}; font-size: 18px; font-weight: 800; margin-bottom: 6px;">${title}</div>
+          <div style="color: #6B705C; font-size: 14px; line-height: 1.4; margin-bottom: 5px;">${text}</div>
+        </div>
+      `;
+      await Swal.fire({
+        html: html, customClass: { popup: 'custom-swal-popup', confirmButton: 'swal-btn-confirm' },
+        buttonsStyling: false, confirmButtonText: btnText
+      });
     }
 
     async function initApp() {
@@ -765,7 +566,7 @@
 
         document.getElementById('loading-overlay').style.opacity = "0";
         setTimeout(() => document.getElementById('loading-overlay').style.display = "none", 400);
-      } catch (err) { Swal.fire({ icon: 'error', title: 'Error', text: 'ไม่สามารถเชื่อมต่อ LINE ได้' }); }
+      } catch (err) { showMinimalAlert('&#10060;', 'Error', 'ไม่สามารถเชื่อมต่อ LINE ได้', 'OK', true); }
     }
 
     async function fetchMemberData() {
@@ -801,14 +602,13 @@
         safeSetText('txt-scan-btn', t.scanBtn);
         safeSetText('txt-go-reward-btn', t.goRewardBtn);
         safeSetText('txt-recent-history', t.recentHistory);
-        
         safeSetText('txt-reward-title', t.rewardTitle);
         safeSetText('txt-history-title', t.historyTitle);
         safeSetText('txt-menu-title', t.menuTitle);
         safeSetText('txt-promo-title', t.promoTitle);
-
         safeSetText('txt-cs-1', t.comingSoon1); 
         safeSetText('txt-cs-2', t.comingSoon2); 
+        safeSetText('txt-list-header', `<span>${t.colActivity}</span><span>${t.colPoints}</span>`);
         
         document.querySelectorAll('.text-close-btn').forEach(el => el.innerText = t.closeBtn);
         
@@ -819,11 +619,12 @@
           const btnAttr = isEnough ? `onclick="redeemPoints(${rw.cost}, '${rw.logName}', '${rw.name}')"` : "disabled";
           const btnText = isEnough ? t.btnRedeem : t.btnNoPts;
           
+          // 🎨 ออกแบบการ์ดของรางวัลให้มีสีสันสดใส
           rewardHtml += `
             <div class="card-box">
               <div class="card-icon">${rw.icon}</div>
-              <div style="font-weight: 600; font-size: 15px;">${rw.name}</div>
-              <div style="font-size: 12px; color: var(--text-light); margin-top: 5px;">${rw.req}</div>
+              <div style="font-weight: 700; font-size: 14px; color: var(--accent-brick);">${rw.name}</div>
+              <div style="font-size: 11px; color: var(--text-light); margin-top: 3px; font-weight: 600;">${rw.req}</div>
               <button class="${btnClass}" ${btnAttr}>${btnText}</button>
             </div>
           `;
@@ -839,9 +640,9 @@
         const t = i18n[globalLang];
         
         if (!historyArr || historyArr.length === 0) {
-          const emptyHtml = `<div style="padding: 30px; text-align: center; color: var(--text-light); font-size:14px;">${t.noHistory}</div>`;
-          fullContainer.innerHTML = emptyHtml;
-          if(recentContainer) recentContainer.innerHTML = emptyHtml;
+          const emptyHtml = `<div style="padding: 20px; text-align: center; color: var(--text-light); font-size:13px;">${t.noHistory}</div>`;
+          if (fullContainer) fullContainer.innerHTML = emptyHtml;
+          if (recentContainer) recentContainer.innerHTML = emptyHtml;
           return;
         }
 
@@ -850,25 +651,89 @@
 
         historyArr.forEach((item, index) => {
           const d = new Date(item.timestamp);
-          const dateStr = d.toLocaleDateString('th-TH', { day: '2-digit', month: '2-digit', year: '2-digit' }) + ' ' + d.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+          let dateStr = "";
+          if (globalLang === "TH") {
+            const monthsTH = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
+            const dateVal = d.getDate();
+            const monthVal = monthsTH[d.getMonth()];
+            const timeVal = d.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', hour12: false });
+            dateStr = `${dateVal} ${monthVal} ${timeVal}`;
+          } else {
+            const monthsEN = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+            const dateVal = d.getDate();
+            const monthVal = monthsEN[d.getMonth()];
+            const timeVal = d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+            dateStr = `${monthVal} ${dateVal} ${timeVal}`;
+          }
           
-          let icon = "☕"; let title = t.txtEarn; let ptsText = `+${item.points}`; let ptsColor = "#A3B18A";
-          if (item.type === "redeem") { icon = "🎁"; title = t.txtRedeem; ptsText = `-${item.points}`; ptsColor = "#C57B57"; }
-          else if (item.type === "edit") { icon = "⚙️"; title = t.txtEdit; ptsText = item.points > 0 ? `+${item.points}` : item.points; }
+          let iconHtml = ""; 
+          let title = t.txtEarn; 
+          let ptsText = ""; 
+          let ptsColor = "#7A8B62";
+          const unit = globalLang === "TH" ? " แต้ม" : " PTS";
+
+          if (item.type === "redeem") {
+            title = t.txtRedeem;
+            ptsText = `-${item.points}${unit}`;
+            ptsColor = "#C57B57";
+            iconHtml = `
+              <div class="history-icon-wrapper" style="background-color: #FDF4E9;">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#C57B57" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="20 12 20 22 4 22 4 12"></polyline>
+                  <rect x="2" y="7" width="20" height="5"></rect>
+                  <line x1="12" y1="22" x2="12" y2="7"></line>
+                  <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"></path>
+                  <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"></path>
+                </svg>
+              </div>
+            `;
+          } else if (item.type === "edit") {
+            title = t.txtEdit;
+            ptsText = (item.points >= 0 ? `+${item.points}` : `${item.points}`) + unit;
+            ptsColor = item.points >= 0 ? "#7A8B62" : "#C57B57";
+            iconHtml = `
+              <div class="history-icon-wrapper" style="background-color: #E2E8F0;">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#4A3F35" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="3"></circle>
+                  <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                </svg>
+              </div>
+            `;
+          } else {
+            title = t.txtEarn;
+            ptsText = `+${item.points}${unit}`;
+            ptsColor = "#7A8B62";
+            iconHtml = `
+              <div class="history-icon-wrapper" style="background-color: #EAE5DB;">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#4A3F35" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M18 8h1a4 4 0 0 1 0 8h-1"></path>
+                  <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path>
+                  <line x1="6" y1="2" x2="6" y2="4"></line>
+                  <line x1="10" y1="2" x2="10" y2="4"></line>
+                  <line x1="14" y1="2" x2="14" y2="4"></line>
+                </svg>
+              </div>
+            `;
+          }
 
           const itemHtml = `
             <div class="list-item">
-              <div><div style="font-weight:600; font-size:14px; color:var(--text-main);">${icon} ${title}</div><div style="font-size:11px; color:var(--text-light); margin-top:3px;">${dateStr}</div></div>
-              <div style="color: ${ptsColor}; font-weight: 700; font-size: 18px;">${ptsText}</div>
+              <div style="display: flex; align-items: center; gap: 12px;">
+                ${iconHtml}
+                <div>
+                  <div style="font-weight: 600; font-size: 13px; color: var(--text-main);">${title}</div>
+                  <div style="font-size: 11px; color: var(--text-light); margin-top: 1px;">${dateStr}</div>
+                </div>
+              </div>
+              <div style="color: ${ptsColor}; font-weight: 700; font-size: 15px;">${ptsText}</div>
             </div>
           `;
-          
           fullHtml += itemHtml;
-          if(index < 3) { recentHtml += itemHtml; }
+          if (index < 3) recentHtml += itemHtml;
         });
         
-        fullContainer.innerHTML = fullHtml;
-        if(recentContainer) recentContainer.innerHTML = recentHtml;
+        if (fullContainer) fullContainer.innerHTML = fullHtml;
+        if (recentContainer) recentContainer.innerHTML = recentHtml;
 
       } catch (err) { console.error(err); }
     }
@@ -876,10 +741,11 @@
     async function redeemPoints(pointsNeeded, logName, displayRewardName) {
       if (globalTotalPoints < pointsNeeded) return;
       
-      const txtConfirm = globalLang === "EN" ? `Confirm to use ${pointsNeeded} PTS for ${displayRewardName}?` : `ยืนยันใช้ ${pointsNeeded} แต้ม เพื่อแลก ${displayRewardName}?`;
-      const txtYes = globalLang === "EN" ? "Yes, Redeem" : "ยืนยันแลกเลย";
+      const txtConfirm = globalLang === "EN" ? `Confirm to use <b style="color:#C57B57">${pointsNeeded} PTS</b><br>for ${displayRewardName}?` : `ยืนยันใช้ <b style="color:#C57B57">${pointsNeeded} แต้ม</b><br>เพื่อแลก ${displayRewardName}?`;
+      const txtYes = globalLang === "EN" ? "Yes" : "ยืนยันแลก";
       const txtNo = globalLang === "EN" ? "Cancel" : "ยกเลิก";
 
+      // 🎨 1. เปลี่ยนหน้าต่างยืนยันให้เป็น Extreme Minimal + SVG Icon
       const confirmHtml = `
         <div style="text-align: center; padding: 10px 0 5px 0;">
           <div style="display: flex; justify-content: center; margin-bottom: 14px;">
@@ -908,7 +774,7 @@
 
       if (!confirmResult.isConfirmed) return;
 
-      Swal.fire({ title: globalLang === "EN" ? 'Processing...' : 'กำลังดำเนินการ...', allowOutsideClick: false, didOpen: () => { Swal.showLoading() }, customClass: { popup: 'custom-swal-popup' } });
+      Swal.fire({ title: globalLang === "EN" ? 'Processing...' : 'กำลังดำเนินการ...', allowOutsideClick: false, didOpen: () => { Swal.showLoading() }, customClass: { popup: 'custom-swal-popup' }});
 
       try {
         const res = await fetch(`${API_URL}/api/redeem-reward`, {
@@ -918,6 +784,8 @@
         const data = await res.json();
         
         if (data.status === "success") {
+          
+          // 🎨 2. เปลี่ยนหน้าต่างแลกสำเร็จให้เป็น Extreme Minimal + SVG Icon + กรอบไฮไลท์รหัส
           const successHtml = `
             <div style="text-align: center; padding: 10px 0 5px 0;">
               <div style="display: flex; justify-content: center; margin-bottom: 14px;">
@@ -943,8 +811,12 @@
             switchTab('home'); 
           });
           await fetchMemberData(); 
-        } else { Swal.fire({ icon: 'error', title: 'Failed', text: data.message, confirmButtonColor: '#C57B57' }); }
-      } catch (err) { Swal.fire({ icon: 'error', title: 'Network Error', confirmButtonColor: '#C57B57' }); }
+        } else { 
+          showMinimalAlert('&#10060;', globalLang === "EN" ? 'Failed' : 'ไม่สำเร็จ', data.message, 'OK', true); 
+        }
+      } catch (err) { 
+        showMinimalAlert('&#10060;', 'Network Error', 'เครือข่ายขัดข้อง กรุณาลองใหม่', 'OK', true); 
+      }
     }
 
     function switchTab(tabId) {
@@ -955,16 +827,23 @@
       window.scrollTo(0, 0); 
     }
 
-    // ฟังก์ชันนี้แหละครับที่เป็นพระเอก! สั่งให้สแกนแล้วพาวาร์ปไปลิงก์ที่ซ่อนอยู่ในคิวอาร์โค้ด
     function openQRScanner() {
-      if (liff.isApiAvailable('scanCodeV2')) { 
+      if (liff.isApiAvailable('scanCodeV2')) {
         liff.scanCodeV2().then(result => {
-          if (result && result.value) {
-            window.location.href = result.value; 
-          }
-        }).catch(err => { console.log(err); }); 
-      } else { 
-        window.location.href = "https://line.me/R/nv/QRCodeReader"; 
+          const value = result && result.value ? result.value : "";
+          if (!value) return;
+
+          if (value.startsWith("http")) { window.location.href = value; return; }
+          window.location.href = `https://beenancy.github.io/kubcafe/scan-test.html?code=${encodeURIComponent(value)}`;
+        }).catch(() => { window.location.href = "https://line.me/R/nv/QRCodeReader"; });
+      } else {
+        window.location.href = "https://line.me/R/nv/QRCodeReader";
+      }
+    }
+
+    function closeAppAndGoToLINE() {
+      if (typeof liff !== "undefined" && liff.isInClient()) {
+        liff.closeWindow();
       }
     }
 
