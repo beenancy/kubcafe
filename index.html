@@ -48,7 +48,7 @@
       border-radius: 28px;
       box-shadow: 0 15px 40px rgba(140, 122, 107, 0.08);
       display: flex; flex-direction: column; justify-content: center; align-items: center;
-      padding: clamp(20px, 4vw, 30px); 
+      padding: clamp(15px, 3vh, 25px) 3px; /* บนล่างพอเหมาะ ซ้ายขวาชิดขอบการ์ด 3px */
       box-sizing: border-box;
       position: relative;
       border: 1px solid var(--border-color);
@@ -118,22 +118,31 @@
       text-align: center;
       line-height: 1.2;
       animation: pulseGlow 2.5s infinite ease-in-out;
+      width: calc(100% - 24px); /* บีบขนาดด้านข้างไม่ให้ย้วยไปชนขอบ 3px */
+      box-sizing: border-box;
     }
     .badge-matcha { background-color: var(--matcha-green); }
     .badge-line { background-color: var(--line-green); }
     
     .qr-box { 
       background: white; 
-      padding: clamp(10px, 3vmin, 15px); 
+      padding: clamp(6px, 2vmin, 10px); /* ลด padding ด้านในลงเล็กน้อยเพื่อให้ QR ขยายได้ใหญ่ขึ้น */
       border-radius: 24px; 
       border: 3px solid var(--border-color); 
       margin-bottom: clamp(15px, 3vh, 25px); 
       position: relative;
       overflow: hidden; /* ล็อกกรอบให้เส้นเลเซอร์สแกนวิ่งเฉพาะด้านใน */
+      width: 100%; /* กางเต็มความกว้างการ์ด เพื่อให้ QR โค้ดใหญ่ที่สุด */
+      max-width: 340px;
+      box-sizing: border-box;
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
     .qr-box img { 
-      width: clamp(180px, 55vmin, 260px); 
-      height: clamp(180px, 55vmin, 260px); 
+      width: 100%; 
+      height: auto; 
+      aspect-ratio: 1/1;
       object-fit: contain; 
       display: block;
     }
@@ -183,7 +192,7 @@
       border-radius: 16px; 
       font-size: clamp(11px, 3.5vw, 13px); 
       font-weight: bold; 
-      width: 100%; 
+      width: calc(100% - 20px); /* เว้นระยะห่างด้านข้างพอเหมาะเพื่อความสวยงาม */
       box-sizing: border-box; 
       border: 1px solid rgba(255, 235, 179, 0.8); 
       line-height: 1.4; 
