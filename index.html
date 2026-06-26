@@ -123,6 +123,8 @@
     }
     .badge-matcha { background-color: var(--matcha-green); }
     .badge-line { background-color: var(--line-green); }
+    .badge-blue { background-color: #0079C1; }
+    .badge-orange { background-color: #FF6600; }
     
     .qr-box { 
       background: white; 
@@ -174,14 +176,42 @@
       color: var(--text-light); 
     }
 
-    /* 3. โหมดจ่ายเงิน */
+    /* 3. โหมดจ่ายเงิน (แบบครอปภาพเหลือเฉพาะ QR Code ขนาดใหญ่เท่าแต้ม) */
+    .payment-qr-box {
+      width: 100%;
+      max-width: 340px;
+      aspect-ratio: 1/1;
+      background: white;
+      border-radius: 24px;
+      border: 3px solid var(--border-color);
+      margin-bottom: clamp(10px, 2vh, 18px);
+      position: relative;
+      overflow: hidden; /* ตัดขอบภาพที่ยื่นเลยกล่องออกไป */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      box-sizing: border-box;
+    }
+    
+    .payment-qr-box::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      width: 100%;
+      height: 3px;
+      background: linear-gradient(to right, transparent, var(--matcha-green), transparent);
+      box-shadow: 0 0 8px var(--matcha-green);
+      animation: scanBeam 2.5s linear infinite;
+      z-index: 2;
+    }
+
     .payment-img { 
       width: 100%; 
-      height: auto; 
-      max-height: clamp(300px, 64dvh, 420px); /* เพิ่มความสูงสูงสุดเพื่อให้ขยายความกว้างได้เต็มการ์ด */
-      object-fit: contain; 
-      border-radius: 20px; 
-      margin-bottom: clamp(8px, 2vh, 12px); /* ปรับลดระยะห่างลงเล็กน้อยเพิ่มพื้นที่แนวตั้ง */
+      height: 100%; 
+      object-fit: cover;
+      object-position: center 38%; /* ปรับเลื่อนแกนตั้งให้ QR code อยู่กึ่งกลางกล่อง */
+      display: block;
+      transform: scale(1.42); /* ซูมเข้าเพื่อให้สลิปด้านนอกถูกครอปออกไป เหลือแต่ตัว QR เน้นๆ */
     }
     
     /* 🥛 กรอบแจ้งเตือนโอนเงินสไตล์กระจกฝ้าโปร่งแสง (Glassmorphism) */
@@ -322,8 +352,11 @@
       } 
       else if (data.mode === "payment") {
         htmlContent = `
-          <div class="instant-content" style="justify-content: center;">
-            <img src="${PAYMENT_IMAGE_URL}" class="payment-img">
+          <div class="instant-content">
+            <div class="badge-title badge-blue">พร้อมเพย์ (PromptPay) 🌐</div>
+            <div class="payment-qr-box">
+              <img src="${PAYMENT_IMAGE_URL}" class="payment-img">
+            </div>
             <div class="payment-note">
               ⚠️ กรุณาใช้ <span style="color:#d35400;">"แอปธนาคาร"</span> สแกนจ่ายเท่านั้น<br>
               <span style="font-size: clamp(9px, 2.5vw, 11px); color:#888; font-weight: normal;">(สแกนด้วยแอป LINE จะดึงไปที่ LINE BK)</span>
@@ -333,8 +366,11 @@
       } 
       else if (data.mode === "true_payment") {
         htmlContent = `
-          <div class="instant-content" style="justify-content: center;">
-            <img src="${TRUE_IMAGE_URL}" class="payment-img">
+          <div class="instant-content">
+            <div class="badge-title badge-orange">TrueMoney / ทรูมันนี่ 🔸</div>
+            <div class="payment-qr-box">
+              <img src="${TRUE_IMAGE_URL}" class="payment-img">
+            </div>
             <div class="payment-note true-note">
               🔸 รองรับสแกนผ่าน <span style="color:#ff6600;">TrueMoney</span> และแอปธนาคาร
             </div>
