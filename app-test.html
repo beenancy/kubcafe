@@ -350,6 +350,22 @@
     .swal-btn-confirm:active { transform: scale(0.97); }
     .swal-btn-cancel { font-size: 13px !important; padding: 9px 22px !important; border-radius: 20px !important; font-weight: 700; background-color: #F4F1EC !important; color: var(--text-main) !important; border: none !important; margin: 0 6px !important; cursor: pointer; transition: all 0.2s; }
     .swal-btn-cancel:active { transform: scale(0.97); }
+
+    /* Points Expiration UI styling */
+    .expire-warning-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255, 255, 255, 0.15);
+      color: rgba(255, 255, 255, 0.95);
+      padding: 5px 12px;
+      border-radius: 12px;
+      font-size: 11px;
+      margin-top: 10px;
+      backdrop-filter: blur(5px);
+      font-weight: 500;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
   </style>
 </head>
 <body>
@@ -370,6 +386,16 @@
         <div style="font-size: 13px; font-weight: 700; opacity: 0.95; margin-top: 15px; letter-spacing: 0.5px;" id="txt-welcome">Member <span id="userName">...</span></div>
         <div style="font-size: 11px; opacity: 0.8; margin-top: 4px; text-transform: uppercase; letter-spacing: 1px;" id="txt-pts-label">แต้มสะสม</div>
         <div class="points-number"><span id="userPoints">0</span></div>
+        <div id="expire-badge-container" style="display: none;">
+          <div class="expire-warning-badge">
+            <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4.5px; vertical-align: middle;">
+              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+              <line x1="12" y1="9" x2="12" y2="13"></line>
+              <line x1="12" y1="17" x2="12.01" y2="17"></line>
+            </svg>
+            <span id="expirePointsText">...</span>
+          </div>
+        </div>
       </div>
       
       <div class="grid-2">
@@ -588,6 +614,18 @@
           historyData.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
 
           applyLanguage(); 
+          
+          if (result.data.expiringPoints && result.data.expiringPoints > 0) {
+            document.getElementById('expire-badge-container').style.display = 'block';
+            const points = result.data.expiringPoints;
+            const txt = globalLang === "EN" 
+              ? `⚠️ ${points} PTS will expire in 30 days` 
+              : `⚠️ มี ${points} แต้ม จะหมดอายุใน 30 วัน`;
+            document.getElementById('expirePointsText').innerHTML = txt;
+          } else {
+            document.getElementById('expire-badge-container').style.display = 'none';
+          }
+
           renderHistory(historyData); 
         }
       } catch (err) { console.error("Fetch Data Error:", err); }
