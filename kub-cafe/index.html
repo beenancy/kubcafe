@@ -128,8 +128,8 @@
                 
                 if (liff.isLoggedIn()) {
                     const profile = await liff.getProfile();
-                    // 1. ส่งรายงานลูกค้าเข้าระบบเก่าไปยัง Firebase
-                    await reportOldSystemAccess(profile.userId, profile.displayName);
+                    // 1. ส่งรายงานไปยัง Firebase (ยิงเบื้องหลังแบบไม่ใช้ await เพื่อไม่ให้บล็อกการโหลดของหน้าใหม่)
+                    reportOldSystemAccess(profile.userId, profile.displayName);
                     // 2. รีไดเรกต์ลูกค้าไปยัง LINE Web App ตัวใหม่ทันที
                     window.location.replace(NEW_LIFF_URL);
                 } else {
@@ -137,7 +137,7 @@
                 }
             } catch (err) {
                 console.error("LIFF Init/Login Error:", err);
-                // ป้องกันหน้าจอดับ ให้สลับไปหน้าใหม่ทันทีเป็นแผนสำรอง
+                // ป้องกันหน้าค้าง ให้โยกไปหน้าใหม่ทันทีเป็นแผนสำรอง
                 window.location.replace(NEW_LIFF_URL);
             }
         }
@@ -151,7 +151,7 @@
                     timeStr: now.toLocaleString('th-TH')
                 };
                 
-                // ใช้ REST API ในการบันทึกข้อมูลลูกค้าที่เปิดหน้าเก่า ลงใน Firebase RTDB
+                // ยิงบันทึกข้อมูลลูกค้าเข้าระบบเก่าลง Firebase RTDB
                 await fetch(`${FIREBASE_DB_URL}/old_system_access/${userId}.json`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
