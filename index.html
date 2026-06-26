@@ -178,10 +178,10 @@
     .payment-img { 
       width: 100%; 
       height: auto; 
-      max-height: 52dvh; 
+      max-height: clamp(300px, 64dvh, 420px); /* เพิ่มความสูงสูงสุดเพื่อให้ขยายความกว้างได้เต็มการ์ด */
       object-fit: contain; 
       border-radius: 20px; 
-      margin-bottom: 15px; 
+      margin-bottom: clamp(8px, 2vh, 12px); /* ปรับลดระยะห่างลงเล็กน้อยเพิ่มพื้นที่แนวตั้ง */
     }
     
     /* 🥛 กรอบแจ้งเตือนโอนเงินสไตล์กระจกฝ้าโปร่งแสง (Glassmorphism) */
