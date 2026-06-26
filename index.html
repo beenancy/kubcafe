@@ -150,16 +150,16 @@
       display: block;
     }
 
-    /* 🟢 แอนิเมชันเส้นแสงเลเซอร์สีเขียวมัทฉะ */
+    /* 🟢 แอนิเมชันเส้นแสงเลเซอร์สีเขียวนีออนสว่าง (Bright Laser Green) */
     .qr-box::after {
       content: '';
       position: absolute;
       left: 0;
       width: 100%;
       height: 3px;
-      background: linear-gradient(to right, transparent, var(--matcha-green), transparent);
-      box-shadow: 0 0 8px var(--matcha-green);
-      animation: scanBeam 2.5s linear infinite;
+      background: linear-gradient(to right, transparent, #00FF66, transparent);
+      box-shadow: 0 0 12px #00FF66, 0 0 4px #00FF66; /* เรืองแสงเขียวนีออนสว่างเด่นชัด */
+      animation: scanBeam 4s linear infinite; /* วิ่งช้าลงและนุ่มนวลขึ้น */
     }
     
     .timer-pill { 
@@ -200,9 +200,9 @@
       left: 0;
       width: 100%;
       height: 3px;
-      background: linear-gradient(to right, transparent, var(--matcha-green), transparent);
-      box-shadow: 0 0 8px var(--matcha-green);
-      animation: scanBeam 2.5s linear infinite;
+      background: linear-gradient(to right, transparent, #00FF66, transparent);
+      box-shadow: 0 0 12px #00FF66, 0 0 4px #00FF66; /* เรืองแสงเขียวนีออนสว่างเด่นชัด */
+      animation: scanBeam 4s linear infinite; /* วิ่งช้าลงและนุ่มนวลขึ้น */
       z-index: 2;
     }
 
