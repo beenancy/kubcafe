@@ -135,7 +135,8 @@
       position: relative;
       overflow: hidden; /* ล็อกกรอบให้เส้นเลเซอร์สแกนวิ่งเฉพาะด้านใน */
       width: 100%; /* กางเต็มความกว้างการ์ด เพื่อให้ QR โค้ดใหญ่ที่สุด */
-      max-width: 340px;
+      max-width: clamp(180px, 47dvh, 340px); /* ยืดหยุ่นตามความสูงของหน้าจอ ป้องกันการล้นแนวตั้งบนจอเล็ก */
+      aspect-ratio: 1/1;
       box-sizing: border-box;
       display: flex;
       justify-content: center;
@@ -179,7 +180,7 @@
     /* 3. โหมดจ่ายเงิน (แบบครอปภาพเหลือเฉพาะ QR Code ขนาดใหญ่เท่าแต้ม) */
     .payment-qr-box {
       width: 100%;
-      max-width: 340px;
+      max-width: clamp(180px, 47dvh, 340px); /* ยืดหยุ่นตามความสูงของหน้าจอ ป้องกันการล้นแนวตั้งบนจอเล็ก */
       aspect-ratio: 1/1;
       background: white;
       border-radius: 24px;
