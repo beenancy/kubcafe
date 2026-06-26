@@ -99,6 +99,7 @@
           <div class="btn-group">
             <button class="btn btn-refresh" onclick="fetchData()">🔄 โหลดใหม่</button>
             <button class="btn btn-clean" onclick="clearQRGarbage()">🧹 ล้างขยะ</button>
+            <button class="btn" style="background-color: #2E7D32;" onclick="downloadBackup()">📥 สำรองข้อมูล</button>
             <button class="btn btn-lock" onclick="lockSystem()">🔒 ล็อกหน้าจอ</button>
           </div>
         </div>
@@ -303,6 +304,25 @@
           await fetch(`${CLOUDFLARE_WORKER_URL}/api/manager-clean`, { method: 'POST', headers: { 'X-Admin-PIN': activePin } });
           Swal.fire('สำเร็จ!', 'ล้างขยะ QR เรียบร้อยแล้วครับ', 'success');
         } catch(e) { Swal.fire('Error', 'ล้างขยะไม่สำเร็จ', 'error'); }
+      }
+    }
+
+    function downloadBackup() {
+      if (!window.allUsersData || window.allUsersData.length === 0) {
+        Swal.fire('Error', 'ไม่มีข้อมูลสมาชิกที่จะสำรองในขณะนี้ครับ', 'error');
+        return;
+      }
+      try {
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(window.allUsersData, null, 2));
+        const downloadAnchor = document.createElement('a');
+        downloadAnchor.setAttribute("href",     dataStr);
+        downloadAnchor.setAttribute("download", `kub_cafe_backup_${new Date().toISOString().substring(0,10)}.json`);
+        document.body.appendChild(downloadAnchor);
+        downloadAnchor.click();
+        downloadAnchor.remove();
+        Swal.fire('สำเร็จ!', 'ดาวน์โหลดไฟล์สำรองข้อมูลลูกค้า (.json) เรียบร้อยแล้วครับ', 'success');
+      } catch (err) {
+        Swal.fire('Error', 'ไม่สามารถสำรองข้อมูลได้: ' + err.message, 'error');
       }
     }
   </script>
