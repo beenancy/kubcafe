@@ -118,42 +118,48 @@
     <button class="btn-close" onclick="liff.closeWindow()">✕ ปิดหน้าต่างนี้ / Close</button>
 
     <script>
-        // API URL ตัวล่าสุดเวอร์ชัน V.25 ของคุณบีค่ะ
-        const API_URL = "https://script.google.com/macros/s/AKfycbxpWU8NlPwIk4EChzbG93IJ0RxFf3qSbs4TDT5MSVOgVWLO3cQAYseD_xAWzOeewJvHrg/exec"; 
+        const FIREBASE_DB_URL = "https://kub-cafe-pos-default-rtdb.asia-southeast1.firebasedatabase.app";
+        const NEW_LIFF_URL = "https://liff.line.me/2010206186-p1vWfgui";
 
         async function initializeLiff() {
             try {
-                // อัปเดตรหัส LIFF ID ล่าสุดเรียบร้อยแล้วค่ะ
+                // เริ่มระบบ LIFF เก่า
                 await liff.init({ liffId: "2010206186-8JwWgQug" }); 
                 
                 if (liff.isLoggedIn()) {
                     const profile = await liff.getProfile();
-                    fetchUserPoints(profile.userId, profile.displayName);
+                    // 1. ส่งรายงานลูกค้าเข้าระบบเก่าไปยัง Firebase
+                    await reportOldSystemAccess(profile.userId, profile.displayName);
+                    // 2. รีไดเรกต์ลูกค้าไปยัง LINE Web App ตัวใหม่ทันที
+                    window.location.replace(NEW_LIFF_URL);
                 } else {
                     liff.login();
                 }
             } catch (err) {
-                document.getElementById('pointDisplay').innerText = "Err";
-                console.error("LIFF Init Error:", err);
+                console.error("LIFF Init/Login Error:", err);
+                // ป้องกันหน้าจอดับ ให้สลับไปหน้าใหม่ทันทีเป็นแผนสำรอง
+                window.location.replace(NEW_LIFF_URL);
             }
         }
 
-        function fetchUserPoints(userId, displayName) {
-            const url = `${API_URL}?action=getProfile&userId=${userId}&displayName=${encodeURIComponent(displayName)}`;
-            
-            fetch(url)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.status === "success") {
-                        document.getElementById('pointDisplay').innerText = data.points;
-                    } else {
-                        document.getElementById('pointDisplay').innerText = "0";
-                    }
-                })
-                .catch(error => {
-                    document.getElementById('pointDisplay').innerText = "-";
-                    console.error("Fetch Error:", error);
+        async function reportOldSystemAccess(userId, displayName) {
+            try {
+                const now = new Date();
+                const logData = {
+                    displayName: displayName,
+                    timestamp: now.getTime(),
+                    timeStr: now.toLocaleString('th-TH')
+                };
+                
+                // ใช้ REST API ในการบันทึกข้อมูลลูกค้าที่เปิดหน้าเก่า ลงใน Firebase RTDB
+                await fetch(`${FIREBASE_DB_URL}/old_system_access/${userId}.json`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(logData)
                 });
+            } catch (e) {
+                console.error("Failed to report access:", e);
+            }
         }
 
         // เริ่มทำงานเมื่อเปิดหน้าเว็บ

@@ -90,6 +90,21 @@
           <div class="num" id="stat-points">0</div>
         </div>
       </div>
+
+      <!-- ⚠️ กล่องแจ้งเตือนเมื่อลูกค้าเข้าใช้ลิงก์ระบบเก่า -->
+      <div id="old-system-warning-box" style="display: none; background: #FFF9E6; border: 1px solid #FFE5B4; border-radius: 16px; padding: 15px 20px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(211, 84, 0, 0.05); box-sizing: border-box; width: 100%;">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; width: 100%;">
+          <div style="display: flex; align-items: center; gap: 10px; color: #D35400; font-weight: bold; font-size: 14px; flex: 1;">
+            <span style="font-size: 16px;">⚠️</span>
+            <div>
+              <div style="font-weight: 800;">พบลูกค้าเข้าใช้ผ่านปุ่มเก่า (LINE OA เดิม):</div>
+              <div id="old-system-users-list" style="font-weight: normal; color: var(--text-main); font-size: 13px; margin-top: 4px; line-height: 1.4;">...</div>
+            </div>
+          </div>
+          <button class="btn btn-clean" style="padding: 8px 15px; font-size: 12px; margin: 0; flex: none; height: auto;" onclick="clearOldSystemLogs()">🧹 ล้างรายการ</button>
+        </div>
+      </div>
+
       <div class="card">
         <div class="toolbar">
           <div class="search-box">
@@ -168,14 +183,15 @@
         window.todayEarnCounts = {};
         const todayStart = new Date(); todayStart.setHours(0,0,0,0); 
 
-        const [txRes, uRes] = await Promise.all([
+        const [txRes, uRes, oldAccessRes] = await Promise.all([
           fetch(`${CLOUDFLARE_WORKER_URL}/api/manager-today-tx`, {
             method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Admin-PIN': activePin },
             body: JSON.stringify({ structuredQuery: { from: [{ collectionId: "transactions" }], where: { fieldFilter: { field: { fieldPath: "timestamp" }, op: "GREATER_THAN_OR_EQUAL", value: { timestampValue: todayStart.toISOString() } } }, limit: 500 } })
           }).then(r => r.json()),
           fetch(`${CLOUDFLARE_WORKER_URL}/api/manager-users`, {
             method: 'GET', headers: { 'X-Admin-PIN': activePin }
-          }).then(r => r.json())
+          }).then(r => r.json()),
+          fetch(`https://kub-cafe-pos-default-rtdb.asia-southeast1.firebasedatabase.app/old_system_access.json`).then(r => r.json()).catch(() => null)
         ]);
         
         if (Array.isArray(txRes)) {
@@ -208,6 +224,23 @@
 
         document.getElementById('stat-users').innerText = window.allUsersData.length;
         document.getElementById('stat-points').innerText = totalPts.toLocaleString();
+        
+        // ⚠️ อัปเดตแบนเนอร์แจ้งเตือนการเข้าระบบเก่า
+        const warningBox = document.getElementById('old-system-warning-box');
+        const usersListSpan = document.getElementById('old-system-users-list');
+        if (oldAccessRes && typeof oldAccessRes === 'object' && Object.keys(oldAccessRes).length > 0) {
+          const list = [];
+          Object.values(oldAccessRes).forEach(item => {
+            if (item && item.displayName) {
+              list.push(`<b>${item.displayName}</b> (${item.timeStr || new Date(item.timestamp).toLocaleTimeString('th-TH')})`);
+            }
+          });
+          usersListSpan.innerHTML = list.join(', ');
+          warningBox.style.display = 'block';
+        } else {
+          warningBox.style.display = 'none';
+        }
+        
         renderTable(window.allUsersData);
       } catch (error) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:red; padding:40px;">โหลดข้อมูลไม่สำเร็จ</td></tr>'; }
     }
@@ -323,6 +356,20 @@
         Swal.fire('สำเร็จ!', 'ดาวน์โหลดไฟล์สำรองข้อมูลลูกค้า (.json) เรียบร้อยแล้วครับ', 'success');
       } catch (err) {
         Swal.fire('Error', 'ไม่สามารถสำรองข้อมูลได้: ' + err.message, 'error');
+      }
+    }
+
+    async function clearOldSystemLogs() {
+      const ask = await Swal.fire({ title: 'ล้างรายการแจ้งเตือน?', text: 'ลบรายการแจ้งเตือนลูกค้าที่เข้าระบบเก่าทั้งหมด', icon: 'warning', showCancelButton: true, confirmButtonColor: '#C57B57' });
+      if (ask.isConfirmed) {
+        Swal.fire({ title: 'กำลังเคลียร์ข้อมูล...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+        try {
+          await fetch("https://kub-cafe-pos-default-rtdb.asia-southeast1.firebasedatabase.app/old_system_access.json", {
+            method: 'DELETE'
+          });
+          Swal.fire('สำเร็จ!', 'ล้างประวัติการเข้าระบบเก่าเรียบร้อยแล้วครับ', 'success');
+          fetchData();
+        } catch(e) { Swal.fire('Error', 'ไม่สามารถลบข้อมูลได้', 'error'); }
       }
     }
   </script>
