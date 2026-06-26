@@ -208,10 +208,8 @@
     .payment-img { 
       width: 100%; 
       height: 100%; 
-      object-fit: cover;
-      object-position: center 38%; /* ปรับเลื่อนแกนตั้งให้ QR code อยู่กึ่งกลางกล่อง */
+      object-fit: contain; /* แสดงผลภาพรูปสี่เหลี่ยมจัตุรัสที่ครอปมาแบบเต็มรูป */
       display: block;
-      transform: scale(1.42); /* ซูมเข้าเพื่อให้สลิปด้านนอกถูกครอปออกไป เหลือแต่ตัว QR เน้นๆ */
     }
     
     /* 🥛 กรอบแจ้งเตือนโอนเงินสไตล์กระจกฝ้าโปร่งแสง (Glassmorphism) */
