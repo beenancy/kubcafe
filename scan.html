@@ -38,14 +38,15 @@ Changelog: Extreme Minimal UI, Button Countdown, Enforce Deep Link, Add Haptic F
 
     // 🚀 ฟังก์ชันกระชากเข้า LINE OA แบบบังคับ 100%
     function closeAppAndGoToLINE() {
-      window.location.href = "https://line.me/R/oa/message/%40848dmzja";
-      setTimeout(() => {
-        try {
-          if (typeof liff !== "undefined" && liff.isInClient()) {
-            liff.closeWindow();
-          }
-        } catch (e) {}
-      }, 1200);
+      try {
+        if (typeof liff !== "undefined" && liff.isInClient()) {
+          liff.closeWindow();
+        } else {
+          window.location.href = "https://line.me/R/ti/p/@848dmzja";
+        }
+      } catch (e) {
+        window.location.href = "https://line.me/R/ti/p/@848dmzja";
+      }
     }
 
     // 🎨 ปรับโฉมหน้าต่างแจ้งเตือนข้อผิดพลาด/สแกนซ้ำ ให้มินิมอลและสั้นกะทัดรัด
