@@ -227,19 +227,28 @@
       });
       
       function calculate() {
-        const total = parseFloat(inputTotal.value) || 0;
+        const totalStr = inputTotal.value;
+        const total = parseFloat(totalStr) || 0;
         const limit = parseFloat(inputLimit.value) || 0;
         
-        // Gov portion = min(total * 0.60, limit)
-        const govShare = Math.min(total * 0.60, limit);
-        // Customer topup = total - govShare
-        const customerTopup = total - govShare;
-        // Remaining limit in app after this purchase
-        const remainingLimit = Math.max(0, limit - govShare);
-        
-        resTopup.textContent = customerTopup.toFixed(2) + ' บาท';
-        resGov.textContent = govShare.toFixed(2) + ' บาท';
-        resRemLimit.textContent = remainingLimit.toFixed(2) + ' บาท';
+        if (totalStr.trim() === '' && limit > 0) {
+          // หากกรอกแค่สิทธิ์คงเหลือ (อยากรู้ว่าต้องเติมเท่าไหร่ถึงจะคุ้มสิทธิ์)
+          const requiredTopup = limit * (40 / 60);
+          const requiredTotal = limit / 0.60;
+          
+          resTopup.textContent = requiredTopup.toFixed(2) + ' บาท (เติมขั้นต่ำ)';
+          resGov.textContent = limit.toFixed(2) + ' บาท (ใช้เต็มสิทธิ์)';
+          resRemLimit.textContent = '(ยอดซื้อรวมคุ้มสุด ' + requiredTotal.toFixed(2) + ' บ.)';
+        } else {
+          // คำนวณปกติเมื่อมีการระบุราคาสินค้า
+          const govShare = Math.min(total * 0.60, limit);
+          const customerTopup = total - govShare;
+          const remainingLimit = Math.max(0, limit - govShare);
+          
+          resTopup.textContent = customerTopup.toFixed(2) + ' บาท';
+          resGov.textContent = govShare.toFixed(2) + ' บาท';
+          resRemLimit.textContent = remainingLimit.toFixed(2) + ' บาท';
+        }
       }
       
       inputTotal.addEventListener('input', calculate);
