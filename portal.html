@@ -185,10 +185,28 @@
     }
 
     // ตรวจสอบว่าเปิดผ่านเว็บปกติ หรือเปิดผ่านแอปที่ติดตั้งแล้ว
-    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+    const isStandalone = (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || window.navigator.standalone;
     if (!isStandalone) {
       // ถ้าเปิดใน Safari/Chrome ปกติ ให้โชว์คำแนะนำวิธีติดตั้งแอป
       document.getElementById('install-hint').style.display = 'block';
+    } else if (window.navigator.standalone) {
+      // FIX for iPhone 5s (iOS 12 and below) PWA bug where links do nothing or open in Safari
+      document.addEventListener('click', function(event) {
+        let a = event.target.closest ? event.target.closest('a') : null;
+        if (!a) {
+          // Fallback for very old browsers without .closest()
+          let el = event.target;
+          while (el && el.tagName !== 'A') {
+            el = el.parentNode;
+          }
+          a = el;
+        }
+        
+        if (a && a.href && a.target !== '_blank' && !a.href.startsWith('javascript:')) {
+          event.preventDefault();
+          window.location.href = a.href;
+        }
+      }, false);
     }
 
     // Modal toggle and calculation logic
