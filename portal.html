@@ -27,6 +27,123 @@
     .btn-icon { font-size: 28px; margin-bottom: 5px; }
     
     .install-hint { margin-top: 25px; font-size: 12px; color: #C57B57; background: #FAE5D3; padding: 10px; border-radius: 10px; display: none; }
+    
+    /* Modal Styles */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(74, 63, 53, 0.6);
+      backdrop-filter: blur(5px);
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    .modal.show {
+      display: flex;
+      opacity: 1;
+    }
+    .modal-content {
+      background-color: #FFFFFF;
+      border-radius: 24px;
+      width: 90%;
+      max-width: 400px;
+      padding: 25px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+      transform: translateY(-20px);
+      transition: transform 0.3s ease;
+      box-sizing: border-box;
+    }
+    .modal.show .modal-content {
+      transform: translateY(0);
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      border-bottom: 1px solid #F0ECE9;
+      padding-bottom: 10px;
+    }
+    .modal-header h3 {
+      margin: 0;
+      font-size: 20px;
+      color: var(--text-main);
+    }
+    .close-btn {
+      font-size: 28px;
+      font-weight: bold;
+      color: #B0A69D;
+      cursor: pointer;
+      line-height: 1;
+    }
+    .close-btn:hover {
+      color: var(--accent-brick);
+    }
+    .input-group {
+      margin-bottom: 15px;
+      text-align: left;
+    }
+    .input-group label {
+      display: block;
+      font-size: 14px;
+      font-weight: bold;
+      color: var(--text-main);
+      margin-bottom: 6px;
+    }
+    .input-group input {
+      width: 100%;
+      padding: 12px 15px;
+      border-radius: 10px;
+      border: 1px solid #D2C9C1;
+      font-size: 16px;
+      outline: none;
+      box-sizing: border-box;
+      background-color: #FAF8F5;
+      color: var(--text-main);
+      transition: border-color 0.2s;
+    }
+    .input-group input:focus {
+      border-color: var(--primary-matcha);
+    }
+    
+    .results-container {
+      background-color: #FAF8F5;
+      border-radius: 14px;
+      padding: 15px;
+      border: 1px solid #EAE3DC;
+      margin-top: 20px;
+    }
+    .result-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      font-size: 14px;
+      color: #706357;
+    }
+    .result-row:last-child {
+      margin-bottom: 0;
+    }
+    .result-row.highlight {
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 1px dashed #EAE3DC;
+      color: var(--accent-brick);
+      font-weight: bold;
+      font-size: 18px;
+    }
+    .result-value {
+      font-family: monospace;
+      font-size: 16px;
+    }
+    .result-row.highlight .result-value {
+      font-size: 20px;
+    }
   </style>
 </head>
 <body>
@@ -44,6 +161,11 @@
       <span class="btn-icon">📊</span>
       ระบบจัดการ (ผู้จัดการ)
     </a>
+
+    <button id="btn-calc" class="btn-menu" style="background-color: var(--accent-brick); color: white; box-shadow: 0 8px 20px rgba(197, 123, 87, 0.3); border: none; font-family: inherit; width: 100%; box-sizing: border-box; margin-bottom: 15px;">
+      <span class="btn-icon">🧮</span>
+      คำนวณโครงการ 60/40
+    </button>
     
     <div id="install-hint" class="install-hint">
       💡 <b>เคล็ดลับ:</b> กดปุ่ม "Share" แล้วเลือก "Add to Home Screen" เพื่อติดตั้งเป็นแอปพลิเคชัน
@@ -68,6 +190,97 @@
       // ถ้าเปิดใน Safari/Chrome ปกติ ให้โชว์คำแนะนำวิธีติดตั้งแอป
       document.getElementById('install-hint').style.display = 'block';
     }
+
+    // Modal toggle and calculation logic
+    const modal = document.getElementById('calc-modal');
+    const btnCalc = document.getElementById('btn-calc');
+    const closeModal = document.getElementById('close-modal');
+    const inputTotal = document.getElementById('calc-total');
+    const inputLimit = document.getElementById('calc-limit');
+    
+    const resTopup = document.getElementById('res-topup');
+    const resGov = document.getElementById('res-gov');
+    const resRemLimit = document.getElementById('res-rem-limit');
+    
+    btnCalc.addEventListener('click', (e) => {
+      e.preventDefault();
+      modal.style.display = 'flex';
+      setTimeout(() => modal.classList.add('show'), 10);
+      inputTotal.focus();
+    });
+    
+    const hideModal = () => {
+      modal.classList.remove('show');
+      setTimeout(() => modal.style.display = 'none', 300);
+      // Reset inputs
+      inputTotal.value = '';
+      inputLimit.value = '';
+      calculate();
+    };
+    
+    closeModal.addEventListener('click', hideModal);
+    window.addEventListener('click', (e) => {
+      if (e.target === modal) {
+        hideModal();
+      }
+    });
+    
+    function calculate() {
+      const total = parseFloat(inputTotal.value) || 0;
+      const limit = parseFloat(inputLimit.value) || 0;
+      
+      // Gov portion = min(total * 0.60, limit)
+      const govShare = Math.min(total * 0.60, limit);
+      // Customer topup = total - govShare
+      const customerTopup = total - govShare;
+      // Remaining limit in app after this purchase
+      const remainingLimit = Math.max(0, limit - govShare);
+      
+      resTopup.textContent = customerTopup.toFixed(2) + ' บาท';
+      resGov.textContent = govShare.toFixed(2) + ' บาท';
+      resRemLimit.textContent = remainingLimit.toFixed(2) + ' บาท';
+    }
+    
+    inputTotal.addEventListener('input', calculate);
+    inputLimit.addEventListener('input', calculate);
   </script>
+
+  <!-- Calculator Modal -->
+  <div id="calc-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>เครื่องคำนวณโครงการ 60/40</h3>
+        <span class="close-btn" id="close-modal">&times;</span>
+      </div>
+      <div class="modal-body">
+        <div style="font-size: 12px; color: #8C7A6B; background: #FAF8F5; padding: 8px 12px; border-radius: 8px; margin-bottom: 15px; border-left: 3px solid var(--accent-brick); text-align: left;">
+          💡 เงื่อนไข: รัฐช่วยจ่าย 60% และลูกค้าจ่ายเอง 40% ของราคาสินค้า
+        </div>
+        <div class="input-group">
+          <label for="calc-total">ราคาสินค้าทั้งหมด (บาท)</label>
+          <input type="number" id="calc-total" placeholder="ระบุราคาสินค้า เช่น 120" min="0" step="any" inputmode="decimal">
+        </div>
+        <div class="input-group">
+          <label for="calc-limit">สิทธิ์คงเหลือในแอปวันนี้ (บาท)</label>
+          <input type="number" id="calc-limit" placeholder="ระบุสิทธิ์เหลือในแอป เช่น 70" min="0" step="any" inputmode="decimal">
+        </div>
+
+        <div class="results-container">
+          <div class="result-row highlight">
+            <span class="result-label">ลูกค้าต้องเติมเงิน (40%+):</span>
+            <span class="result-value" id="res-topup">0.00 บาท</span>
+          </div>
+          <div class="result-row">
+            <span class="result-label">ส่วนที่รัฐช่วยจ่าย (60%):</span>
+            <span class="result-value" id="res-gov">0.00 บาท</span>
+          </div>
+          <div class="result-row">
+            <span class="result-label">สิทธิ์คงเหลือในแอปถัดไป:</span>
+            <span class="result-value" id="res-rem-limit">0.00 บาท</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </body>
 </html>
