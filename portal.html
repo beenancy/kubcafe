@@ -192,57 +192,59 @@
     }
 
     // Modal toggle and calculation logic
-    const modal = document.getElementById('calc-modal');
-    const btnCalc = document.getElementById('btn-calc');
-    const closeModal = document.getElementById('close-modal');
-    const inputTotal = document.getElementById('calc-total');
-    const inputLimit = document.getElementById('calc-limit');
-    
-    const resTopup = document.getElementById('res-topup');
-    const resGov = document.getElementById('res-gov');
-    const resRemLimit = document.getElementById('res-rem-limit');
-    
-    btnCalc.addEventListener('click', (e) => {
-      e.preventDefault();
-      modal.style.display = 'flex';
-      setTimeout(() => modal.classList.add('show'), 10);
-      inputTotal.focus();
-    });
-    
-    const hideModal = () => {
-      modal.classList.remove('show');
-      setTimeout(() => modal.style.display = 'none', 300);
-      // Reset inputs
-      inputTotal.value = '';
-      inputLimit.value = '';
-      calculate();
-    };
-    
-    closeModal.addEventListener('click', hideModal);
-    window.addEventListener('click', (e) => {
-      if (e.target === modal) {
-        hideModal();
+    document.addEventListener('DOMContentLoaded', () => {
+      const modal = document.getElementById('calc-modal');
+      const btnCalc = document.getElementById('btn-calc');
+      const closeModal = document.getElementById('close-modal');
+      const inputTotal = document.getElementById('calc-total');
+      const inputLimit = document.getElementById('calc-limit');
+      
+      const resTopup = document.getElementById('res-topup');
+      const resGov = document.getElementById('res-gov');
+      const resRemLimit = document.getElementById('res-rem-limit');
+      
+      btnCalc.addEventListener('click', (e) => {
+        e.preventDefault();
+        modal.style.display = 'flex';
+        setTimeout(() => modal.classList.add('show'), 10);
+        inputTotal.focus();
+      });
+      
+      const hideModal = () => {
+        modal.classList.remove('show');
+        setTimeout(() => modal.style.display = 'none', 300);
+        // Reset inputs
+        inputTotal.value = '';
+        inputLimit.value = '';
+        calculate();
+      };
+      
+      closeModal.addEventListener('click', hideModal);
+      window.addEventListener('click', (e) => {
+        if (e.target === modal) {
+          hideModal();
+        }
+      });
+      
+      function calculate() {
+        const total = parseFloat(inputTotal.value) || 0;
+        const limit = parseFloat(inputLimit.value) || 0;
+        
+        // Gov portion = min(total * 0.60, limit)
+        const govShare = Math.min(total * 0.60, limit);
+        // Customer topup = total - govShare
+        const customerTopup = total - govShare;
+        // Remaining limit in app after this purchase
+        const remainingLimit = Math.max(0, limit - govShare);
+        
+        resTopup.textContent = customerTopup.toFixed(2) + ' บาท';
+        resGov.textContent = govShare.toFixed(2) + ' บาท';
+        resRemLimit.textContent = remainingLimit.toFixed(2) + ' บาท';
       }
+      
+      inputTotal.addEventListener('input', calculate);
+      inputLimit.addEventListener('input', calculate);
     });
-    
-    function calculate() {
-      const total = parseFloat(inputTotal.value) || 0;
-      const limit = parseFloat(inputLimit.value) || 0;
-      
-      // Gov portion = min(total * 0.60, limit)
-      const govShare = Math.min(total * 0.60, limit);
-      // Customer topup = total - govShare
-      const customerTopup = total - govShare;
-      // Remaining limit in app after this purchase
-      const remainingLimit = Math.max(0, limit - govShare);
-      
-      resTopup.textContent = customerTopup.toFixed(2) + ' บาท';
-      resGov.textContent = govShare.toFixed(2) + ' บาท';
-      resRemLimit.textContent = remainingLimit.toFixed(2) + ' บาท';
-    }
-    
-    inputTotal.addEventListener('input', calculate);
-    inputLimit.addEventListener('input', calculate);
   </script>
 
   <!-- Calculator Modal -->
