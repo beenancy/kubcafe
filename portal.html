@@ -12,21 +12,33 @@
   <meta name="apple-mobile-web-app-title" content="KUB Cafe">
 
   <style>
-    :root { --bg-color: #FDFCF0; --text-main: #4A3F35; --primary-matcha: #A3B18A; --matcha-dark: #7A8B62; --accent-brick: #C57B57; }
+    :root { 
+      --bg-color: #E6E2D8; 
+      --shadow-light: #ffffff; 
+      --shadow-dark: #c9c4b8; 
+      --text-main: #4A3F35; 
+      --primary-matcha: #7A8B62; 
+      --accent-brick: #C57B57; 
+      --neu-out: 8px 8px 16px var(--shadow-dark), -8px -8px 16px var(--shadow-light);
+      --neu-in: inset 6px 6px 12px var(--shadow-dark), inset -6px -6px 12px var(--shadow-light);
+      --neu-out-sm: 4px 4px 8px var(--shadow-dark), -4px -4px 8px var(--shadow-light);
+      --neu-in-sm: inset 4px 4px 8px var(--shadow-dark), inset -4px -4px 8px var(--shadow-light);
+    }
     body, html { margin: 0; padding: 0; width: 100%; height: 100vh; background-color: var(--bg-color); font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; }
     
-    .hub-container { background: #FFFFFF; padding: 40px 30px; border-radius: 24px; box-shadow: 0 15px 35px rgba(140, 122, 107, 0.1); text-align: center; width: 85%; max-width: 400px; }
-    .logo-text { font-size: 32px; font-weight: 900; color: var(--primary-matcha); margin: 0 0 5px 0; letter-spacing: 2px; }
-    .sub-text { font-size: 14px; color: #B0A69D; margin-bottom: 30px; }
+    .hub-container { background: var(--bg-color); padding: 40px 30px; border-radius: 24px; box-shadow: var(--neu-out); text-align: center; width: 85%; max-width: 400px; }
+    .logo-text { font-size: 32px; font-weight: 900; color: var(--primary-matcha); margin: 0 0 5px 0; letter-spacing: 2px; text-shadow: 2px 2px 4px rgba(0,0,0,0.1); }
+    .sub-text { font-size: 14px; color: #9A8F83; margin-bottom: 30px; font-weight: bold; }
     
-    .btn-menu { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; padding: 20px; border-radius: 16px; font-size: 18px; font-weight: bold; border: none; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; text-decoration: none; box-sizing: border-box; margin-bottom: 15px; }
-    .btn-menu:active { transform: scale(0.97); }
+    .btn-menu { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; padding: 20px; border-radius: 16px; font-size: 18px; font-weight: bold; border: none; cursor: pointer; transition: all 0.2s ease; text-decoration: none; box-sizing: border-box; margin-bottom: 15px; background: var(--bg-color); box-shadow: var(--neu-out); color: var(--text-main); }
+    .btn-menu:active { transform: scale(0.98); box-shadow: var(--neu-in); }
     
-    .btn-pos { background-color: var(--primary-matcha); color: white; box-shadow: 0 8px 20px rgba(163, 177, 138, 0.4); }
-    .btn-manager { background-color: #4A3F35; color: white; box-shadow: 0 8px 20px rgba(74, 63, 53, 0.3); }
+    .btn-pos { color: var(--primary-matcha); }
+    .btn-manager { color: var(--text-main); }
+    #btn-calc { color: var(--accent-brick); font-family: inherit; }
     .btn-icon { font-size: 28px; margin-bottom: 5px; }
     
-    .install-hint { margin-top: 25px; font-size: 12px; color: #C57B57; background: #FAE5D3; padding: 10px; border-radius: 10px; display: none; }
+    .install-hint { margin-top: 25px; font-size: 12px; color: var(--accent-brick); background: transparent; padding: 15px; border-radius: 12px; display: none; box-shadow: var(--neu-in-sm); font-weight: bold; }
     
     /* Modal Styles */
     .modal {
@@ -37,113 +49,60 @@
       top: 0;
       width: 100%;
       height: 100%;
-      background-color: rgba(74, 63, 53, 0.6);
+      background-color: rgba(230, 226, 216, 0.6);
       backdrop-filter: blur(5px);
       align-items: center;
       justify-content: center;
       opacity: 0;
       transition: opacity 0.3s ease;
     }
-    .modal.show {
-      display: flex;
-      opacity: 1;
-    }
+    .modal.show { display: flex; opacity: 1; }
     .modal-content {
-      background-color: #FFFFFF;
+      background-color: var(--bg-color);
       border-radius: 24px;
       width: 90%;
       max-width: 400px;
       padding: 25px;
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+      box-shadow: var(--neu-out);
       transform: translateY(-20px);
       transition: transform 0.3s ease;
       box-sizing: border-box;
     }
-    .modal.show .modal-content {
-      transform: translateY(0);
-    }
-    .modal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 20px;
-      border-bottom: 1px solid #F0ECE9;
-      padding-bottom: 10px;
-    }
-    .modal-header h3 {
-      margin: 0;
-      font-size: 20px;
-      color: var(--text-main);
-    }
-    .close-btn {
-      font-size: 28px;
-      font-weight: bold;
-      color: #B0A69D;
-      cursor: pointer;
-      line-height: 1;
-    }
-    .close-btn:hover {
-      color: var(--accent-brick);
-    }
-    .input-group {
-      margin-bottom: 15px;
-      text-align: left;
-    }
-    .input-group label {
-      display: block;
-      font-size: 14px;
-      font-weight: bold;
-      color: var(--text-main);
-      margin-bottom: 6px;
-    }
+    .modal.show .modal-content { transform: translateY(0); }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--shadow-dark); padding-bottom: 10px; }
+    .modal-header h3 { margin: 0; font-size: 20px; color: var(--text-main); }
+    .close-btn { font-size: 28px; font-weight: bold; color: #9A8F83; cursor: pointer; line-height: 1; transition: color 0.2s; }
+    .close-btn:hover { color: var(--accent-brick); }
+    
+    .input-group { margin-bottom: 15px; text-align: left; }
+    .input-group label { display: block; font-size: 14px; font-weight: bold; color: var(--text-main); margin-bottom: 8px; }
     .input-group input {
       width: 100%;
       padding: 12px 15px;
-      border-radius: 10px;
-      border: 1px solid #D2C9C1;
+      border-radius: 12px;
+      border: none;
       font-size: 16px;
       outline: none;
       box-sizing: border-box;
-      background-color: #FAF8F5;
+      background-color: var(--bg-color);
       color: var(--text-main);
-      transition: border-color 0.2s;
+      box-shadow: var(--neu-in);
+      transition: box-shadow 0.2s;
     }
-    .input-group input:focus {
-      border-color: var(--primary-matcha);
-    }
+    .input-group input:focus { box-shadow: inset 8px 8px 16px var(--shadow-dark), inset -8px -8px 16px var(--shadow-light); }
     
     .results-container {
-      background-color: #FAF8F5;
-      border-radius: 14px;
+      background-color: var(--bg-color);
+      border-radius: 16px;
       padding: 15px;
-      border: 1px solid #EAE3DC;
+      box-shadow: var(--neu-in);
       margin-top: 20px;
     }
-    .result-row {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 8px;
-      font-size: 14px;
-      color: #706357;
-    }
-    .result-row:last-child {
-      margin-bottom: 0;
-    }
-    .result-row.highlight {
-      margin-bottom: 12px;
-      padding-bottom: 8px;
-      border-bottom: 1px dashed #EAE3DC;
-      color: var(--accent-brick);
-      font-weight: bold;
-      font-size: 18px;
-    }
-    .result-value {
-      font-family: monospace;
-      font-size: 16px;
-    }
-    .result-row.highlight .result-value {
-      font-size: 20px;
-    }
+    .result-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px; color: var(--text-main); font-weight: 500; }
+    .result-row:last-child { margin-bottom: 0; }
+    .result-row.highlight { margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--shadow-dark); color: var(--accent-brick); font-weight: bold; font-size: 18px; }
+    .result-value { font-family: monospace; font-size: 16px; }
+    .result-row.highlight .result-value { font-size: 20px; }
   </style>
 </head>
 <body>
@@ -162,7 +121,7 @@
       ระบบจัดการ (ผู้จัดการ)
     </a>
 
-    <button id="btn-calc" class="btn-menu" style="background-color: var(--accent-brick); color: white; box-shadow: 0 8px 20px rgba(197, 123, 87, 0.3); border: none; font-family: inherit; width: 100%; box-sizing: border-box; margin-bottom: 15px;">
+    <button id="btn-calc" class="btn-menu">
       <span class="btn-icon">🧮</span>
       คำนวณโครงการ 60/40
     </button>
@@ -282,7 +241,7 @@
         <span class="close-btn" id="close-modal">&times;</span>
       </div>
       <div class="modal-body">
-        <div style="font-size: 12px; color: #8C7A6B; background: #FAF8F5; padding: 8px 12px; border-radius: 8px; margin-bottom: 15px; border-left: 3px solid var(--accent-brick); text-align: left;">
+        <div style="font-size: 12px; color: #8C7A6B; background: transparent; padding: 12px; border-radius: 12px; margin-bottom: 15px; border-left: 4px solid var(--accent-brick); text-align: left; box-shadow: var(--neu-in-sm);">
           💡 เงื่อนไข: รัฐช่วยจ่าย 60% และลูกค้าจ่ายเอง 40% ของราคาสินค้า
         </div>
         <div class="input-group">
