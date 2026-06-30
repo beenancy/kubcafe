@@ -59,11 +59,14 @@
     .modal.show { display: flex; opacity: 1; }
     .modal-content {
       background-color: var(--bg-color);
-      border-radius: 24px;
+      border-radius: 28px;
       width: 90%;
       max-width: 400px;
       padding: 25px;
-      box-shadow: var(--neu-out);
+      box-shadow: 
+        inset 4px 4px 12px var(--shadow-light), 
+        inset -4px -4px 12px var(--shadow-dark), 
+        10px 10px 30px rgba(74, 63, 53, 0.22);
       transform: translateY(-20px);
       transition: transform 0.3s ease;
       box-sizing: border-box;
@@ -78,8 +81,8 @@
     .input-group label { display: block; font-size: 14px; font-weight: bold; color: var(--text-main); margin-bottom: 8px; }
     .input-group input {
       width: 100%;
-      padding: 12px 15px;
-      border-radius: 12px;
+      padding: 14px 18px;
+      border-radius: 16px;
       border: none;
       font-size: 16px;
       outline: none;
@@ -87,14 +90,16 @@
       background-color: var(--bg-color);
       color: var(--text-main);
       box-shadow: var(--neu-in);
-      transition: box-shadow 0.2s;
+      transition: all 0.2s ease;
     }
-    .input-group input:focus { box-shadow: inset 8px 8px 16px var(--shadow-dark), inset -8px -8px 16px var(--shadow-light); }
+    .input-group input:focus { 
+      box-shadow: inset 8px 8px 16px var(--shadow-dark), inset -8px -8px 16px var(--shadow-light); 
+    }
     
     .results-container {
       background-color: var(--bg-color);
-      border-radius: 16px;
-      padding: 15px;
+      border-radius: 20px;
+      padding: 18px;
       box-shadow: var(--neu-in);
       margin-top: 20px;
     }
