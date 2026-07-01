@@ -63,6 +63,29 @@
     .history-date { font-size: 11px; color: #999; }
     .pts-plus { color: #27ae60; font-weight: bold; }
     .pts-minus { color: #e74c3c; font-weight: bold; }
+    
+    /* Menu Images Tab Styling */
+    .menu-tabs { display: flex; gap: 8px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 5px; -webkit-overflow-scrolling: touch; }
+    .menu-tab-btn { background: #EAE5D9; color: var(--text-main); border: none; padding: 8px 16px; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 13px; white-space: nowrap; }
+    .menu-tab-btn.active { background: var(--primary-matcha); color: white; }
+    
+    .menu-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; margin-top: 15px; }
+    .menu-card { background: white; border: 1px solid var(--border-color); border-radius: 16px; padding: 15px; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 4px 10px rgba(0,0,0,0.02); }
+    .menu-card-header { display: flex; gap: 15px; align-items: center; }
+    .menu-card-img { width: 70px; height: 70px; border-radius: 12px; object-fit: cover; border: 1px solid var(--border-color); background: #eee; }
+    .menu-card-details { flex: 1; min-width: 0; }
+    .menu-card-title { font-weight: bold; color: var(--text-main); margin: 0; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .menu-card-subtitle { font-size: 12px; color: var(--text-muted); margin: 2px 0 0 0; }
+    
+    .menu-card-actions { margin-top: 15px; border-top: 1px dashed var(--border-color); padding-top: 12px; display: flex; flex-direction: column; gap: 8px; }
+    .menu-input-group { display: flex; gap: 6px; align-items: center; }
+    .menu-text-input { flex: 1; padding: 8px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 12px; box-sizing: border-box; }
+    
+    .upload-btn-label { background: #8C7A6B; color: white; border-radius: 8px; padding: 8px 12px; font-size: 12px; font-weight: bold; cursor: pointer; text-align: center; display: inline-block; flex-shrink: 0; }
+    .upload-btn-label:hover { background: #766558; }
+    
+    .btn-save-img { background: var(--primary-matcha); color: white; border-radius: 8px; padding: 8px 12px; font-size: 12px; font-weight: bold; cursor: pointer; border: none; flex: 1; }
+    .btn-reset-img { background: #D32F2F; color: white; border-radius: 8px; padding: 8px 12px; font-size: 12px; font-weight: bold; cursor: pointer; border: none; flex: 1; }
   </style>
 </head>
 <body>
@@ -105,28 +128,62 @@
         </div>
       </div>
 
-      <div class="card">
-        <div class="toolbar">
-          <div class="search-box">
-            <span class="search-icon">🔍</span>
-            <input type="text" id="searchInput" placeholder="ค้นหาชื่อลูกค้า..." onkeyup="filterTable()">
+      <!-- Navigation Tabs -->
+      <div style="display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid var(--border-color); padding-bottom: 8px;">
+        <button id="tab-members-btn" class="btn" style="background: var(--text-main); color: white; border: none; padding: 10px 20px; border-radius: 12px; font-weight: bold; flex: none;" onclick="switchTab('members')">👥 รายชื่อสมาชิก</button>
+        <button id="tab-menu-btn" class="btn" style="background: #EAE5D9; color: var(--text-main); border: none; padding: 10px 20px; border-radius: 12px; font-weight: bold; flex: none;" onclick="switchTab('menu-images')">🖼️ จัดการรูปเมนู</button>
+      </div>
+
+      <!-- Tab Contents -->
+      <div id="view-members" class="tab-content">
+        <div class="card">
+          <div class="toolbar">
+            <div class="search-box">
+              <span class="search-icon">🔍</span>
+              <input type="text" id="searchInput" placeholder="ค้นหาชื่อลูกค้า..." onkeyup="filterTable()">
+            </div>
+            <div class="btn-group">
+              <button class="btn btn-refresh" onclick="fetchData()">🔄 โหลดใหม่</button>
+              <button class="btn btn-clean" onclick="clearQRGarbage()">🧹 ล้างขยะ</button>
+              <button class="btn" style="background-color: #2E7D32;" onclick="downloadBackup()">📥 สำรองข้อมูล</button>
+              <button class="btn btn-lock" onclick="lockSystem()">🔒 ล็อกหน้าจอ</button>
+            </div>
           </div>
-          <div class="btn-group">
-            <button class="btn btn-refresh" onclick="fetchData()">🔄 โหลดใหม่</button>
-            <button class="btn btn-clean" onclick="clearQRGarbage()">🧹 ล้างขยะ</button>
-            <button class="btn" style="background-color: #2E7D32;" onclick="downloadBackup()">📥 สำรองข้อมูล</button>
-            <button class="btn btn-lock" onclick="lockSystem()">🔒 ล็อกหน้าจอ</button>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr><th>ลำดับ</th><th>ชื่อลูกค้า</th><th>แต้มปัจจุบัน</th><th>แต้มเก่า</th><th>อัปเดตล่าสุด</th><th>จัดการ</th></tr>
+              </thead>
+              <tbody id="user-table-body">
+                <tr><td colspan="6" style="text-align:center; padding:40px; color:#ccc;">กรุณาปลดล็อกเพื่อดูข้อมูล...</td></tr>
+              </tbody>
+            </table>
           </div>
         </div>
-        <div class="table-responsive">
-          <table>
-            <thead>
-              <tr><th>ลำดับ</th><th>ชื่อลูกค้า</th><th>แต้มปัจจุบัน</th><th>แต้มเก่า</th><th>อัปเดตล่าสุด</th><th>จัดการ</th></tr>
-            </thead>
-            <tbody id="user-table-body">
-              <tr><td colspan="6" style="text-align:center; padding:40px; color:#ccc;">กรุณาปลดล็อกเพื่อดูข้อมูล...</td></tr>
-            </tbody>
-          </table>
+      </div>
+
+      <!-- View Menu Images -->
+      <div id="view-menu-images" class="tab-content" style="display: none;">
+        <div class="card">
+          <div class="toolbar" style="border-bottom: 1px dashed var(--border-color); margin-bottom: 20px; padding-bottom: 15px;">
+            <div>
+              <h2 style="margin: 0; font-size: 18px; color: #6B705C;">🖼️ จัดการรูปภาพเมนูเครื่องดื่ม</h2>
+              <p style="margin: 5px 0 0 0; font-size: 13px; color: var(--text-muted);">อัปโหลดรูปภาพจริง หรือใส่ลิงก์รูปภาพเพื่อแทนรูปภาพเริ่มต้นในหน้าสั่งซื้อของลูกค้า</p>
+            </div>
+          </div>
+          
+          <!-- Category Tabs -->
+          <div class="menu-tabs" id="category-tab-container">
+            <button class="menu-tab-btn active" onclick="filterMenuCategory('coffee', this)">☕ กาแฟ (Coffee)</button>
+            <button class="menu-tab-btn" onclick="filterMenuCategory('tea', this)">🍵 ชา (Tea)</button>
+            <button class="menu-tab-btn" onclick="filterMenuCategory('non-coffee', this)">🥛 นม/โกโก้ (Non-Coffee)</button>
+            <button class="menu-tab-btn" onclick="filterMenuCategory('soda', this)">🥤 โซดา (Soda)</button>
+            <button class="menu-tab-btn" onclick="filterMenuCategory('additional', this)">➕ เพิ่มเติม (Additional)</button>
+          </div>
+          
+          <div class="menu-grid" id="menu-management-grid">
+            <!-- Dynamic drinks rendered here -->
+          </div>
         </div>
       </div>
     </div>
@@ -359,17 +416,266 @@
       }
     }
 
-    async function clearOldSystemLogs() {
-      const ask = await Swal.fire({ title: 'ล้างรายการแจ้งเตือน?', text: 'ลบรายการแจ้งเตือนลูกค้าที่เข้าระบบเก่าทั้งหมด', icon: 'warning', showCancelButton: true, confirmButtonColor: '#C57B57' });
-      if (ask.isConfirmed) {
-        Swal.fire({ title: 'กำลังเคลียร์ข้อมูล...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-        try {
           await fetch("https://kub-cafe-pos-default-rtdb.asia-southeast1.firebasedatabase.app/old_system_access.json", {
             method: 'DELETE'
           });
           Swal.fire('สำเร็จ!', 'ล้างประวัติการเข้าระบบเก่าเรียบร้อยแล้วครับ', 'success');
           fetchData();
         } catch(e) { Swal.fire('Error', 'ไม่สามารถลบข้อมูลได้', 'error'); }
+      }
+    }
+
+    // --- CUSTOM MENU IMAGES MANAGER LOGIC ---
+    function switchTab(tabName) {
+      document.querySelectorAll('.tab-content').forEach(el => el.style.display = 'none');
+      const membersBtn = document.getElementById('tab-members-btn');
+      const menuBtn = document.getElementById('tab-menu-btn');
+      
+      if (tabName === 'members') {
+        document.getElementById('view-members').style.display = 'block';
+        membersBtn.style.background = 'var(--text-main)';
+        membersBtn.style.color = 'white';
+        menuBtn.style.background = '#EAE5D9';
+        menuBtn.style.color = 'var(--text-main)';
+      } else {
+        document.getElementById('view-menu-images').style.display = 'block';
+        menuBtn.style.background = 'var(--text-main)';
+        menuBtn.style.color = 'white';
+        membersBtn.style.background = '#EAE5D9';
+        membersBtn.style.color = 'var(--text-main)';
+        loadMenuManagement();
+      }
+    }
+
+    let customMenuImages = {};
+    let activeMenuCategory = 'coffee';
+
+    const menuItems = [
+      // COFFEE
+      { category: "coffee", nameTH: "เอสเพรสโซ่", nameEN: "Espresso", defaultImg: "https://images.unsplash.com/photo-151097252790b-af4f42d91dfa?w=200&auto=format&fit=crop&q=60" },
+      { category: "coffee", nameTH: "คาปูชิโน่", nameEN: "Cappuccino", defaultImg: "https://images.unsplash.com/photo-1534778101976-62847782c213?w=200&auto=format&fit=crop&q=60" },
+      { category: "coffee", nameTH: "ลาเต้", nameEN: "Latte", defaultImg: "https://images.unsplash.com/photo-1541167760496-1628856ab772?w=200&auto=format&fit=crop&q=60" },
+      { category: "coffee", nameTH: "มอคค่า", nameEN: "Mocca", defaultImg: "https://images.unsplash.com/photo-1578314675249-a6910f80cc4e?w=200&auto=format&fit=crop&q=60" },
+      { category: "coffee", nameTH: "อเมริกาโน่", nameEN: "Americano", defaultImg: "https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=200&auto=format&fit=crop&q=60" },
+      { category: "coffee", nameTH: "มัทฉะกาแฟ", nameEN: "Matcha Coffee", defaultImg: "https://images.unsplash.com/photo-1536256263959-770b48d82b0a?w=200&auto=format&fit=crop&q=60" },
+      { category: "coffee", nameTH: "กาแฟส้ม", nameEN: "Americano Orange", defaultImg: "https://images.unsplash.com/photo-1622467827417-bbe2237067a9?w=200&auto=format&fit=crop&q=60" },
+      { category: "coffee", nameTH: "อเมริกาโน่น้ำผึ้ง", nameEN: "Americano Honey", defaultImg: "https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=200&auto=format&fit=crop&q=60" },
+      { category: "coffee", nameTH: "อเมริกาโน่น้ำผึ้งมะนาว", nameEN: "Americano Honey Lemon", defaultImg: "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=200&auto=format&fit=crop&q=60" },
+      { category: "coffee", nameTH: "อเมริกาโน่มะพร้าว", nameEN: "Americano Coconut", defaultImg: "https://images.unsplash.com/photo-1541167760496-1628856ab772?w=200&auto=format&fit=crop&q=60" },
+      { category: "coffee", nameTH: "มัคคิอาโต้", nameEN: "Macchiato", defaultImg: "https://images.unsplash.com/photo-1485808191679-5f86510681a2?w=200&auto=format&fit=crop&q=60" },
+      { category: "coffee", nameTH: "คาราเมลลาเต้", nameEN: "Caramel Latte", defaultImg: "https://images.unsplash.com/photo-1572286258217-40142c1c6a70?w=200&auto=format&fit=crop&q=60" },
+
+      // TEA
+      { category: "tea", nameTH: "ชาไทย", nameEN: "Thai Tea", defaultImg: "images/thai_tea_iced.jpg" },
+      { category: "tea", nameTH: "ชาเขียว", nameEN: "Green Tea", defaultImg: "images/green_tea_iced.jpg" },
+      { category: "tea", nameTH: "ชาพีช", nameEN: "Peach Tea", defaultImg: "https://images.unsplash.com/photo-1556679343-c7306c1976bc?w=200&auto=format&fit=crop&q=60" },
+      { category: "tea", nameTH: "ชาเขียวมะนาว", nameEN: "Lemon Green Tea", defaultImg: "images/lemon_tea_iced.jpg" },
+      { category: "tea", nameTH: "ชามะลิ", nameEN: "Jasmine Tea", defaultImg: "images/jasmine_tea_iced.jpg" },
+      { category: "tea", nameTH: "ชาเขียวน้ำผึ้งมะนาว", nameEN: "Honey Lemon Green Tea", defaultImg: "images/matcha_honey_lemon_iced.jpg" },
+      { category: "tea", nameTH: "ชานมไต้หวัน", nameEN: "Taiwan Milk Tea", defaultImg: "images/taiwan_milk_tea_iced.jpg" },
+      { category: "tea", nameTH: "ชาไทยลาเต้", nameEN: "Thai Tea Latte", defaultImg: "images/thai_tea_latte_iced.jpg" },
+      { category: "tea", nameTH: "ชาเขียวลาเต้", nameEN: "Green Tea Latte", defaultImg: "images/green_tea_latte_iced.jpg" },
+
+      // NON-COFFEE
+      { category: "non-coffee", nameTH: "โกโก้", nameEN: "Cocoa", defaultImg: "images/cocoa_iced.jpg" },
+      { category: "non-coffee", nameTH: "มัทฉะนมสด", nameEN: "Matcha Milk", defaultImg: "images/matcha_milk_iced.jpg" },
+      { category: "non-coffee", nameTH: "มัทฉะวนิลา", nameEN: "Vanilla Matcha", defaultImg: "images/matcha_vanilla_iced.jpg" },
+      { category: "non-coffee", nameTH: "มัทฉะคาราเมล", nameEN: "Caramel Matcha", defaultImg: "images/cocoa_caramel_milk_iced.jpg" },
+      { category: "non-coffee", nameTH: "มัทฉะน้ำส้ม", nameEN: "Orange Matcha", defaultImg: "images/matcha_orange_iced.jpg" },
+      { category: "non-coffee", nameTH: "มัทฉะน้ำผึ้งมะนาว", nameEN: "Honey Lemon Matcha", defaultImg: "images/matcha_honey_lemon_iced.jpg" },
+      { category: "non-coffee", nameTH: "นมสด", nameEN: "Iced Fresh Milk", defaultImg: "images/fresh_milk_iced.jpg" },
+      { category: "non-coffee", nameTH: "นมสดน้ำผึ้ง", nameEN: "Honey Milk", defaultImg: "images/fresh_milk_iced.jpg" },
+      { category: "non-coffee", nameTH: "นมสดคาราเมล", nameEN: "Caramel Milk", defaultImg: "images/caramel_milk_iced.jpg" },
+      { category: "non-coffee", nameTH: "นมสดวนิลา", nameEN: "Vanilla Milk", defaultImg: "images/fresh_milk_iced.jpg" },
+      { category: "non-coffee", nameTH: "นมชมพู", nameEN: "Iced Pink Milk", defaultImg: "images/pink_milk_iced.jpg" },
+      { category: "non-coffee", nameTH: "นมสดสตรอเบอรี่", nameEN: "Strawberry Milk", defaultImg: "images/strawberry_milk_iced.jpg" },
+      { category: "non-coffee", nameTH: "นมสดสตรอเบอรี่มัทฉะ", nameEN: "Strawberry Matcha Milk", defaultImg: "images/strawberry_matcha_milk_special.jpg" },
+      { category: "non-coffee", nameTH: "นมสดบราวน์ซูการ์", nameEN: "Brown Sugar Milk", defaultImg: "images/caramel_milk_iced.jpg" },
+      { category: "non-coffee", nameTH: "นมสดเผือก", nameEN: "Taro Fresh Milk", defaultImg: "images/taro_milk_iced.jpg" },
+      { category: "non-coffee", nameTH: "นมสดมิ้นท์", nameEN: "Mint Fresh Milk", defaultImg: "images/mint_milk_iced.jpg" },
+      { category: "non-coffee", nameTH: "โอรีโอ้นมสดปั่น", nameEN: "Oreo Frappe", defaultImg: "images/oreo_frappe.jpg" },
+      { category: "non-coffee", nameTH: "ไมโล", nameEN: "Milo", defaultImg: "images/milo_iced.jpg" },
+      { category: "non-coffee", nameTH: "โอวัลติน", nameEN: "Ovaltine", defaultImg: "images/ovaltine_iced.jpg" },
+      { category: "non-coffee", nameTH: "น้ำบ๊วย", nameEN: "Iced Plum Juice", defaultImg: "images/red_soda_iced.jpg" },
+
+      // SODA
+      { category: "soda", nameTH: "บลูฮาวายโซดา", nameEN: "Blue Hawaii Soda", defaultImg: "images/blue_hawaii_soda_iced.jpg" },
+      { category: "soda", nameTH: "พีชโซดา", nameEN: "Peach Soda", defaultImg: "https://images.unsplash.com/photo-1556679343-c7306c1976bc?w=200&auto=format&fit=crop&q=60" },
+      { category: "soda", nameTH: "สตรอเบอรี่โซดา", nameEN: "Strawberry Soda", defaultImg: "images/strawberry_soda_iced.jpg" },
+      { category: "soda", nameTH: "กีวี่โซดา", nameEN: "Kiwi Soda", defaultImg: "images/kiwi_soda_iced.jpg" },
+      { category: "soda", nameTH: "ลิ้นจี่โซดา", nameEN: "Lychee Soda", defaultImg: "images/lychee_soda_iced.jpg" },
+      { category: "soda", nameTH: "น้ำผึ้งมะนาวโซดา", nameEN: "Honey Lemon Soda", defaultImg: "images/honey_lemon_soda_iced.jpg" },
+      { category: "soda", nameTH: "แอปเปิ้ลเขียวโซดา", nameEN: "Green Apple Soda", defaultImg: "images/kiwi_soda_iced.jpg" },
+      { category: "soda", nameTH: "บลูเบอรี่โซดา", nameEN: "Blueberry Soda", defaultImg: "images/blueberry_soda_iced.jpg" },
+      { category: "soda", nameTH: "บ๊วยโซดา", nameEN: "Plum Soda", defaultImg: "images/red_soda_iced.jpg" },
+      { category: "soda", nameTH: "เสาวรสโซดา", nameEN: "Passion Fruit Soda", defaultImg: "images/honey_lemon_soda_iced.jpg" },
+      { category: "soda", nameTH: "องุ่นโซดา", nameEN: "Grape Soda", defaultImg: "images/blueberry_soda_iced.jpg" },
+      { category: "soda", nameTH: "เลม่อนโซดา", nameEN: "Lemon Soda", defaultImg: "images/lemon_soda_iced.jpg" },
+
+      // ADDITIONAL
+      { category: "additional", nameTH: "เพิ่มช็อตกาแฟ", nameEN: "Extra Shot", defaultImg: "https://images.unsplash.com/photo-151097252790b-af4f42d91dfa?w=200&auto=format&fit=crop&q=60" },
+      { category: "additional", nameTH: "บุกบราวน์ซูการ์", nameEN: "Add Konjac Brown Sugar", defaultImg: "images/oreo_milk_iced.jpg" },
+      { category: "additional", nameTH: "ปั่น", nameEN: "Frappe", defaultImg: "images/oreo_frappe.jpg" }
+    ];
+
+    async function loadMenuManagement() {
+      const grid = document.getElementById('menu-management-grid');
+      grid.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding:40px; color:var(--text-muted);">กำลังโหลดข้อมูลรูปภาพ...</div>';
+      
+      try {
+        const res = await fetch('https://kub-cafe-pos-default-rtdb.asia-southeast1.firebasedatabase.app/pos_display/custom_menu_images.json');
+        if (res.ok) {
+          customMenuImages = await res.json() || {};
+        }
+      } catch (err) {
+        console.error('Failed to load custom images:', err);
+      }
+      
+      renderMenuManagementGrid();
+    }
+
+    function filterMenuCategory(category, btn) {
+      activeMenuCategory = category;
+      document.querySelectorAll('.menu-tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderMenuManagementGrid();
+    }
+
+    function renderMenuManagementGrid() {
+      const grid = document.getElementById('menu-management-grid');
+      grid.innerHTML = '';
+      
+      const filtered = menuItems.filter(item => item.category === activeMenuCategory);
+      
+      filtered.forEach(item => {
+        const customUrl = customMenuImages[item.nameEN] || '';
+        const currentImg = customUrl || item.defaultImg;
+        
+        const card = document.createElement('div');
+        card.className = 'menu-card';
+        card.innerHTML = `
+          <div class="menu-card-header">
+            <img class="menu-card-img" id="img-preview-${item.nameEN}" src="${currentImg}" alt="${item.nameTH}">
+            <div class="menu-card-details">
+              <h3 class="menu-card-title">${item.nameTH}</h3>
+              <p class="menu-card-subtitle">${item.nameEN}</p>
+              ${customUrl ? '<span style="font-size:10px; color:#27ae60; font-weight:bold; background:#e8f8f5; padding:2px 6px; border-radius:4px; margin-top:4px; display:inline-block;">✓ รูปภาพกำหนดเอง</span>' : ''}
+            </div>
+          </div>
+          <div class="menu-card-actions">
+            <div class="menu-input-group">
+              <input type="text" class="menu-text-input" id="url-input-${item.nameEN}" placeholder="วางลิงก์รูปภาพ หรืออัปโหลดรูป..." value="${customUrl}">
+            </div>
+            <div style="display: flex; gap: 8px; align-items: center;">
+              <label class="upload-btn-label" style="flex: 1;">
+                📷 เลือกรูปภาพ
+                <input type="file" accept="image/*" style="display:none;" onchange="handleImageUpload(event, '${item.nameEN}')">
+              </label>
+              <button class="btn-save-img" onclick="saveMenuImage('${item.nameEN}')">💾 บันทึก</button>
+              ${customUrl ? \`<button class="btn-reset-img" style="flex:none; width:40px; padding:0; display:flex; justify-content:center; align-items:center;" onclick="resetMenuImage('\${item.nameEN}')" title="ล้างรูปภาพ">🗑️</button>\` : ''}
+            </div>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    function handleImageUpload(event, nameEN) {
+      const file = event.target.files[0];
+      if (!file) return;
+      
+      Swal.fire({ title: 'กำลังประมวลผลรูปภาพ...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+      
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const img = new Image();
+        img.onload = function() {
+          const canvas = document.createElement('canvas');
+          const max_size = 120;
+          let width = img.width;
+          let height = img.height;
+          
+          let size = Math.min(width, height);
+          canvas.width = max_size;
+          canvas.height = max_size;
+          
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(
+            img, 
+            (width - size) / 2, (height - size) / 2, size, size, 
+            0, 0, max_size, max_size
+          );
+          
+          const base64 = canvas.toDataURL('image/jpeg', 0.7);
+          
+          document.getElementById(`url-input-${nameEN}`).value = base64;
+          document.getElementById(`img-preview-${nameEN}`).src = base64;
+          
+          Swal.close();
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    async function saveMenuImage(nameEN) {
+      const urlVal = document.getElementById(`url-input-${nameEN}`).value.trim();
+      if (!urlVal) {
+        return Swal.fire('คำแนะนำ', 'กรุณาอัปโหลดรูปภาพหรือใส่ลิงก์รูปภาพก่อนกดบันทึกครับ', 'warning');
+      }
+      
+      Swal.fire({ title: 'กำลังบันทึก...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+      
+      try {
+        const url = `https://kub-cafe-pos-default-rtdb.asia-southeast1.firebasedatabase.app/pos_display/custom_menu_images/${nameEN}.json`;
+        const res = await fetch(url, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(urlVal)
+        });
+        
+        if (res.ok) {
+          customMenuImages[nameEN] = urlVal;
+          Swal.fire('สำเร็จ!', `บันทึกรูปภาพเมนู ${nameEN} เรียบร้อยแล้วครับ`, 'success');
+          renderMenuManagementGrid();
+        } else {
+          throw new Error(await res.text());
+        }
+      } catch (err) {
+        Swal.fire('เกิดข้อผิดพลาด', 'ไม่สามารถบันทึกได้: ' + err.message, 'error');
+      }
+    }
+
+    async function resetMenuImage(nameEN) {
+      const ask = await Swal.fire({
+        title: 'ยืนยันการล้างรูปภาพ?',
+        text: `คุณต้องการลบรูปภาพที่กำหนดเองของเมนู ${nameEN} และกลับไปใช้รูปภาพเริ่มต้นใช่หรือไม่?`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#D32F2F',
+        cancelButtonText: 'ยกเลิก',
+        confirmButtonText: 'ใช่, ลบเลย'
+      });
+      
+      if (ask.isConfirmed) {
+        Swal.fire({ title: 'กำลังลบรูปภาพ...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+        
+        try {
+          const url = `https://kub-cafe-pos-default-rtdb.asia-southeast1.firebasedatabase.app/pos_display/custom_menu_images/${nameEN}.json`;
+          const res = await fetch(url, {
+            method: 'DELETE'
+          });
+          
+          if (res.ok) {
+            delete customMenuImages[nameEN];
+            Swal.fire('สำเร็จ!', `ลบรูปภาพที่กำหนดเองของ ${nameEN} เรียบร้อยแล้วครับ`, 'success');
+            renderMenuManagementGrid();
+          } else {
+            throw new Error(await res.text());
+          }
+        } catch (err) {
+          Swal.fire('เกิดข้อผิดพลาด', 'ไม่สามารถลบรูปภาพได้: ' + err.message, 'error');
+        }
       }
     }
   </script>

@@ -512,6 +512,23 @@ Changelog: Dynamic Grid Menu UI with Category Tabs, Local JSON Menu Data, idToke
         globalUserId = profile.userId; globalUserName = profile.displayName;
         document.getElementById('userProfilePic').src = profile.pictureUrl || "https://via.placeholder.com/70";
 
+        // ☕ Fetch custom menu images from RTDB to override default placeholders
+        try {
+          const res = await fetch('https://kub-cafe-pos-default-rtdb.asia-southeast1.firebasedatabase.app/pos_display/custom_menu_images.json');
+          if (res.ok) {
+            const customImages = await res.json();
+            if (customImages) {
+              menuData.forEach(item => {
+                if (customImages[item.nameEN]) {
+                  item.img = customImages[item.nameEN];
+                }
+              });
+            }
+          }
+        } catch (e) {
+          console.error("Failed to load custom menu images:", e);
+        }
+
         const currentUrl = window.location.href.toLowerCase();
         let targetTab = 'home'; 
         if (currentUrl.includes('tab=rewards')) targetTab = 'rewards';
