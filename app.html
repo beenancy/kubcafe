@@ -238,7 +238,14 @@ Changelog: Dynamic Grid Menu UI with Category Tabs, Local JSON Menu Data, idToke
       transform: scale(0.98);
     }
     
-    .menu-icon { font-size: 36px; text-align: center; margin-bottom: 6px; }
+    .menu-image { 
+      width: 100%; 
+      height: 90px; 
+      object-fit: cover; 
+      border-radius: 16px; 
+      margin-bottom: 8px; 
+      box-shadow: inset 1px 1px 3px rgba(0,0,0,0.05); 
+    }
     .menu-name-th { font-weight: 700; font-size: 13px; color: var(--text-main); text-align: center; line-height: 1.2; margin-bottom: 2px; }
     .menu-name-en { font-size: 10px; color: var(--text-light); text-align: center; margin-bottom: 8px; }
     
@@ -338,6 +345,7 @@ Changelog: Dynamic Grid Menu UI with Category Tabs, Local JSON Menu Data, idToke
         <button class="cat-btn" onclick="renderMenu('tea', this)">TEA</button>
         <button class="cat-btn" onclick="renderMenu('non-coffee', this)">NON-COFFEE</button>
         <button class="cat-btn" onclick="renderMenu('soda', this)">SODA</button>
+        <button class="cat-btn" onclick="renderMenu('additional', this)">ADDITIONAL</button>
       </div>
 
       <!-- Menu Grid Container -->
@@ -378,23 +386,69 @@ Changelog: Dynamic Grid Menu UI with Category Tabs, Local JSON Menu Data, idToke
 
     // ☕ ฐานข้อมูลจำลองสำหรับเมนู (Local JSON Data) สกัดจากภาพเมนูของ KUB Cafe
     const menuData = [
-      { category: "coffee", nameTH: "เอสเพรสโซ่", nameEN: "Espresso", icon: "☕", hot: 40, iced: 45 },
-      { category: "coffee", nameTH: "คาปูชิโน่", nameEN: "Cappuccino", icon: "☕", hot: 40, iced: 45 },
-      { category: "coffee", nameTH: "ลาเต้", nameEN: "Latte", icon: "☕", hot: 40, iced: 45 },
-      { category: "coffee", nameTH: "อเมริกาโน่", nameEN: "Americano", icon: "☕", hot: 40, iced: 45 },
-      { category: "coffee", nameTH: "มัทฉะกาแฟ", nameEN: "Matcha Coffee", icon: "☕", hot: "-", iced: 55 },
-      { category: "coffee", nameTH: "อเมริกาโน่น้ำผึ้งมะนาว", nameEN: "Americano Honey Lemon", icon: "☕", hot: 45, iced: 50 },
-      { category: "tea", nameTH: "ชาไทย", nameEN: "Thai Tea", icon: "🧋", hot: 30, iced: 35 },
-      { category: "tea", nameTH: "ชาเขียว", nameEN: "Green Tea", icon: "🍵", hot: 30, iced: 35 },
-      { category: "tea", nameTH: "ชามะนาว", nameEN: "Lemon Tea", icon: "🍋", hot: 30, iced: 35 },
-      { category: "tea", nameTH: "ชาเขียวน้ำผึ้งมะนาว", nameEN: "Honey Lemon Green Tea", icon: "🍵", hot: 35, iced: 40 },
-      { category: "non-coffee", nameTH: "โกโก้", nameEN: "Cocoa", icon: "🍫", hot: 35, iced: 40 },
-      { category: "non-coffee", nameTH: "มัทฉะนมสด", nameEN: "Matcha Milk", icon: "🥛", hot: 40, iced: 45 },
-      { category: "non-coffee", nameTH: "นมสด", nameEN: "Iced Fresh Milk", icon: "🥛", hot: 30, iced: 30 },
-      { category: "soda", nameTH: "บลูฮาวายโซดา", nameEN: "Blue Hawaii Soda", icon: "🍹", hot: "-", iced: 25 },
-      { category: "soda", nameTH: "พีชโซดา", nameEN: "Peach Soda", icon: "🍑", hot: "-", iced: 30 },
-      { category: "soda", nameTH: "สตรอเบอรี่โซดา", nameEN: "Strawberry Soda", icon: "🍓", hot: "-", iced: 25 },
-      { category: "soda", nameTH: "น้ำผึ้งมะนาวโซดา", nameEN: "Honey Lemon Soda", icon: "🍋", hot: "-", iced: 35 }
+      // COFFEE
+      { category: "coffee", nameTH: "เอสเพรสโซ่", nameEN: "Espresso", img: "https://images.unsplash.com/photo-151097252790b-af4f42d91dfa?w=200&auto=format&fit=crop&q=60", hot: 40, iced: 45 },
+      { category: "coffee", nameTH: "คาปูชิโน่", nameEN: "Cappuccino", img: "https://images.unsplash.com/photo-1534778101976-62847782c213?w=200&auto=format&fit=crop&q=60", hot: 40, iced: 45 },
+      { category: "coffee", nameTH: "ลาเต้", nameEN: "Latte", img: "https://images.unsplash.com/photo-1541167760496-1628856ab772?w=200&auto=format&fit=crop&q=60", hot: 40, iced: 45 },
+      { category: "coffee", nameTH: "มอคค่า", nameEN: "Mocca", img: "https://images.unsplash.com/photo-1578314675249-a6910f80cc4e?w=200&auto=format&fit=crop&q=60", hot: 40, iced: 45 },
+      { category: "coffee", nameTH: "อเมริกาโน่", nameEN: "Americano", img: "https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=200&auto=format&fit=crop&q=60", hot: 40, iced: 45 },
+      { category: "coffee", nameTH: "มัทฉะกาแฟ", nameEN: "Matcha Coffee", img: "https://images.unsplash.com/photo-1536256263959-770b48d82b0a?w=200&auto=format&fit=crop&q=60", hot: "-", iced: 55 },
+      { category: "coffee", nameTH: "กาแฟส้ม", nameEN: "Americano Orange", img: "https://images.unsplash.com/photo-1622467827417-bbe2237067a9?w=200&auto=format&fit=crop&q=60", hot: "-", iced: 50 },
+      { category: "coffee", nameTH: "อเมริกาโน่น้ำผึ้ง", nameEN: "Americano Honey", img: "https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=200&auto=format&fit=crop&q=60", hot: 45, iced: 50 },
+      { category: "coffee", nameTH: "อเมริกาโน่น้ำผึ้งมะนาว", nameEN: "Americano Honey Lemon", img: "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=200&auto=format&fit=crop&q=60", hot: 45, iced: 50 },
+      { category: "coffee", nameTH: "อเมริกาโน่มะพร้าว", nameEN: "Americano Coconut", img: "https://images.unsplash.com/photo-1541167760496-1628856ab772?w=200&auto=format&fit=crop&q=60", hot: "-", iced: 50 },
+      { category: "coffee", nameTH: "มัคคิอาโต้", nameEN: "Macchiato", img: "https://images.unsplash.com/photo-1485808191679-5f86510681a2?w=200&auto=format&fit=crop&q=60", hot: "-", iced: 50 },
+      { category: "coffee", nameTH: "คาราเมลลาเต้", nameEN: "Caramel Latte", img: "https://images.unsplash.com/photo-1572286258217-40142c1c6a70?w=200&auto=format&fit=crop&q=60", hot: "-", iced: 50 },
+
+      // TEA
+      { category: "tea", nameTH: "ชาไทย", nameEN: "Thai Tea", img: "https://images.unsplash.com/photo-1576092768241-dec231879fc3?w=200&auto=format&fit=crop&q=60", hot: 30, iced: 35 },
+      { category: "tea", nameTH: "ชาเขียว", nameEN: "Green Tea", img: "https://images.unsplash.com/photo-1536256263959-770b48d82b0a?w=200&auto=format&fit=crop&q=60", hot: 30, iced: 35 },
+      { category: "tea", nameTH: "ชาพีช", nameEN: "Peach Tea", img: "https://images.unsplash.com/photo-1556679343-c7306c1976bc?w=200&auto=format&fit=crop&q=60", hot: 30, iced: 35 },
+      { category: "tea", nameTH: "ชาเขียวมะนาว", nameEN: "Lemon Green Tea", img: "https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?w=200&auto=format&fit=crop&q=60", hot: 30, iced: 35 },
+      { category: "tea", nameTH: "ชามะลิ", nameEN: "Jasmine Tea", img: "https://images.unsplash.com/photo-1318498082410-d412a9468f24?w=200&auto=format&fit=crop&q=60", hot: 30, iced: 35 },
+      { category: "tea", nameTH: "ชาเขียวน้ำผึ้งมะนาว", nameEN: "Honey Lemon Green Tea", img: "https://images.unsplash.com/photo-1627754546922-229b4566a7b7?w=200&auto=format&fit=crop&q=60", hot: 35, iced: 40 },
+      { category: "tea", nameTH: "ชานมไต้หวัน", nameEN: "Taiwan Milk Tea", img: "https://images.unsplash.com/photo-1541658016709-82535e94bc69?w=200&auto=format&fit=crop&q=60", hot: "-", iced: 35 },
+
+      // NON-COFFEE
+      { category: "non-coffee", nameTH: "โกโก้", nameEN: "Cocoa", img: "https://images.unsplash.com/photo-1544787219-7f47ccb76574?w=200&auto=format&fit=crop&q=60", hot: 35, iced: 40 },
+      { category: "non-coffee", nameTH: "มัทฉะนมสด", nameEN: "Matcha Milk", img: "https://images.unsplash.com/photo-1536256263959-770b48d82b0a?w=200&auto=format&fit=crop&q=60", hot: 40, iced: 45 },
+      { category: "non-coffee", nameTH: "มัทฉะวนิลา", nameEN: "Vanilla Matcha", img: "https://images.unsplash.com/photo-1536256263959-770b48d82b0a?w=200&auto=format&fit=crop&q=60", hot: 45, iced: 50 },
+      { category: "non-coffee", nameTH: "มัทฉะคาราเมล", nameEN: "Caramel Matcha", img: "https://images.unsplash.com/photo-1536256263959-770b48d82b0a?w=200&auto=format&fit=crop&q=60", hot: 45, iced: 50 },
+      { category: "non-coffee", nameTH: "มัทฉะน้ำส้ม", nameEN: "Orange Matcha", img: "https://images.unsplash.com/photo-1622467827417-bbe2237067a9?w=200&auto=format&fit=crop&q=60", hot: "-", iced: 50 },
+      { category: "non-coffee", nameTH: "มัทฉะน้ำผึ้งมะนาว", nameEN: "Honey Lemon Matcha", img: "https://images.unsplash.com/photo-1627754546922-229b4566a7b7?w=200&auto=format&fit=crop&q=60", hot: 45, iced: 50 },
+      { category: "non-coffee", nameTH: "นมสด", nameEN: "Iced Fresh Milk", img: "https://images.unsplash.com/photo-1563636619-e9143da7973b?w=200&auto=format&fit=crop&q=60", hot: 30, iced: 30 },
+      { category: "non-coffee", nameTH: "นมสดน้ำผึ้ง", nameEN: "Honey Milk", img: "https://images.unsplash.com/photo-1563636619-e9143da7973b?w=200&auto=format&fit=crop&q=60", hot: 35, iced: 35 },
+      { category: "non-coffee", nameTH: "นมสดคาราเมล", nameEN: "Caramel Milk", img: "https://images.unsplash.com/photo-1572286258217-40142c1c6a70?w=200&auto=format&fit=crop&q=60", hot: 35, iced: 35 },
+      { category: "non-coffee", nameTH: "นมสดวนิลา", nameEN: "Vanilla Milk", img: "https://images.unsplash.com/photo-1563636619-e9143da7973b?w=200&auto=format&fit=crop&q=60", hot: 35, iced: 35 },
+      { category: "non-coffee", nameTH: "นมชมพู", nameEN: "Iced Pink Milk", img: "https://images.unsplash.com/photo-1572490122747-3968b75cc699?w=200&auto=format&fit=crop&q=60", hot: "-", iced: 35 },
+      { category: "non-coffee", nameTH: "นมสดสตรอเบอรี่", nameEN: "Strawberry Milk", img: "https://images.unsplash.com/photo-1572490122747-3968b75cc699?w=200&auto=format&fit=crop&q=60", hot: "-", iced: 45 },
+      { category: "non-coffee", nameTH: "นมสดสตรอเบอรี่มัทฉะ", nameEN: "Strawberry Matcha Milk", img: "https://images.unsplash.com/photo-1572490122747-3968b75cc699?w=200&auto=format&fit=crop&q=60", hot: "-", iced: 50 },
+      { category: "non-coffee", nameTH: "นมสดบราวน์ซูการ์", nameEN: "Brown Sugar Milk", img: "https://images.unsplash.com/photo-1541658016709-82535e94bc69?w=200&auto=format&fit=crop&q=60", hot: "-", iced: 35 },
+      { category: "non-coffee", nameTH: "นมสดเผือก", nameEN: "Taro Fresh Milk", img: "https://images.unsplash.com/photo-1563636619-e9143da7973b?w=200&auto=format&fit=crop&q=60", hot: "-", iced: 35 },
+      { category: "non-coffee", nameTH: "นมสดมิ้นท์", nameEN: "Mint Fresh Milk", img: "https://images.unsplash.com/photo-1563636619-e9143da7973b?w=200&auto=format&fit=crop&q=60", hot: "-", iced: 35 },
+      { category: "non-coffee", nameTH: "โอรีโอ้นมสดปั่น", nameEN: "Oreo Frappe", img: "https://images.unsplash.com/photo-1572490122747-3968b75cc699?w=200&auto=format&fit=crop&q=60", hot: "-", iced: 45 },
+      { category: "non-coffee", nameTH: "ไมโล", nameEN: "Milo", img: "https://images.unsplash.com/photo-1544787219-7f47ccb76574?w=200&auto=format&fit=crop&q=60", hot: 30, iced: 35 },
+      { category: "non-coffee", nameTH: "โอวัลติน", nameEN: "Ovaltine", img: "https://images.unsplash.com/photo-1544787219-7f47ccb76574?w=200&auto=format&fit=crop&q=60", hot: 30, iced: 35 },
+      { category: "non-coffee", nameTH: "น้ำบ๊วย", nameEN: "Iced Plum Juice", img: "https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?w=200&auto=format&fit=crop&q=60", hot: "-", iced: 30 },
+
+      // SODA
+      { category: "soda", nameTH: "บลูฮาวายโซดา", nameEN: "Blue Hawaii Soda", img: "https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?w=200&auto=format&fit=crop&q=60", hot: "-", iced: 25 },
+      { category: "soda", nameTH: "พีชโซดา", nameEN: "Peach Soda", img: "https://images.unsplash.com/photo-1556679343-c7306c1976bc?w=200&auto=format&fit=crop&q=60", hot: "-", iced: 30 },
+      { category: "soda", nameTH: "สตรอเบอรี่โซดา", nameEN: "Strawberry Soda", img: "https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?w=200&auto=format&fit=crop&q=60", hot: "-", iced: 25 },
+      { category: "soda", nameTH: "กีวี่โซดา", nameEN: "Kiwi Soda", img: "https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?w=200&auto=format&fit=crop&q=60", hot: "-", iced: 25 },
+      { category: "soda", nameTH: "ลิ้นจี่โซดา", nameEN: "Lychee Soda", img: "https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?w=200&auto=format&fit=crop&q=60", hot: "-", iced: 25 },
+      { category: "soda", nameTH: "น้ำผึ้งมะนาวโซดา", nameEN: "Honey Lemon Soda", img: "https://images.unsplash.com/photo-1627754546922-229b4566a7b7?w=200&auto=format&fit=crop&q=60", hot: "-", iced: 35 },
+      { category: "soda", nameTH: "แอปเปิ้ลเขียวโซดา", nameEN: "Green Apple Soda", img: "https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?w=200&auto=format&fit=crop&q=60", hot: "-", iced: 25 },
+      { category: "soda", nameTH: "บลูเบอรี่โซดา", nameEN: "Blueberry Soda", img: "https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?w=200&auto=format&fit=crop&q=60", hot: "-", iced: 25 },
+      { category: "soda", nameTH: "บ๊วยโซดา", nameEN: "Plum Soda", img: "https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?w=200&auto=format&fit=crop&q=60", hot: "-", iced: 30 },
+      { category: "soda", nameTH: "เสาวรสโซดา", nameEN: "Passion Fruit Soda", img: "https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?w=200&auto=format&fit=crop&q=60", hot: "-", iced: 25 },
+      { category: "soda", nameTH: "องุ่นโซดา", nameEN: "Grape Soda", img: "https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?w=200&auto=format&fit=crop&q=60", hot: "-", iced: 25 },
+      { category: "soda", nameTH: "เลม่อนโซดา", nameEN: "Lemon Soda", img: "https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?w=200&auto=format&fit=crop&q=60", hot: "-", iced: 25 },
+
+      // ADDITIONAL
+      { category: "additional", nameTH: "เพิ่มช็อตกาแฟ", nameEN: "Extra Shot", img: "https://images.unsplash.com/photo-151097252790b-af4f42d91dfa?w=200&auto=format&fit=crop&q=60", hot: "-", iced: 10 },
+      { category: "additional", nameTH: "บุกบราวน์ซูการ์", nameEN: "Add Konjac Brown Sugar", img: "https://images.unsplash.com/photo-1541658016709-82535e94bc69?w=200&auto=format&fit=crop&q=60", hot: "-", iced: 5 },
+      { category: "additional", nameTH: "ปั่น", nameEN: "Frappe", img: "https://images.unsplash.com/photo-1572490122747-3968b75cc699?w=200&auto=format&fit=crop&q=60", hot: "-", iced: 5 }
     ];
 
     const i18n = {
@@ -563,12 +617,18 @@ Changelog: Dynamic Grid Menu UI with Category Tabs, Local JSON Menu Data, idToke
         const hotClass = item.hot === "-" ? "price-val dash" : "price-val";
         const icedClass = item.iced === "-" ? "price-val dash" : "price-val";
 
-        menuHtml += `
-          <div class="menu-card-item">
-            <div class="menu-icon">${item.icon}</div>
-            <div class="menu-name-th">${nameToDisplay}</div>
-            <div class="menu-name-en">${subNameToDisplay}</div>
-            
+        let priceBoxHtml = "";
+        if (item.category === "additional") {
+          priceBoxHtml = `
+            <div class="price-box" style="justify-content: center;">
+              <div class="price-item">
+                <div class="price-label">${globalLang === "EN" ? "PRICE" : "ราคา"}</div>
+                <div class="price-val">+${item.iced}</div>
+              </div>
+            </div>
+          `;
+        } else {
+          priceBoxHtml = `
             <div class="price-box">
               <div class="price-item">
                 <div class="price-label">${t.lblHot}</div>
@@ -579,6 +639,15 @@ Changelog: Dynamic Grid Menu UI with Category Tabs, Local JSON Menu Data, idToke
                 <div class="${icedClass}">${item.iced}</div>
               </div>
             </div>
+          `;
+        }
+
+        menuHtml += `
+          <div class="menu-card-item">
+            <img class="menu-image" src="${item.img || 'https://via.placeholder.com/150'}" alt="${nameToDisplay}" onerror="this.src='https://via.placeholder.com/150'">
+            <div class="menu-name-th">${nameToDisplay}</div>
+            <div class="menu-name-en">${subNameToDisplay}</div>
+            ${priceBoxHtml}
           </div>
         `;
       });
