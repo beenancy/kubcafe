@@ -587,25 +587,29 @@
             </div>
             
             <!-- Price Settings Section -->
-            <div style="border-top: 1px dashed #eae5d9; padding-top: 10px;">
-              <label style="font-size: 11px; color: var(--text-muted); font-weight: bold; display: block; margin-bottom: 6px;">💰 จัดการราคาเครื่องดื่ม</label>
-              <div style="display: flex; gap: 8px; align-items: center;">
+            <div style="border-top: 1px dashed #eae5d9; padding-top: 10px; margin-top: 8px;">
+              <label style="font-size: 11px; color: var(--text-muted); font-weight: bold; display: block; margin-bottom: 6px;">💰 จัดการราคาเครื่องดื่ม (พิมพ์แล้วกด Enter บันทึกได้เลย)</label>
+              
+              <!-- Inputs Row -->
+              <div style="display: flex; gap: 8px; margin-bottom: 8px;">
                 ${item.hot !== '-' ? `
                   <div style="flex: 1;">
                     <div style="font-size: 10px; color: #888; text-align: center; margin-bottom: 2px;">🔥 ร้อน (ปกติ ${item.hot})</div>
-                    <input type="text" class="menu-text-input" id="price-hot-${item.nameEN}" value="${currentHotPrice}" style="text-align: center; padding: 6px 4px; font-size: 12px; font-weight: bold;">
+                    <input type="text" class="menu-text-input" id="price-hot-${item.nameEN}" value="${currentHotPrice}" style="text-align: center; padding: 6px 4px; font-size: 12px; font-weight: bold;" onkeydown="if(event.key === 'Enter') saveMenuPrice('${item.nameEN}')">
                   </div>
                 ` : ''}
                 ${item.iced !== '-' ? `
                   <div style="flex: 1;">
                     <div style="font-size: 10px; color: #888; text-align: center; margin-bottom: 2px;">❄️ เย็น/ปั่น (ปกติ ${item.iced})</div>
-                    <input type="text" class="menu-text-input" id="price-iced-${item.nameEN}" value="${currentIcedPrice}" style="text-align: center; padding: 6px 4px; font-size: 12px; font-weight: bold;">
+                    <input type="text" class="menu-text-input" id="price-iced-${item.nameEN}" value="${currentIcedPrice}" style="text-align: center; padding: 6px 4px; font-size: 12px; font-weight: bold;" onkeydown="if(event.key === 'Enter') saveMenuPrice('${item.nameEN}')">
                   </div>
                 ` : ''}
-                <div style="display: flex; align-items: flex-end; gap: 4px; padding-top: 16px;">
-                  <button class="btn-save-img" style="background: #5E503F; padding: 7px 10px; font-size: 11px; flex: none;" onclick="saveMenuPrice('${item.nameEN}')" title="บันทึกราคา">💾 บันทึกราคา</button>
-                  ${hasCustomPrice ? '<button class="btn-reset-img" style="flex:none; width:30px; padding:7px 0; display:flex; justify-content:center; align-items:center;" onclick="resetMenuPrice(\'' + item.nameEN + '\')" title="ล้างราคา">🗑️</button>' : ''}
-                </div>
+              </div>
+
+              <!-- Buttons Row -->
+              <div style="display: flex; gap: 6px; justify-content: flex-end;">
+                <button class="btn-save-img" style="background: #5E503F; padding: 6px 12px; font-size: 11px;" onclick="saveMenuPrice('${item.nameEN}')">💾 บันทึกราคา</button>
+                ${hasCustomPrice ? `<button class="btn-reset-img" style="flex:none; width:30px; padding:6px 0; display:flex; justify-content:center; align-items:center;" onclick="resetMenuPrice(\'' + item.nameEN + '\')" title="ล้างราคา">🗑️</button>` : ''}
               </div>
             </div>
           </div>
