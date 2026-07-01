@@ -577,7 +577,7 @@
                 <input type="file" accept="image/*" style="display:none;" onchange="handleImageUpload(event, '${item.nameEN}')">
               </label>
               <button class="btn-save-img" onclick="saveMenuImage('${item.nameEN}')">💾 บันทึก</button>
-              ${customUrl ? \`<button class="btn-reset-img" style="flex:none; width:40px; padding:0; display:flex; justify-content:center; align-items:center;" onclick="resetMenuImage('\${item.nameEN}')" title="ล้างรูปภาพ">🗑️</button>\` : ''}
+              ${customUrl ? '<button class="btn-reset-img" style="flex:none; width:40px; padding:0; display:flex; justify-content:center; align-items:center;" onclick="resetMenuImage(\'' + item.nameEN + '\')" title="ล้างรูปภาพ">🗑️</button>' : ''}
             </div>
           </div>
         `;
