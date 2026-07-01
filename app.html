@@ -356,15 +356,26 @@
       overflow: hidden; 
       border: none !important;
     }
+    .custom-swal-popup .swal2-actions {
+      display: flex !important;
+      flex-direction: column !important;
+      align-items: stretch !important;
+      width: 100% !important;
+      gap: 10px !important;
+      margin-top: 1.5em !important;
+    }
     .swal-btn-confirm { 
+      order: 1 !important;
+      width: 100% !important;
+      box-sizing: border-box !important;
       font-size: 14px !important; 
-      padding: 12px 28px !important; 
+      padding: 13px 28px !important; 
       border-radius: 50px !important; 
       font-weight: 700; 
       background-color: var(--matcha-dark) !important; 
       color: #ffffff !important; 
       border: none !important; 
-      margin: 0 6px !important; 
+      margin: 0 !important; 
       cursor: pointer; 
       box-shadow: 
         inset 2px 2px 4px rgba(255, 255, 255, 0.4), 
@@ -379,14 +390,17 @@
         inset -4px -4px 8px rgba(255, 255, 255, 0.2) !important; 
     }
     .swal-btn-cancel { 
+      order: 2 !important;
+      width: 100% !important;
+      box-sizing: border-box !important;
       font-size: 14px !important; 
-      padding: 11px 27px !important; 
+      padding: 12px 27px !important; 
       border-radius: 50px !important; 
       font-weight: 700; 
       background-color: transparent !important; 
       color: var(--text-main) !important; 
       border: 1px solid rgba(74, 63, 53, 0.2) !important; 
-      margin: 0 6px !important; 
+      margin: 0 !important; 
       cursor: pointer; 
       transition: all 0.2s; 
     }
