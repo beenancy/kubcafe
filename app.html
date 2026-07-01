@@ -725,21 +725,31 @@
         globalUserId = profile.userId; globalUserName = profile.displayName;
         document.getElementById('userProfilePic').src = profile.pictureUrl || "https://via.placeholder.com/70";
 
-        // ☕ Fetch custom menu images from RTDB to override default placeholders
+        // ☕ Fetch custom menu configuration (images and prices) from RTDB
         try {
-          const res = await fetch('https://kub-cafe-pos-default-rtdb.asia-southeast1.firebasedatabase.app/pos_display/custom_menu_images.json');
+          const res = await fetch('https://kub-cafe-pos-default-rtdb.asia-southeast1.firebasedatabase.app/pos_display.json');
           if (res.ok) {
-            const customImages = await res.json();
-            if (customImages) {
+            const config = await res.json();
+            if (config) {
+              const customImages = config.custom_menu_images || {};
+              const customPrices = config.custom_menu_prices || {};
+              
               menuData.forEach(item => {
+                // Apply custom images
                 if (customImages[item.nameEN]) {
                   item.img = customImages[item.nameEN];
+                }
+                // Apply custom prices
+                if (customPrices[item.nameEN]) {
+                  const cp = customPrices[item.nameEN];
+                  if (cp.hot !== undefined) item.hot = cp.hot;
+                  if (cp.iced !== undefined) item.iced = cp.iced;
                 }
               });
             }
           }
         } catch (e) {
-          console.error("Failed to load custom menu images:", e);
+          console.error("Failed to load custom menu configuration:", e);
         }
 
         const currentUrl = window.location.href.toLowerCase();

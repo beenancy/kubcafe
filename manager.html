@@ -453,87 +453,81 @@
     }
 
     let customMenuImages = {};
+    let customMenuPrices = {};
     let activeMenuCategory = 'coffee';
 
     const menuItems = [
-      // COFFEE
-      { category: "coffee", nameTH: "เอสเพรสโซ่", nameEN: "Espresso", defaultImg: "https://images.unsplash.com/photo-151097252790b-af4f42d91dfa?w=200&auto=format&fit=crop&q=60" },
-      { category: "coffee", nameTH: "คาปูชิโน่", nameEN: "Cappuccino", defaultImg: "https://images.unsplash.com/photo-1534778101976-62847782c213?w=200&auto=format&fit=crop&q=60" },
-      { category: "coffee", nameTH: "ลาเต้", nameEN: "Latte", defaultImg: "https://images.unsplash.com/photo-1541167760496-1628856ab772?w=200&auto=format&fit=crop&q=60" },
-      { category: "coffee", nameTH: "มอคค่า", nameEN: "Mocca", defaultImg: "https://images.unsplash.com/photo-1578314675249-a6910f80cc4e?w=200&auto=format&fit=crop&q=60" },
-      { category: "coffee", nameTH: "อเมริกาโน่", nameEN: "Americano", defaultImg: "https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=200&auto=format&fit=crop&q=60" },
-      { category: "coffee", nameTH: "มัทฉะกาแฟ", nameEN: "Matcha Coffee", defaultImg: "https://images.unsplash.com/photo-1536256263959-770b48d82b0a?w=200&auto=format&fit=crop&q=60" },
-      { category: "coffee", nameTH: "กาแฟส้ม", nameEN: "Americano Orange", defaultImg: "https://images.unsplash.com/photo-1622467827417-bbe2237067a9?w=200&auto=format&fit=crop&q=60" },
-      { category: "coffee", nameTH: "อเมริกาโน่น้ำผึ้ง", nameEN: "Americano Honey", defaultImg: "https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=200&auto=format&fit=crop&q=60" },
-      { category: "coffee", nameTH: "อเมริกาโน่น้ำผึ้งมะนาว", nameEN: "Americano Honey Lemon", defaultImg: "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=200&auto=format&fit=crop&q=60" },
-      { category: "coffee", nameTH: "อเมริกาโน่มะพร้าว", nameEN: "Americano Coconut", defaultImg: "https://images.unsplash.com/photo-1541167760496-1628856ab772?w=200&auto=format&fit=crop&q=60" },
-      { category: "coffee", nameTH: "มัคคิอาโต้", nameEN: "Macchiato", defaultImg: "https://images.unsplash.com/photo-1485808191679-5f86510681a2?w=200&auto=format&fit=crop&q=60" },
-      { category: "coffee", nameTH: "คาราเมลลาเต้", nameEN: "Caramel Latte", defaultImg: "https://images.unsplash.com/photo-1572286258217-40142c1c6a70?w=200&auto=format&fit=crop&q=60" },
-
-      // TEA
-      { category: "tea", nameTH: "ชาไทย", nameEN: "Thai Tea", defaultImg: "images/thai_tea_iced.jpg" },
-      { category: "tea", nameTH: "ชาเขียว", nameEN: "Green Tea", defaultImg: "images/green_tea_iced.jpg" },
-      { category: "tea", nameTH: "ชาพีช", nameEN: "Peach Tea", defaultImg: "https://images.unsplash.com/photo-1556679343-c7306c1976bc?w=200&auto=format&fit=crop&q=60" },
-      { category: "tea", nameTH: "ชาเขียวมะนาว", nameEN: "Lemon Green Tea", defaultImg: "images/lemon_tea_iced.jpg" },
-      { category: "tea", nameTH: "ชามะลิ", nameEN: "Jasmine Tea", defaultImg: "images/jasmine_tea_iced.jpg" },
-      { category: "tea", nameTH: "ชาเขียวน้ำผึ้งมะนาว", nameEN: "Honey Lemon Green Tea", defaultImg: "images/matcha_honey_lemon_iced.jpg" },
-      { category: "tea", nameTH: "ชานมไต้หวัน", nameEN: "Taiwan Milk Tea", defaultImg: "images/taiwan_milk_tea_iced.jpg" },
-      { category: "tea", nameTH: "ชาไทยลาเต้", nameEN: "Thai Tea Latte", defaultImg: "images/thai_tea_latte_iced.jpg" },
-      { category: "tea", nameTH: "ชาเขียวลาเต้", nameEN: "Green Tea Latte", defaultImg: "images/green_tea_latte_iced.jpg" },
-
-      // NON-COFFEE
-      { category: "non-coffee", nameTH: "โกโก้", nameEN: "Cocoa", defaultImg: "images/cocoa_iced.jpg" },
-      { category: "non-coffee", nameTH: "มัทฉะนมสด", nameEN: "Matcha Milk", defaultImg: "images/matcha_milk_iced.jpg" },
-      { category: "non-coffee", nameTH: "มัทฉะวนิลา", nameEN: "Vanilla Matcha", defaultImg: "images/matcha_vanilla_iced.jpg" },
-      { category: "non-coffee", nameTH: "มัทฉะคาราเมล", nameEN: "Caramel Matcha", defaultImg: "images/cocoa_caramel_milk_iced.jpg" },
-      { category: "non-coffee", nameTH: "มัทฉะน้ำส้ม", nameEN: "Orange Matcha", defaultImg: "images/matcha_orange_iced.jpg" },
-      { category: "non-coffee", nameTH: "มัทฉะน้ำผึ้งมะนาว", nameEN: "Honey Lemon Matcha", defaultImg: "images/matcha_honey_lemon_iced.jpg" },
-      { category: "non-coffee", nameTH: "นมสด", nameEN: "Iced Fresh Milk", defaultImg: "images/fresh_milk_iced.jpg" },
-      { category: "non-coffee", nameTH: "นมสดน้ำผึ้ง", nameEN: "Honey Milk", defaultImg: "images/fresh_milk_iced.jpg" },
-      { category: "non-coffee", nameTH: "นมสดคาราเมล", nameEN: "Caramel Milk", defaultImg: "images/caramel_milk_iced.jpg" },
-      { category: "non-coffee", nameTH: "นมสดวนิลา", nameEN: "Vanilla Milk", defaultImg: "images/fresh_milk_iced.jpg" },
-      { category: "non-coffee", nameTH: "นมชมพู", nameEN: "Iced Pink Milk", defaultImg: "images/pink_milk_iced.jpg" },
-      { category: "non-coffee", nameTH: "นมสดสตรอเบอรี่", nameEN: "Strawberry Milk", defaultImg: "images/strawberry_milk_iced.jpg" },
-      { category: "non-coffee", nameTH: "นมสดสตรอเบอรี่มัทฉะ", nameEN: "Strawberry Matcha Milk", defaultImg: "images/strawberry_matcha_milk_special.jpg" },
-      { category: "non-coffee", nameTH: "นมสดบราวน์ซูการ์", nameEN: "Brown Sugar Milk", defaultImg: "images/caramel_milk_iced.jpg" },
-      { category: "non-coffee", nameTH: "นมสดเผือก", nameEN: "Taro Fresh Milk", defaultImg: "images/taro_milk_iced.jpg" },
-      { category: "non-coffee", nameTH: "นมสดมิ้นท์", nameEN: "Mint Fresh Milk", defaultImg: "images/mint_milk_iced.jpg" },
-      { category: "non-coffee", nameTH: "โอรีโอ้นมสดปั่น", nameEN: "Oreo Frappe", defaultImg: "images/oreo_frappe.jpg" },
-      { category: "non-coffee", nameTH: "ไมโล", nameEN: "Milo", defaultImg: "images/milo_iced.jpg" },
-      { category: "non-coffee", nameTH: "โอวัลติน", nameEN: "Ovaltine", defaultImg: "images/ovaltine_iced.jpg" },
-      { category: "non-coffee", nameTH: "น้ำบ๊วย", nameEN: "Iced Plum Juice", defaultImg: "images/red_soda_iced.jpg" },
-
-      // SODA
-      { category: "soda", nameTH: "บลูฮาวายโซดา", nameEN: "Blue Hawaii Soda", defaultImg: "images/blue_hawaii_soda_iced.jpg" },
-      { category: "soda", nameTH: "พีชโซดา", nameEN: "Peach Soda", defaultImg: "https://images.unsplash.com/photo-1556679343-c7306c1976bc?w=200&auto=format&fit=crop&q=60" },
-      { category: "soda", nameTH: "สตรอเบอรี่โซดา", nameEN: "Strawberry Soda", defaultImg: "images/strawberry_soda_iced.jpg" },
-      { category: "soda", nameTH: "กีวี่โซดา", nameEN: "Kiwi Soda", defaultImg: "images/kiwi_soda_iced.jpg" },
-      { category: "soda", nameTH: "ลิ้นจี่โซดา", nameEN: "Lychee Soda", defaultImg: "images/lychee_soda_iced.jpg" },
-      { category: "soda", nameTH: "น้ำผึ้งมะนาวโซดา", nameEN: "Honey Lemon Soda", defaultImg: "images/honey_lemon_soda_iced.jpg" },
-      { category: "soda", nameTH: "แอปเปิ้ลเขียวโซดา", nameEN: "Green Apple Soda", defaultImg: "images/kiwi_soda_iced.jpg" },
-      { category: "soda", nameTH: "บลูเบอรี่โซดา", nameEN: "Blueberry Soda", defaultImg: "images/blueberry_soda_iced.jpg" },
-      { category: "soda", nameTH: "บ๊วยโซดา", nameEN: "Plum Soda", defaultImg: "images/red_soda_iced.jpg" },
-      { category: "soda", nameTH: "เสาวรสโซดา", nameEN: "Passion Fruit Soda", defaultImg: "images/honey_lemon_soda_iced.jpg" },
-      { category: "soda", nameTH: "องุ่นโซดา", nameEN: "Grape Soda", defaultImg: "images/blueberry_soda_iced.jpg" },
-      { category: "soda", nameTH: "เลม่อนโซดา", nameEN: "Lemon Soda", defaultImg: "images/lemon_soda_iced.jpg" },
-
-      // ADDITIONAL
-      { category: "additional", nameTH: "เพิ่มช็อตกาแฟ", nameEN: "Extra Shot", defaultImg: "https://images.unsplash.com/photo-151097252790b-af4f42d91dfa?w=200&auto=format&fit=crop&q=60" },
-      { category: "additional", nameTH: "บุกบราวน์ซูการ์", nameEN: "Add Konjac Brown Sugar", defaultImg: "images/oreo_milk_iced.jpg" },
-      { category: "additional", nameTH: "ปั่น", nameEN: "Frappe", defaultImg: "images/oreo_frappe.jpg" }
+      { category: "coffee", nameTH: "เอสเพรสโซ่", nameEN: "Espresso", defaultImg: "https://images.unsplash.com/photo-151097252790b-af4f42d91dfa?w=200&auto=format&fit=crop&q=60", hot: 40, iced: 45 },
+      { category: "coffee", nameTH: "คาปูชิโน่", nameEN: "Cappuccino", defaultImg: "https://images.unsplash.com/photo-1534778101976-62847782c213?w=200&auto=format&fit=crop&q=60", hot: 40, iced: 45 },
+      { category: "coffee", nameTH: "ลาเต้", nameEN: "Latte", defaultImg: "https://images.unsplash.com/photo-1541167760496-1628856ab772?w=200&auto=format&fit=crop&q=60", hot: 40, iced: 45 },
+      { category: "coffee", nameTH: "มอคค่า", nameEN: "Mocca", defaultImg: "https://images.unsplash.com/photo-1578314675249-a6910f80cc4e?w=200&auto=format&fit=crop&q=60", hot: 40, iced: 45 },
+      { category: "coffee", nameTH: "อเมริกาโน่", nameEN: "Americano", defaultImg: "https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=200&auto=format&fit=crop&q=60", hot: 40, iced: 45 },
+      { category: "coffee", nameTH: "มัทฉะกาแฟ", nameEN: "Matcha Coffee", defaultImg: "https://images.unsplash.com/photo-1536256263959-770b48d82b0a?w=200&auto=format&fit=crop&q=60", hot: "-", iced: 55 },
+      { category: "coffee", nameTH: "กาแฟส้ม", nameEN: "Americano Orange", defaultImg: "https://images.unsplash.com/photo-1622467827417-bbe2237067a9?w=200&auto=format&fit=crop&q=60", hot: "-", iced: 50 },
+      { category: "coffee", nameTH: "อเมริกาโน่น้ำผึ้ง", nameEN: "Americano Honey", defaultImg: "https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=200&auto=format&fit=crop&q=60", hot: 45, iced: 50 },
+      { category: "coffee", nameTH: "อเมริกาโน่น้ำผึ้งมะนาว", nameEN: "Americano Honey Lemon", defaultImg: "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=200&auto=format&fit=crop&q=60", hot: 45, iced: 50 },
+      { category: "coffee", nameTH: "อเมริกาโน่มะพร้าว", nameEN: "Americano Coconut", defaultImg: "https://images.unsplash.com/photo-1541167760496-1628856ab772?w=200&auto=format&fit=crop&q=60", hot: "-", iced: 50 },
+      { category: "coffee", nameTH: "มัคคิอาโต้", nameEN: "Macchiato", defaultImg: "https://images.unsplash.com/photo-1485808191679-5f86510681a2?w=200&auto=format&fit=crop&q=60", hot: "-", iced: 50 },
+      { category: "coffee", nameTH: "คาราเมลลาเต้", nameEN: "Caramel Latte", defaultImg: "https://images.unsplash.com/photo-1572286258217-40142c1c6a70?w=200&auto=format&fit=crop&q=60", hot: "-", iced: 50 },
+      { category: "tea", nameTH: "ชาไทย", nameEN: "Thai Tea", defaultImg: "images/thai_tea_iced.jpg", hot: 30, iced: 35 },
+      { category: "tea", nameTH: "ชาเขียว", nameEN: "Green Tea", defaultImg: "images/green_tea_iced.jpg", hot: 30, iced: 35 },
+      { category: "tea", nameTH: "ชาพีช", nameEN: "Peach Tea", defaultImg: "https://images.unsplash.com/photo-1556679343-c7306c1976bc?w=200&auto=format&fit=crop&q=60", hot: 30, iced: 35 },
+      { category: "tea", nameTH: "ชาเขียวมะนาว", nameEN: "Lemon Green Tea", defaultImg: "images/lemon_tea_iced.jpg", hot: 30, iced: 35 },
+      { category: "tea", nameTH: "ชามะลิ", nameEN: "Jasmine Tea", defaultImg: "images/jasmine_tea_iced.jpg", hot: 30, iced: 35 },
+      { category: "tea", nameTH: "ชาเขียวน้ำผึ้งมะนาว", nameEN: "Honey Lemon Green Tea", defaultImg: "images/matcha_honey_lemon_iced.jpg", hot: 35, iced: 40 },
+      { category: "tea", nameTH: "ชานมไต้หวัน", nameEN: "Taiwan Milk Tea", defaultImg: "images/taiwan_milk_tea_iced.jpg", hot: "-", iced: 35 },
+      { category: "tea", nameTH: "ชาไทยลาเต้", nameEN: "Thai Tea Latte", defaultImg: "images/thai_tea_latte_iced.jpg", hot: "-", iced: 35 },
+      { category: "tea", nameTH: "ชาเขียวลาเต้", nameEN: "Green Tea Latte", defaultImg: "images/green_tea_latte_iced.jpg", hot: "-", iced: 35 },
+      { category: "non-coffee", nameTH: "โกโก้", nameEN: "Cocoa", defaultImg: "images/cocoa_iced.jpg", hot: 35, iced: 40 },
+      { category: "non-coffee", nameTH: "มัทฉะนมสด", nameEN: "Matcha Milk", defaultImg: "images/matcha_milk_iced.jpg", hot: 40, iced: 45 },
+      { category: "non-coffee", nameTH: "มัทฉะวนิลา", nameEN: "Vanilla Matcha", defaultImg: "images/matcha_vanilla_iced.jpg", hot: 45, iced: 50 },
+      { category: "non-coffee", nameTH: "มัทฉะคาราเมล", nameEN: "Caramel Matcha", defaultImg: "images/cocoa_caramel_milk_iced.jpg", hot: 45, iced: 50 },
+      { category: "non-coffee", nameTH: "มัทฉะน้ำส้ม", nameEN: "Orange Matcha", defaultImg: "images/matcha_orange_iced.jpg", hot: "-", iced: 50 },
+      { category: "non-coffee", nameTH: "มัทฉะน้ำผึ้งมะนาว", nameEN: "Honey Lemon Matcha", defaultImg: "images/matcha_honey_lemon_iced.jpg", hot: 45, iced: 50 },
+      { category: "non-coffee", nameTH: "นมสด", nameEN: "Iced Fresh Milk", defaultImg: "images/fresh_milk_iced.jpg", hot: 30, iced: 30 },
+      { category: "non-coffee", nameTH: "นมสดน้ำผึ้ง", nameEN: "Honey Milk", defaultImg: "images/fresh_milk_iced.jpg", hot: 35, iced: 35 },
+      { category: "non-coffee", nameTH: "นมสดคาราเมล", nameEN: "Caramel Milk", defaultImg: "images/caramel_milk_iced.jpg", hot: 35, iced: 35 },
+      { category: "non-coffee", nameTH: "นมสดวนิลา", nameEN: "Vanilla Milk", defaultImg: "images/fresh_milk_iced.jpg", hot: 35, iced: 35 },
+      { category: "non-coffee", nameTH: "นมชมพู", nameEN: "Iced Pink Milk", defaultImg: "images/pink_milk_iced.jpg", hot: "-", iced: 35 },
+      { category: "non-coffee", nameTH: "นมสดสตรอเบอรี่", nameEN: "Strawberry Milk", defaultImg: "images/strawberry_milk_iced.jpg", hot: "-", iced: 45 },
+      { category: "non-coffee", nameTH: "นมสดสตรอเบอรี่มัทฉะ", nameEN: "Strawberry Matcha Milk", defaultImg: "images/strawberry_matcha_milk_special.jpg", hot: "-", iced: 50 },
+      { category: "non-coffee", nameTH: "นมสดบราวน์ซูการ์", nameEN: "Brown Sugar Milk", defaultImg: "images/caramel_milk_iced.jpg", hot: "-", iced: 35 },
+      { category: "non-coffee", nameTH: "นมสดเผือก", nameEN: "Taro Fresh Milk", defaultImg: "images/taro_milk_iced.jpg", hot: "-", iced: 35 },
+      { category: "non-coffee", nameTH: "นมสดมิ้นท์", nameEN: "Mint Fresh Milk", defaultImg: "images/mint_milk_iced.jpg", hot: "-", iced: 35 },
+      { category: "non-coffee", nameTH: "โอรีโอ้นมสดปั่น", nameEN: "Oreo Frappe", defaultImg: "images/oreo_frappe.jpg", hot: "-", iced: 45 },
+      { category: "non-coffee", nameTH: "ไมโล", nameEN: "Milo", defaultImg: "images/milo_iced.jpg", hot: 30, iced: 35 },
+      { category: "non-coffee", nameTH: "โอวัลติน", nameEN: "Ovaltine", defaultImg: "images/ovaltine_iced.jpg", hot: 30, iced: 35 },
+      { category: "non-coffee", nameTH: "น้ำบ๊วย", nameEN: "Iced Plum Juice", defaultImg: "images/red_soda_iced.jpg", hot: "-", iced: 30 },
+      { category: "soda", nameTH: "บลูฮาวายโซดา", nameEN: "Blue Hawaii Soda", defaultImg: "images/blue_hawaii_soda_iced.jpg", hot: "-", iced: 25 },
+      { category: "soda", nameTH: "พีชโซดา", nameEN: "Peach Soda", defaultImg: "https://images.unsplash.com/photo-1556679343-c7306c1976bc?w=200&auto=format&fit=crop&q=60", hot: "-", iced: 30 },
+      { category: "soda", nameTH: "สตรอเบอรี่โซดา", nameEN: "Strawberry Soda", defaultImg: "images/strawberry_soda_iced.jpg", hot: "-", iced: 25 },
+      { category: "soda", nameTH: "กีวี่โซดา", nameEN: "Kiwi Soda", defaultImg: "images/kiwi_soda_iced.jpg", hot: "-", iced: 25 },
+      { category: "soda", nameTH: "ลิ้นจี่โซดา", nameEN: "Lychee Soda", defaultImg: "images/lychee_soda_iced.jpg", hot: "-", iced: 25 },
+      { category: "soda", nameTH: "น้ำผึ้งมะนาวโซดา", nameEN: "Honey Lemon Soda", defaultImg: "images/honey_lemon_soda_iced.jpg", hot: "-", iced: 35 },
+      { category: "soda", nameTH: "แอปเปิ้ลเขียวโซดา", nameEN: "Green Apple Soda", defaultImg: "images/kiwi_soda_iced.jpg", hot: "-", iced: 25 },
+      { category: "soda", nameTH: "บลูเบอรี่โซดา", nameEN: "Blueberry Soda", defaultImg: "images/blueberry_soda_iced.jpg", hot: "-", iced: 25 },
+      { category: "soda", nameTH: "บ๊วยโซดา", nameEN: "Plum Soda", defaultImg: "images/red_soda_iced.jpg", hot: "-", iced: 30 },
+      { category: "soda", nameTH: "เสาวรสโซดา", nameEN: "Passion Fruit Soda", defaultImg: "images/honey_lemon_soda_iced.jpg", hot: "-", iced: 25 },
+      { category: "soda", nameTH: "องุ่นโซดา", nameEN: "Grape Soda", defaultImg: "images/blueberry_soda_iced.jpg", hot: "-", iced: 25 },
+      { category: "soda", nameTH: "เลม่อนโซดา", nameEN: "Lemon Soda", defaultImg: "images/lemon_soda_iced.jpg", hot: "-", iced: 25 },
+      { category: "additional", nameTH: "เพิ่มช็อตกาแฟ", nameEN: "Extra Shot", defaultImg: "https://images.unsplash.com/photo-151097252790b-af4f42d91dfa?w=200&auto=format&fit=crop&q=60", hot: "-", iced: 10 },
+      { category: "additional", nameTH: "บุกบราวน์ซูการ์", nameEN: "Add Konjac Brown Sugar", defaultImg: "images/oreo_milk_iced.jpg", hot: "-", iced: 5 },
+      { category: "additional", nameTH: "ปั่น", nameEN: "Frappe", defaultImg: "images/oreo_frappe.jpg", hot: "-", iced: 5 }
     ];
 
     async function loadMenuManagement() {
       const grid = document.getElementById('menu-management-grid');
-      grid.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding:40px; color:var(--text-muted);">กำลังโหลดข้อมูลรูปภาพ...</div>';
+      grid.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding:40px; color:var(--text-muted);">กำลังโหลดข้อมูลรูปภาพและราคา...</div>';
       
       try {
-        const res = await fetch('https://kub-cafe-pos-default-rtdb.asia-southeast1.firebasedatabase.app/pos_display/custom_menu_images.json');
-        if (res.ok) {
-          customMenuImages = await res.json() || {};
-        }
+        const [imgRes, priceRes] = await Promise.all([
+          fetch('https://kub-cafe-pos-default-rtdb.asia-southeast1.firebasedatabase.app/pos_display/custom_menu_images.json').then(r => r.json()),
+          fetch('https://kub-cafe-pos-default-rtdb.asia-southeast1.firebasedatabase.app/pos_display/custom_menu_prices.json').then(r => r.json())
+        ]);
+        customMenuImages = imgRes || {};
+        customMenuPrices = priceRes || {};
       } catch (err) {
-        console.error('Failed to load custom images:', err);
+        console.error('Failed to load custom data:', err);
       }
       
       renderMenuManagementGrid();
@@ -556,6 +550,11 @@
         const customUrl = customMenuImages[item.nameEN] || '';
         const currentImg = customUrl || item.defaultImg;
         
+        const customPriceObj = customMenuPrices[item.nameEN] || {};
+        const currentHotPrice = customPriceObj.hot !== undefined ? customPriceObj.hot : item.hot;
+        const currentIcedPrice = customPriceObj.iced !== undefined ? customPriceObj.iced : item.iced;
+        const hasCustomPrice = customPriceObj.hot !== undefined || customPriceObj.iced !== undefined;
+        
         const card = document.createElement('div');
         card.className = 'menu-card';
         card.innerHTML = `
@@ -564,20 +563,50 @@
             <div class="menu-card-details">
               <h3 class="menu-card-title">${item.nameTH}</h3>
               <p class="menu-card-subtitle">${item.nameEN}</p>
-              ${customUrl ? '<span style="font-size:10px; color:#27ae60; font-weight:bold; background:#e8f8f5; padding:2px 6px; border-radius:4px; margin-top:4px; display:inline-block;">✓ รูปภาพกำหนดเอง</span>' : ''}
+              <div style="margin-top: 4px; display: flex; gap: 4px; flex-wrap: wrap;">
+                ${customUrl ? '<span style="font-size:10px; color:#27ae60; font-weight:bold; background:#e8f8f5; padding:2px 6px; border-radius:4px; display:inline-block;">✓ รูปกำหนดเอง</span>' : ''}
+                ${hasCustomPrice ? '<span style="font-size:10px; color:#2980b9; font-weight:bold; background:#eaf2f8; padding:2px 6px; border-radius:4px; display:inline-block;">✓ ราคากำหนดเอง</span>' : ''}
+              </div>
             </div>
           </div>
           <div class="menu-card-actions">
-            <div class="menu-input-group">
-              <input type="text" class="menu-text-input" id="url-input-${item.nameEN}" placeholder="วางลิงก์รูปภาพ หรืออัปโหลดรูป..." value="${customUrl}">
+            <!-- Image Settings Section -->
+            <div style="margin-bottom: 12px;">
+              <label style="font-size: 11px; color: var(--text-muted); font-weight: bold; display: block; margin-bottom: 4px;">🔗 ลิงก์ / อัปโหลดรูปภาพ</label>
+              <div class="menu-input-group" style="margin-bottom: 6px;">
+                <input type="text" class="menu-text-input" id="url-input-${item.nameEN}" placeholder="วางลิงก์รูปภาพ หรืออัปโหลดรูป..." value="${customUrl}">
+              </div>
+              <div style="display: flex; gap: 6px; align-items: center;">
+                <label class="upload-btn-label" style="flex: 1; padding: 6px 10px; font-size: 11px;">
+                  📷 เลือกรูป
+                  <input type="file" accept="image/*" style="display:none;" onchange="handleImageUpload(event, '${item.nameEN}')">
+                </label>
+                <button class="btn-save-img" style="padding: 6px 10px; font-size: 11px;" onclick="saveMenuImage('${item.nameEN}')">💾 บันทึกรูป</button>
+                ${customUrl ? '<button class="btn-reset-img" style="flex:none; width:30px; padding:6px 0; display:flex; justify-content:center; align-items:center;" onclick="resetMenuImage(\'' + item.nameEN + '\')" title="ล้างรูปภาพ">🗑️</button>' : ''}
+              </div>
             </div>
-            <div style="display: flex; gap: 8px; align-items: center;">
-              <label class="upload-btn-label" style="flex: 1;">
-                📷 เลือกรูปภาพ
-                <input type="file" accept="image/*" style="display:none;" onchange="handleImageUpload(event, '${item.nameEN}')">
-              </label>
-              <button class="btn-save-img" onclick="saveMenuImage('${item.nameEN}')">💾 บันทึก</button>
-              ${customUrl ? '<button class="btn-reset-img" style="flex:none; width:40px; padding:0; display:flex; justify-content:center; align-items:center;" onclick="resetMenuImage(\'' + item.nameEN + '\')" title="ล้างรูปภาพ">🗑️</button>' : ''}
+            
+            <!-- Price Settings Section -->
+            <div style="border-top: 1px dashed #eae5d9; padding-top: 10px;">
+              <label style="font-size: 11px; color: var(--text-muted); font-weight: bold; display: block; margin-bottom: 6px;">💰 จัดการราคาเครื่องดื่ม</label>
+              <div style="display: flex; gap: 8px; align-items: center;">
+                ${item.hot !== '-' ? `
+                  <div style="flex: 1;">
+                    <div style="font-size: 10px; color: #888; text-align: center; margin-bottom: 2px;">🔥 ร้อน (ปกติ ${item.hot})</div>
+                    <input type="text" class="menu-text-input" id="price-hot-${item.nameEN}" value="${currentHotPrice}" style="text-align: center; padding: 6px 4px; font-size: 12px; font-weight: bold;">
+                  </div>
+                ` : ''}
+                ${item.iced !== '-' ? `
+                  <div style="flex: 1;">
+                    <div style="font-size: 10px; color: #888; text-align: center; margin-bottom: 2px;">❄️ เย็น/ปั่น (ปกติ ${item.iced})</div>
+                    <input type="text" class="menu-text-input" id="price-iced-${item.nameEN}" value="${currentIcedPrice}" style="text-align: center; padding: 6px 4px; font-size: 12px; font-weight: bold;">
+                  </div>
+                ` : ''}
+                <div style="display: flex; align-items: flex-end; gap: 4px; padding-top: 16px;">
+                  <button class="btn-save-img" style="background: #5E503F; padding: 7px 10px; font-size: 11px; flex: none;" onclick="saveMenuPrice('${item.nameEN}')" title="บันทึกราคา">💾 บันทึกราคา</button>
+                  ${hasCustomPrice ? '<button class="btn-reset-img" style="flex:none; width:30px; padding:7px 0; display:flex; justify-content:center; align-items:center;" onclick="resetMenuPrice(\'' + item.nameEN + '\')" title="ล้างราคา">🗑️</button>' : ''}
+                </div>
+              </div>
             </div>
           </div>
         `;
@@ -687,6 +716,76 @@
           }
         } catch (err) {
           Swal.fire('เกิดข้อผิดพลาด', 'ไม่สามารถลบรูปภาพได้: ' + err.message, 'error');
+        }
+      }
+    }
+
+    async function saveMenuPrice(nameEN) {
+      const item = menuItems.find(x => x.nameEN === nameEN);
+      if (!item) return;
+
+      const hotInput = document.getElementById(`price-hot-${nameEN}`);
+      const icedInput = document.getElementById(`price-iced-${nameEN}`);
+      
+      const newHot = hotInput ? hotInput.value.trim() : '-';
+      const newIced = icedInput ? icedInput.value.trim() : '-';
+      
+      const priceObj = {
+        hot: isNaN(parseInt(newHot)) ? '-' : parseInt(newHot),
+        iced: isNaN(parseInt(newIced)) ? '-' : parseInt(newIced)
+      };
+
+      Swal.fire({ title: 'กำลังบันทึกราคา...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+      
+      try {
+        const url = `https://kub-cafe-pos-default-rtdb.asia-southeast1.firebasedatabase.app/pos_display/custom_menu_prices/${nameEN}.json`;
+        const res = await fetch(url, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(priceObj)
+        });
+        
+        if (res.ok) {
+          customMenuPrices[nameEN] = priceObj;
+          Swal.fire('สำเร็จ!', `บันทึกราคาเมนู ${nameEN} เรียบร้อยแล้วครับ`, 'success');
+          renderMenuManagementGrid();
+        } else {
+          throw new Error(await res.text());
+        }
+      } catch (err) {
+        Swal.fire('เกิดข้อผิดพลาด', 'ไม่สามารถบันทึกราคาได้: ' + err.message, 'error');
+      }
+    }
+
+    async function resetMenuPrice(nameEN) {
+      const ask = await Swal.fire({
+        title: 'ยืนยันการล้างราคา?',
+        text: `คุณต้องการลบราคาที่กำหนดเองของเมนู ${nameEN} และกลับไปใช้ราคาเริ่มต้นใช่หรือไม่?`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#D32F2F',
+        cancelButtonText: 'ยกเลิก',
+        confirmButtonText: 'ใช่, ลบเลย'
+      });
+      
+      if (ask.isConfirmed) {
+        Swal.fire({ title: 'กำลังลบราคา...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+        
+        try {
+          const url = `https://kub-cafe-pos-default-rtdb.asia-southeast1.firebasedatabase.app/pos_display/custom_menu_prices/${nameEN}.json`;
+          const res = await fetch(url, {
+            method: 'DELETE'
+          });
+          
+          if (res.ok) {
+            delete customMenuPrices[nameEN];
+            Swal.fire('สำเร็จ!', `ลบราคาที่กำหนดเองของ ${nameEN} เรียบร้อยแล้วครับ`, 'success');
+            renderMenuManagementGrid();
+          } else {
+            throw new Error(await res.text());
+          }
+        } catch (err) {
+          Swal.fire('เกิดข้อผิดพลาด', 'ไม่สามารถลบราคาได้: ' + err.message, 'error');
         }
       }
     }
