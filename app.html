@@ -466,17 +466,32 @@
     .category-scroll::-webkit-scrollbar { display: none; }
     .cat-btn { background: #FFFFFF; border: none; color: var(--text-light); padding: 10px 20px; border-radius: 50px; font-size: 12px; font-weight: 700; white-space: nowrap; cursor: pointer; font-family: 'Prompt'; transition: all 0.2s ease; box-shadow: inset 2px 2px 4px #ffffff, inset -2px -2px 4px rgba(180, 170, 150, 0.15), 0 4px 8px rgba(74, 63, 53, 0.04); outline: none; }
     .cat-btn.active { background: var(--matcha-dark); color: white; box-shadow: inset 2px 2px 4px rgba(255, 255, 255, 0.4), inset -2px -2px 4px rgba(0, 0, 0, 0.15), 0 8px 16px rgba(122, 139, 98, 0.3); }
-    .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding-bottom: 15px; }
-    .menu-card-item { background: #FFFFFF; border: none; border-radius: 24px; padding: 16px 14px; box-shadow: inset 3px 3px 6px #ffffff, inset -3px -3px 6px rgba(180, 170, 150, 0.12), 0 10px 25px rgba(74, 63, 53, 0.05); display: flex; flex-direction: column; justify-content: space-between; transition: transform 0.2s ease; }
-    .menu-card-item:active { transform: scale(0.98); }
-    .menu-image { width: 100%; height: 90px; object-fit: cover; border-radius: 16px; margin-bottom: 8px; box-shadow: inset 1px 1px 3px rgba(0,0,0,0.05); }
-    .menu-name-th { font-weight: 700; font-size: 13px; color: var(--text-main); text-align: center; line-height: 1.2; margin-bottom: 2px; }
-    .menu-name-en { font-size: 10px; color: var(--text-light); text-align: center; margin-bottom: 8px; }
-    .price-box { display: flex; justify-content: space-around; background: #FAF8F5; border-radius: 14px; padding: 8px 6px; box-shadow: inset 2px 2px 4px rgba(0, 0, 0, 0.05), inset -2px -2px 4px #ffffff; }
-    .price-item { text-align: center; }
-    .price-label { font-size: 9px; color: var(--text-light); font-weight: 700; margin-bottom: 1px; letter-spacing: 0.5px; }
-    .price-val { font-size: 13px; color: var(--text-main); font-weight: 700; }
-    .price-val.dash { color: #D1D5DB; }
+    .menu-grid { display: flex; flex-direction: column; gap: 10px; padding-bottom: 20px; }
+    .menu-card-item { 
+      background: #FFFFFF; 
+      border: none; 
+      border-radius: 20px; 
+      padding: 10px 12px; 
+      box-shadow: 
+        inset 3px 3px 6px #ffffff, 
+        inset -3px -3px 6px rgba(180, 170, 150, 0.12), 
+        0 8px 20px rgba(74, 63, 53, 0.04); 
+      display: flex; 
+      align-items: center;
+      gap: 12px;
+      transition: transform 0.2s ease;
+    }
+    .menu-card-item:active { transform: scale(0.99); }
+    .menu-image { 
+      width: 60px; 
+      height: 60px; 
+      object-fit: contain; 
+      border-radius: 12px; 
+      background: #FFFFFF;
+      flex-shrink: 0;
+      border: 1px solid #F3EFEA;
+      box-shadow: inset 1px 1px 3px rgba(0,0,0,0.03);
+    }
 
 </style>
 </head>
@@ -1130,24 +1145,28 @@ function renderMenu(category, btnElement = null) {
         let priceBoxHtml = "";
         if (item.category === "additional") {
           priceBoxHtml = `
-            <div class="price-box" style="justify-content: center;">
-              <div class="price-item">
-                <div class="price-label">${globalLang === "EN" ? "PRICE" : "ราคา"}</div>
-                <div class="price-val">+${item.iced}</div>
+            <div class="price-box" style="flex-shrink: 0; display: flex; gap: 8px; background: none; box-shadow: none; padding: 0;">
+              <div class="price-item" style="background: #F0F9FF; border: 1px solid #E0F2FE; border-radius: 10px; padding: 4px 8px; min-width: 44px; text-align: center;">
+                <div class="price-label" style="color: #0284C7; font-size: 9px; font-weight: 700; margin-bottom: 1px; line-height: 1;">${globalLang === "EN" ? "PRICE" : "ราคา"}</div>
+                <div class="price-val" style="color: #0369A1; font-size: 12px; font-weight: 700; line-height: 1.2;">+${item.iced}</div>
               </div>
             </div>
           `;
         } else {
           priceBoxHtml = `
-            <div class="price-box">
-              <div class="price-item">
-                <div class="price-label">${t.lblHot}</div>
-                <div class="${hotClass}">${item.hot}</div>
-              </div>
-              <div class="price-item">
-                <div class="price-label">${t.lblIced}</div>
-                <div class="${icedClass}">${item.iced}</div>
-              </div>
+            <div class="price-box" style="flex-shrink: 0; display: flex; gap: 6px; background: none; box-shadow: none; padding: 0;">
+              ${item.hot !== '-' ? `
+                <div class="price-item" style="background: #FFF5F5; border: 1px solid #FFE3E3; border-radius: 10px; padding: 4px 6px; min-width: 38px; text-align: center;">
+                  <div class="price-label" style="color: #E53E3E; font-size: 9px; font-weight: 700; margin-bottom: 1px; line-height: 1;">${t.lblHot}</div>
+                  <div class="price-val" style="color: #C53030; font-size: 12px; font-weight: 700; line-height: 1.2;">${item.hot}</div>
+                </div>
+              ` : ''}
+              ${item.iced !== '-' ? `
+                <div class="price-item" style="background: #F0F9FF; border: 1px solid #E0F2FE; border-radius: 10px; padding: 4px 6px; min-width: 38px; text-align: center;">
+                  <div class="price-label" style="color: #0284C7; font-size: 9px; font-weight: 700; margin-bottom: 1px; line-height: 1;">${t.lblIced}</div>
+                  <div class="price-val" style="color: #0369A1; font-size: 12px; font-weight: 700; line-height: 1.2;">${item.iced}</div>
+                </div>
+              ` : ''}
             </div>
           `;
         }
@@ -1155,8 +1174,10 @@ function renderMenu(category, btnElement = null) {
         menuHtml += `
           <div class="menu-card-item">
             <img class="menu-image" src="${item.img || 'https://via.placeholder.com/150'}" alt="${nameToDisplay}" onerror="this.src='https://via.placeholder.com/150'">
-            <div class="menu-name-th">${nameToDisplay}</div>
-            <div class="menu-name-en">${subNameToDisplay}</div>
+            <div class="menu-details" style="flex: 1; min-width: 0; padding-left: 4px;">
+              <div class="menu-name-th" style="text-align: left; font-size: 14px; font-weight: 700; color: var(--text-main); margin-bottom: 2px;">${nameToDisplay}</div>
+              <div class="menu-name-en" style="text-align: left; font-size: 10px; color: var(--text-light); margin-bottom: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${subNameToDisplay}</div>
+            </div>
             ${priceBoxHtml}
           </div>
         `;
