@@ -416,6 +416,11 @@
       }
     }
 
+    async function clearOldSystemLogs() {
+      const ask = await Swal.fire({ title: 'ล้างรายการแจ้งเตือน?', text: 'ลบรายการแจ้งเตือนลูกค้าที่เข้าระบบเก่าทั้งหมด', icon: 'warning', showCancelButton: true, confirmButtonColor: '#C57B57' });
+      if (ask.isConfirmed) {
+        Swal.fire({ title: 'กำลังเคลียร์ข้อมูล...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+        try {
           await fetch("https://kub-cafe-pos-default-rtdb.asia-southeast1.firebasedatabase.app/old_system_access.json", {
             method: 'DELETE'
           });
