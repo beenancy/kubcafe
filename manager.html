@@ -572,9 +572,9 @@
           <div class="menu-card-actions">
             <!-- Image Settings Section -->
             <div style="margin-bottom: 12px;">
-              <label style="font-size: 11px; color: var(--text-muted); font-weight: bold; display: block; margin-bottom: 4px;">🔗 ลิงก์ / อัปโหลดรูปภาพ</label>
+              <label style="font-size: 11px; color: var(--text-muted); font-weight: bold; display: block; margin-bottom: 4px;">🔗 ลิงก์ / อัปโหลด / กดวางภาพ (Ctrl+V)</label>
               <div class="menu-input-group" style="margin-bottom: 6px;">
-                <input type="text" class="menu-text-input" id="url-input-${item.nameEN}" placeholder="วางลิงก์รูปภาพ หรืออัปโหลดรูป..." value="${customUrl}">
+                <input type="text" class="menu-text-input" id="url-input-${item.nameEN}" placeholder="วางลิงก์ หรือกดที่นี่แล้วกด Ctrl+V เพื่อวางรูป..." value="${customUrl}" onpaste="handleImagePaste(event, '${item.nameEN}')">
               </div>
               <div style="display: flex; gap: 6px; align-items: center;">
                 <label class="upload-btn-label" style="flex: 1; padding: 6px 10px; font-size: 11px;">
@@ -614,10 +614,7 @@
       });
     }
 
-    function handleImageUpload(event, nameEN) {
-      const file = event.target.files[0];
-      if (!file) return;
-      
+    function processAndSetImage(file, nameEN) {
       Swal.fire({ title: 'กำลังประมวลผลรูปภาพ...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
       
       const reader = new FileReader();
@@ -657,6 +654,24 @@
         img.src = e.target.result;
       };
       reader.readAsDataURL(file);
+    }
+
+    function handleImageUpload(event, nameEN) {
+      const file = event.target.files[0];
+      if (!file) return;
+      processAndSetImage(file, nameEN);
+    }
+
+    function handleImagePaste(event, nameEN) {
+      const items = (event.clipboardData || window.clipboardData).items;
+      for (let i = 0; i < items.length; i++) {
+        if (items[i].type.indexOf('image') !== -1) {
+          event.preventDefault(); // Stop normal text pasting of file object name
+          const file = items[i].getAsFile();
+          processAndSetImage(file, nameEN);
+          break;
+        }
+      }
     }
 
     async function saveMenuImage(nameEN) {
