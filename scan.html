@@ -15,9 +15,52 @@ Changelog: Extreme Minimal UI, Button Countdown, Enforce Deep Link, Add Haptic F
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <style>
     body { font-family: 'Prompt', sans-serif; background-color: #FDFCF0; margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; flex-direction: column; }
-    .loader { border: 4px solid #E8E2D9; border-left-color: #A3B18A; border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; margin-bottom: 20px; }
-    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-    .text { color: #A3B18A; font-weight: bold; font-size: 16px; }
+    /* Newton's Cradle Loader */
+    .newtons-cradle {
+      --uib-size: 50px;
+      --uib-speed: 1.2s;
+      --uib-color: #7A8B62;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: var(--uib-size);
+      height: var(--uib-size);
+      margin-bottom: 20px;
+    }
+    .newtons-cradle__dot {
+      position: relative;
+      display: flex;
+      align-items: center;
+      height: 100%;
+      width: 25%;
+      transform-origin: center top;
+    }
+    .newtons-cradle__dot::after {
+      content: '';
+      display: block;
+      width: 100%;
+      height: 25%;
+      border-radius: 50%;
+      background-color: var(--uib-color);
+    }
+    .newtons-cradle__dot:first-child {
+      animation: swing var(--uib-speed) linear infinite;
+    }
+    .newtons-cradle__dot:last-child {
+      animation: swing2 var(--uib-speed) linear infinite;
+    }
+    @keyframes swing {
+      0% { transform: rotate(0deg); animation-timing-function: ease-out; }
+      25% { transform: rotate(70deg); animation-timing-function: ease-in; }
+      50% { transform: rotate(0deg); animation-timing-function: linear; }
+    }
+    @keyframes swing2 {
+      0% { transform: rotate(0deg); animation-timing-function: linear; }
+      50% { transform: rotate(0deg); animation-timing-function: ease-out; }
+      75% { transform: rotate(-70deg); animation-timing-function: ease-in; }
+    }
+    .text { color: #7A8B62; font-weight: bold; font-size: 16px; margin-top: 10px; }
     
     /* 🎨 Extreme Minimal Popup Styling (Uniform Size) */
     .swal2-popup { border-radius: 36px !important; font-family: 'Prompt', sans-serif !important; padding: 2em 1.5em !important; }
@@ -71,7 +114,12 @@ Changelog: Extreme Minimal UI, Button Countdown, Enforce Deep Link, Add Haptic F
 </head>
 <body>
 
-  <div class="loader" id="spinner"></div>
+  <div class="newtons-cradle" id="spinner">
+    <div class="newtons-cradle__dot"></div>
+    <div class="newtons-cradle__dot"></div>
+    <div class="newtons-cradle__dot"></div>
+    <div class="newtons-cradle__dot"></div>
+  </div>
   <div class="text" id="statusText">กำลังประมวลผลรับแต้ม...</div>
   <audio id="dingSound" src="https://www.soundjay.com/buttons/sounds/button-09.mp3" preload="auto"></audio>
 
