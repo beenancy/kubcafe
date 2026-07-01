@@ -344,12 +344,56 @@
     }
 
     .swal2-container { z-index: 10000 !important; }
-    .swal2-popup { border-radius: 24px !important; font-family: 'Prompt', sans-serif !important; padding: 1.5em 1.2em !important; }
-    .custom-swal-popup { width: 80% !important; max-width: 290px !important; background-color: #FFFFFF !important; box-shadow: 0 15px 35px rgba(140, 122, 107, 0.2) !important; overflow: hidden; }
-    .swal-btn-confirm { font-size: 13px !important; padding: 9px 22px !important; border-radius: 20px !important; font-weight: 700; background-color: var(--matcha) !important; color: #ffffff !important; border: none !important; margin: 0 6px !important; cursor: pointer; box-shadow: 0 4px 10px rgba(163, 177, 138, 0.25) !important; transition: all 0.2s; }
-    .swal-btn-confirm:active { transform: scale(0.97); }
-    .swal-btn-cancel { font-size: 13px !important; padding: 9px 22px !important; border-radius: 20px !important; font-weight: 700; background-color: #F4F1EC !important; color: var(--text-main) !important; border: none !important; margin: 0 6px !important; cursor: pointer; transition: all 0.2s; }
-    .swal-btn-cancel:active { transform: scale(0.97); }
+    .swal2-popup { border-radius: 36px !important; font-family: 'Prompt', sans-serif !important; padding: 2em 1.5em !important; }
+    .custom-swal-popup { 
+      width: 85% !important; 
+      max-width: 320px !important; 
+      background-color: #FFFDF9 !important; 
+      box-shadow: 
+        inset 4px 4px 8px #ffffff, 
+        inset -4px -4px 8px rgba(180, 170, 150, 0.2), 
+        0 25px 50px rgba(74, 63, 53, 0.15) !important; 
+      overflow: hidden; 
+      border: none !important;
+    }
+    .swal-btn-confirm { 
+      font-size: 14px !important; 
+      padding: 12px 28px !important; 
+      border-radius: 50px !important; 
+      font-weight: 700; 
+      background-color: var(--matcha-dark) !important; 
+      color: #ffffff !important; 
+      border: none !important; 
+      margin: 0 6px !important; 
+      cursor: pointer; 
+      box-shadow: 
+        inset 2px 2px 4px rgba(255, 255, 255, 0.4), 
+        inset -2px -2px 4px rgba(0, 0, 0, 0.1), 
+        0 8px 16px rgba(122, 139, 98, 0.35) !important; 
+      transition: all 0.2s; 
+    }
+    .swal-btn-confirm:active { 
+      transform: scale(0.96); 
+      box-shadow: 
+        inset 4px 4px 8px rgba(0, 0, 0, 0.15), 
+        inset -4px -4px 8px rgba(255, 255, 255, 0.2) !important; 
+    }
+    .swal-btn-cancel { 
+      font-size: 14px !important; 
+      padding: 11px 27px !important; 
+      border-radius: 50px !important; 
+      font-weight: 700; 
+      background-color: transparent !important; 
+      color: var(--text-main) !important; 
+      border: 1px solid rgba(74, 63, 53, 0.2) !important; 
+      margin: 0 6px !important; 
+      cursor: pointer; 
+      transition: all 0.2s; 
+    }
+    .swal-btn-cancel:active { 
+      transform: scale(0.96); 
+      background-color: rgba(74, 63, 53, 0.05) !important; 
+    }
 
     /* Points Expiration UI styling */
     .expire-warning-badge {

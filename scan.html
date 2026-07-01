@@ -20,10 +20,53 @@ Changelog: Extreme Minimal UI, Button Countdown, Enforce Deep Link, Add Haptic F
     .text { color: #A3B18A; font-weight: bold; font-size: 16px; }
     
     /* 🎨 Extreme Minimal Popup Styling (Uniform Size) */
-    .swal2-popup { border-radius: 20px !important; font-family: 'Prompt', sans-serif !important; padding: 1.2em 1em !important; }
-    .custom-swal-popup { width: 75% !important; max-width: 280px !important; background-color: #FFFFFF !important; box-shadow: 0 10px 25px rgba(140, 122, 107, 0.15) !important; overflow: hidden; }
-    .matcha-btn { font-size: 14px !important; padding: 12px 24px !important; border-radius: 12px !important; font-weight: 600 !important; background-color: #A3B18A !important; color: #ffffff !important; border: none !important; width: 100% !important; margin-top: 10px !important;}
-    .warning-btn { background-color: #C57B57 !important; }
+    .swal2-popup { border-radius: 36px !important; font-family: 'Prompt', sans-serif !important; padding: 2em 1.5em !important; }
+    .custom-swal-popup { 
+      width: 85% !important; 
+      max-width: 320px !important; 
+      background-color: #FFFDF9 !important; 
+      box-shadow: 
+        inset 4px 4px 8px #ffffff, 
+        inset -4px -4px 8px rgba(180, 170, 150, 0.2), 
+        0 25px 50px rgba(74, 63, 53, 0.15) !important; 
+      overflow: hidden; 
+      border: none !important;
+    }
+    .matcha-btn { 
+      font-size: 14px !important; 
+      padding: 12px 28px !important; 
+      border-radius: 50px !important; 
+      font-weight: 700 !important; 
+      background-color: #7A8B62 !important; 
+      color: #ffffff !important; 
+      border: none !important; 
+      width: 100% !important; 
+      margin-top: 15px !important;
+      cursor: pointer !important;
+      box-shadow: 
+        inset 2px 2px 4px rgba(255, 255, 255, 0.4), 
+        inset -2px -2px 4px rgba(0, 0, 0, 0.1), 
+        0 8px 16px rgba(122, 139, 98, 0.35) !important;
+      transition: all 0.2s;
+    }
+    .matcha-btn:active {
+      transform: scale(0.96) !important;
+      box-shadow: 
+        inset 4px 4px 8px rgba(0, 0, 0, 0.15), 
+        inset -4px -4px 8px rgba(255, 255, 255, 0.2) !important;
+    }
+    .warning-btn { 
+      background-color: #C57B57 !important; 
+      box-shadow: 
+        inset 2px 2px 4px rgba(255, 255, 255, 0.4), 
+        inset -2px -2px 4px rgba(0, 0, 0, 0.1), 
+        0 8px 16px rgba(197, 123, 87, 0.35) !important;
+    }
+    .warning-btn:active {
+      box-shadow: 
+        inset 4px 4px 8px rgba(0, 0, 0, 0.15), 
+        inset -4px -4px 8px rgba(255, 255, 255, 0.2) !important;
+    }
   </style>
 </head>
 <body>
