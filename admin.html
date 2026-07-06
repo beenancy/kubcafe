@@ -180,9 +180,14 @@
         border-radius: 12px;
       }
     }
+
+    /* 📱 ปิด double-tap zoom เพื่อให้กดปุ่มได้ทันที ไม่มีดีเลย์ 300ms */
+    .btn-key, .btn-copy, .btn-lock, .btn-home, .qr-preview-box {
+      touch-action: manipulation;
+    }
   </style>
 </head>
-<body>
+<body ontouchstart="">
 
   <audio id="kds-chime" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto" playsinline></audio>
   <div id="kds-toast-container"></div>
@@ -432,10 +437,30 @@
 
     function fireAction(mode, points = 0) {
       document.getElementById('custom-pts').value = '';
+      
+      // สั่นเบาๆ ให้ฟีลเหมือนแอปเนทีฟ (ถ้าเครื่องรองรับ)
+      if (navigator.vibrate) { navigator.vibrate(20); }
+      
+      // แสดงสถานะกำลังบันทึกชั่วคราว
+      const label = document.getElementById('sync-status-label');
+      const originalHTML = label.innerHTML;
+      label.innerHTML = "⏳ กำลังส่ง...";
+      
       const activePin = localStorage.getItem("kub_admin_pin");
       fetch(`${CLOUDFLARE_WORKER_URL}/api/pos-update`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Admin-PIN': activePin },
+        method: 'POST', 
+        headers: { 'Content-Type': 'application/json', 'X-Admin-PIN': activePin },
         body: JSON.stringify({ mode, points, timestamp: Date.now() })
+      }).then(res => {
+        if (res.status !== 200) {
+          res.text().then(msg => {
+            alert("❌ ส่งแต้มไม่สำเร็จ: " + (msg || "รหัส PIN ไม่ถูกต้อง"));
+            label.innerHTML = originalHTML;
+          });
+        }
+      }).catch(err => {
+        alert("❌ ส่งแต้มไม่สำเร็จ: เชื่อมต่ออินเทอร์เน็ตล้มเหลว หรือถูกตัวบล็อกโฆษณา (Adblocker) ปิดกั้น");
+        label.innerHTML = originalHTML;
       });
     }
 
