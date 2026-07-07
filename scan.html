@@ -245,7 +245,7 @@ Changelog: Extreme Minimal UI, Button Countdown, Enforce Deep Link, Add Haptic F
           Swal.fire({
             html: minimalHtml,
             showConfirmButton: true, 
-            confirmButtonText: isEN ? 'Chat (5)' : 'เข้าห้องแชท (5)',
+            confirmButtonText: isEN ? 'OK (5)' : 'ตกลง (5)',
             customClass: { popup: 'custom-swal-popup', confirmButton: 'matcha-btn' },
             buttonsStyling: false, 
             timer: 5000, // ⏱️ ตั้งเวลาไว้ที่ 5 วินาที
@@ -255,7 +255,7 @@ Changelog: Extreme Minimal UI, Button Countdown, Enforce Deep Link, Add Haptic F
               const btn = Swal.getConfirmButton();
               timerInterval = setInterval(() => {
                 const timeLeft = Math.ceil(Swal.getTimerLeft() / 1000);
-                if(btn) btn.innerHTML = isEN ? `Go to Chat (${timeLeft})` : `เข้าห้องแชท (${timeLeft})`;
+                if(btn) btn.innerHTML = isEN ? `OK (${timeLeft})` : `ตกลง (${timeLeft})`;
               }, 100);
             },
             willClose: () => { clearInterval(timerInterval); }
