@@ -229,7 +229,7 @@
       if (pin.length === 4) {
         fetch(`${CLOUDFLARE_WORKER_URL}/api/pos-update`, {
           method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Admin-PIN': pin },
-          body: JSON.stringify({ mode: 'idle' })
+          body: JSON.stringify({ mode: 'idle', pin: pin })
         }).then(res => {
           if (res.status === 200) {
             localStorage.setItem("kub_admin_pin", pin);
@@ -424,13 +424,20 @@
       fetch(`${CLOUDFLARE_WORKER_URL}/api/pos-update`, {
         method: 'POST', 
         headers: { 'Content-Type': 'application/json', 'X-Admin-PIN': activePin },
-        body: JSON.stringify({ mode, points, timestamp: Date.now() })
+        body: JSON.stringify({ mode, points, timestamp: Date.now(), pin: activePin })
       }).then(res => {
-        if (res.status !== 200) {
+        if (res.status === 401) {
+          alert("❌ รหัส PIN ไม่ถูกต้อง หรือเซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่ครับ");
+          localStorage.removeItem("kub_admin_pin");
+          localStorage.removeItem("kub_admin_unlocked");
+          location.reload();
+        } else if (res.status !== 200) {
           res.text().then(msg => {
             alert("❌ ส่งแต้มไม่สำเร็จ: " + (msg || "รหัส PIN ไม่ถูกต้อง"));
             label.innerHTML = originalHTML;
           });
+        } else {
+          label.innerHTML = originalHTML;
         }
       }).catch(err => {
         alert("❌ ส่งแต้มไม่สำเร็จ: เชื่อมต่ออินเทอร์เน็ตล้มเหลว หรือถูกตัวบล็อกโฆษณา (Adblocker) ปิดกั้น");
