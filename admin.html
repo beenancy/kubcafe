@@ -315,30 +315,31 @@
       document.addEventListener('input', resetActivityTimer);
       resetActivityTimer(); 
 
-      let lastHash = "";
-      function pollDatabase() {
-        // 🌐 ใช้ REST API แบบ Long/Short Polling แทน WebSocket เพื่อแก้ปัญหาสนทนาหลุด/หน้าจอ POS ค้าง ไม่ซิงค์แต้มกับเครื่องแสดงผลฝั่งลูกค้า
-        fetch("https://kub-cafe-pos-default-rtdb.asia-southeast1.firebasedatabase.app/pos_display.json")
-          .then(r => r.json())
-          .then(data => {
-            if (!data) return;
-            const currentHash = `${data.mode}-${data.points}-${data.timestamp}`;
-            if (currentHash !== lastHash) {
-              lastHash = currentHash;
-              window.syncedState = data;
-              if (data.mode === 'points') {
-                const hash = data.hash || ''; 
-                window.currentLiffUrl = `https://liff.line.me/2010206186-u1XRJldq?code=KUBBAR-${data.points}-${data.timestamp}-${hash}`;
-              }
-              updateAdminUI(data);
-            }
-          })
-          .catch(err => console.log("Database poll error:", err));
-      }
+      db.ref('pos_display').on('value', (snapshot) => {
+        const data = snapshot.val();
+        if (!data) return;
+        window.syncedState = data;
+        
+        if(data.mode === 'points') {
+          const hash = data.hash || ''; 
+          window.currentLiffUrl = `https://liff.line.me/2010206186-u1XRJldq?code=KUBBAR-${data.points}-${data.timestamp}-${hash}`;
+        }
+        updateAdminUI(data);
+      });
 
-      // เริ่มทำงานครั้งแรกทันที และเช็กความเปลี่ยนแปลงทุกๆ 1.2 วินาที
-      pollDatabase();
-      setInterval(pollDatabase, 1200);
+      // 🔄 บังคับให้ระบบเชื่อมต่อใหม่ทันทีเมื่อเบราว์เซอร์ตื่นจากโหมดสลีป (Sleep) หรือเมื่อมีการสลับเปิดหน้าต่าง
+      function forceFirebaseReconnect() {
+        try {
+          db.goOffline();
+          db.goOnline();
+        } catch(e) {
+          console.error("Firebase reconnect error:", e);
+        }
+      }
+      document.addEventListener("visibilitychange", () => {
+        if (document.visibilityState === "visible") { forceFirebaseReconnect(); }
+      });
+      window.addEventListener("focus", forceFirebaseReconnect);
 
       initKDSListener(db);
     }

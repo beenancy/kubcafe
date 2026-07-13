@@ -17,6 +17,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&family=Prompt:wght@300;500;700;900&display=swap" rel="stylesheet">
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
   
   <style>
     :root {
@@ -325,32 +327,42 @@
     const PAYMENT_IMAGE_URL = "https://raw.githubusercontent.com/beenancy/kubcafe/main/qr%20kshop.jpg";
     const TRUE_IMAGE_URL = "https://raw.githubusercontent.com/beenancy/kubcafe/main/truescan.jpg";
 
+    const firebaseConfig = {
+      apiKey: "AIzaSyAi-8gxkAs3N4b5r3EULZHckqq3tHa6tlE",
+      authDomain: "kub-cafe-pos.firebaseapp.com",
+      databaseURL: "https://kub-cafe-pos-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "kub-cafe-pos",
+      storageBucket: "kub-cafe-pos.firebasestorage.app"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
     const displayCard = document.getElementById('main-display');
     let timerInterval;
-    let lastHash = "";
 
-    function pollDatabase() {
-      // 🌐 ใช้ REST API แบบ Long/Short Polling แทน WebSocket เพื่อแก้บั๊กเน็ตหลุด/หน้าจอค้างบนเบราว์เซอร์เก่าของ iPhone 5s
-      fetch("https://kub-cafe-pos-default-rtdb.asia-southeast1.firebasedatabase.app/pos_display.json")
-        .then(r => r.json())
-        .then(data => {
-          if (!data) return;
-          const currentHash = `${data.mode}-${data.points}-${data.timestamp}`;
-          if (currentHash !== lastHash) {
-            lastHash = currentHash;
-            if (data.mode === "idle") {
-              renderStandby();
-            } else {
-              renderActive(data);
-            }
-          }
-        })
-        .catch(err => console.log("Database poll error:", err));
+    db.ref('pos_display').on('value', (snapshot) => {
+      const data = snapshot.val();
+      if (!data || data.mode === "idle") {
+        renderStandby();
+      } else {
+        renderActive(data);
+      }
+    });
+
+    // 🔄 บังคับให้ระบบเชื่อมต่อใหม่ทันทีเมื่อเบราว์เซอร์ตื่นจากโหมดสลีป (Sleep) หรือเมื่อสลับกลับมาโฟกัสที่แท็บเล็ต
+    function forceFirebaseReconnect() {
+      try {
+        db.goOffline();
+        db.goOnline();
+      } catch(e) {
+        console.error("Firebase reconnect error:", e);
+      }
     }
-
-    // เริ่มทำงานครั้งแรกทันที และเช็กความเปลี่ยนแปลงทุกๆ 1.2 วินาที
-    pollDatabase();
-    setInterval(pollDatabase, 1200);
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "visible") { forceFirebaseReconnect(); }
+    });
+    window.addEventListener("focus", forceFirebaseReconnect);
 
     function renderStandby() {
       clearInterval(timerInterval);
