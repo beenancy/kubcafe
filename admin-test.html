@@ -2,7 +2,10 @@
 <html lang="th">
 <head>
   <meta charset="UTF-8">
-  <title>KUB Cafe - Admin TEST</title>
+  <title>KUB Cafe - Admin POS V.9.12 Test</title>
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
@@ -289,17 +292,42 @@
       document.addEventListener('input', resetActivityTimer);
       resetActivityTimer(); 
 
+      let lastHash = "";
+      
       db.ref('pos_display').on('value', (snapshot) => {
         const data = snapshot.val();
         if (!data) return;
+        handleStateUpdate(data);
+      });
+
+      // 🌐 ระบบเช็กอัปเดตสำรองผ่าน REST API (ทุกๆ 2.5 วินาที) เผื่อเครือข่าย WebSockets ค้าง/หลุดช่วงเครื่องสลีป
+      function pollDatabaseFallback() {
+        fetch("https://kub-cafe-pos-default-rtdb.asia-southeast1.firebasedatabase.app/pos_display.json")
+          .then(r => r.json())
+          .then(data => {
+            if (!data) return;
+            const currentHash = `${data.mode}-${data.points}-${data.timestamp}`;
+            if (currentHash !== lastHash) {
+              console.log("Fallback sync updated!");
+              handleStateUpdate(data);
+              forceFirebaseReconnect(); // สั่งให้ท่อ WebSocket เชื่อมต่อใหม่ทันทีในเบื้องหลัง
+            }
+          })
+          .catch(err => console.log("Database fallback poll error:", err));
+      }
+      setInterval(pollDatabaseFallback, 2500);
+
+      function handleStateUpdate(data) {
+        const currentHash = `${data.mode}-${data.points}-${data.timestamp}`;
+        lastHash = currentHash;
         window.syncedState = data;
         
-        if(data.mode === 'points') {
+        if (data.mode === 'points') {
           const hash = data.hash || ''; 
           window.currentLiffUrl = `https://liff.line.me/2010460841-1So0N2Jn?code=KUBBAR-${data.points}-${data.timestamp}-${hash}`;
         }
         updateAdminUI(data);
-      });
+      }
 
       // 🔄 บังคับให้ระบบเชื่อมต่อใหม่ทันทีเมื่อเบราว์เซอร์ตื่นจากโหมดสลีป (Sleep) หรือเมื่อมีการสลับเปิดหน้าต่าง
       function forceFirebaseReconnect() {
