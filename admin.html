@@ -483,10 +483,43 @@
       // สั่นเบาๆ ให้ฟีลเหมือนแอปเนทีฟ (ถ้าเครื่องรองรับ)
       if (navigator.vibrate) { navigator.vibrate(20); }
       
-      // แสดงสถานะกำลังบันทึกชั่วคราว
       const label = document.getElementById('sync-status-label');
       const originalHTML = label.innerHTML;
-      label.innerHTML = "⏳ กำลังส่ง...";
+      const originalColor = label.style.color;
+      const originalBG = label.style.backgroundColor;
+      const originalBorder = label.style.borderColor;
+
+      // 🚀 Optimistic Update: แสดงค่าใหม่บนแผงบาริสต้าทันทีโดยไม่รอการตอบกลับจากเซิร์ฟเวอร์
+      if (mode === "idle") {
+        label.innerHTML = "⚪ ว่าง (STANDBY)"; 
+        label.style.color = "#B0A69D"; 
+        label.style.backgroundColor = "white"; 
+        label.style.borderColor = "var(--border-color)";
+      } 
+      else if (mode === "points") {
+        label.innerHTML = `☕ <b style="font-size: 18px; color: #D32F2F;">${points}</b> <span style="color: #D32F2F;">แต้ม</span>`; 
+        label.style.color = "#D32F2F"; 
+        label.style.backgroundColor = "#FFEBEE"; 
+        label.style.borderColor = "#EF9A9A";
+      } 
+      else if (mode === "store_line") {
+        label.innerHTML = `💬 LINE OA`; 
+        label.style.color = "#06C755"; 
+        label.style.backgroundColor = "white"; 
+        label.style.borderColor = "var(--border-color)";
+      } 
+      else if (mode === "payment") {
+        label.innerHTML = `🏦 ธนาคาร`; 
+        label.style.color = "#1565C0"; 
+        label.style.backgroundColor = "white"; 
+        label.style.borderColor = "var(--border-color)";
+      } 
+      else if (mode === "true_payment") {
+        label.innerHTML = `🧡 TrueMoney`; 
+        label.style.color = "#FF6600"; 
+        label.style.backgroundColor = "white"; 
+        label.style.borderColor = "var(--border-color)";
+      }
       
       const activePin = localStorage.getItem("kub_admin_pin");
       fetch(`${CLOUDFLARE_WORKER_URL}/api/pos-update`, {
@@ -503,13 +536,17 @@
           res.text().then(msg => {
             alert("❌ ส่งแต้มไม่สำเร็จ: " + (msg || "รหัส PIN ไม่ถูกต้อง"));
             label.innerHTML = originalHTML;
+            label.style.color = originalColor;
+            label.style.backgroundColor = originalBG;
+            label.style.borderColor = originalBorder;
           });
-        } else {
-          label.innerHTML = originalHTML;
         }
       }).catch(err => {
         alert("❌ ส่งแต้มไม่สำเร็จ: เชื่อมต่ออินเทอร์เน็ตล้มเหลว หรือถูกตัวบล็อกโฆษณา (Adblocker) ปิดกั้น");
         label.innerHTML = originalHTML;
+        label.style.color = originalColor;
+        label.style.backgroundColor = originalBG;
+        label.style.borderColor = originalBorder;
       });
     }
 
