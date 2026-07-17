@@ -128,14 +128,12 @@
     .badge-blue { background-color: #0079C1; }
     .badge-orange { background-color: #FF6600; }
     
-    .qr-box { 
-      background: white; 
-      padding: clamp(6px, 2vmin, 10px); /* ลด padding ด้านในลงเล็กน้อยเพื่อให้ QR ขยายได้ใหญ่ขึ้น */
-      border-radius: 24px; 
-      border: 3px solid var(--border-color); 
+    .qr-box, .payment-qr-box { 
+      background: transparent; 
+      border: none; 
       margin-bottom: clamp(15px, 3vh, 25px); 
       position: relative;
-      overflow: hidden; /* ล็อกกรอบให้เส้นเลเซอร์สแกนวิ่งเฉพาะด้านใน */
+      overflow: hidden; /* ล็อกกรอบให้เส้นเลเซอร์สแกนและไฟวิ่งวิ่งเฉพาะด้านใน */
       width: 100%; /* กางเต็มความกว้างการ์ด เพื่อให้ QR โค้ดใหญ่ที่สุด */
       max-width: clamp(180px, 47dvh, 340px); /* ยืดหยุ่นตามความสูงของหน้าจอ ป้องกันการล้นแนวตั้งบนจอเล็ก */
       aspect-ratio: 1/1;
@@ -143,17 +141,66 @@
       display: flex;
       justify-content: center;
       align-items: center;
+      box-shadow: 0 15px 35px rgba(140, 122, 107, 0.15);
+      z-index: 1;
     }
-    .qr-box img { 
-      width: 100%; 
-      height: auto; 
+
+    /* 🚀 เอฟเฟกต์ลูกไฟวิ่งรอบกรอบ (Rotating Border Beam) */
+    .qr-box::before, .payment-qr-box::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 160%;
+      height: 160%;
+      transform: translate(-50%, -50%) rotate(0deg);
+      animation: rotate-beam 3s linear infinite;
+      z-index: -2;
+    }
+
+    /* 🎨 โทนสีไฟวิ่งตามโหมด */
+    .glow-points::before {
+      background: conic-gradient(
+        from 0deg,
+        transparent 0%,
+        transparent 40%,
+        #A3B18A 45%, /* เขียวมัทฉะ */
+        #FF6600 50%, /* แดงไฟแรง */
+        #FFCC00 55%, /* ส้มทองสว่าง */
+        transparent 60%,
+        transparent 100%
+      );
+    }
+    .glow-line::before {
+      background: conic-gradient(from 0deg, transparent 40%, #06C755 45%, #ffffff 50%, #06C755 55%, transparent 60%);
+    }
+    .glow-bank::before {
+      background: conic-gradient(from 0deg, transparent 40%, #1565C0 45%, #ffffff 50%, #1565C0 55%, transparent 60%);
+    }
+    .glow-true::before {
+      background: conic-gradient(from 0deg, transparent 40%, #FF6600 45%, #ffffff 50%, #FF6600 55%, transparent 60%);
+    }
+
+    @keyframes rotate-beam {
+      0% { transform: translate(-50%, -50%) rotate(0deg); }
+      100% { transform: translate(-50%, -50%) rotate(360deg); }
+    }
+
+    .qr-box img, .payment-qr-box img, .payment-img { 
+      width: calc(100% - 6px); /* หักออกฝั่งละ 3px เพื่อเว้นที่ให้กรอบไฟวิ่ง */
+      height: calc(100% - 6px); 
       aspect-ratio: 1/1;
       object-fit: contain; 
       display: block;
+      background: white;
+      border-radius: 20px;
+      padding: clamp(6px, 1.5vmin, 12px);
+      box-sizing: border-box;
+      z-index: 1;
     }
 
     /* 🟢 แอนิเมชันเส้นแสงเลเซอร์สีเขียวนีออนสว่าง (Bright Laser Green) */
-    .qr-box::after {
+    .qr-box::after, .payment-qr-box::after {
       content: '';
       position: absolute;
       left: 0;
@@ -162,6 +209,7 @@
       background: linear-gradient(to right, transparent, #00FF66, transparent);
       box-shadow: 0 0 12px #00FF66, 0 0 4px #00FF66; /* เรืองแสงเขียวนีออนสว่างเด่นชัด */
       animation: scanBeam 4s linear infinite; /* วิ่งช้าลงและนุ่มนวลขึ้น */
+      z-index: 2; /* แสดงบนสุดทับตัวรูป QR */
     }
     
     .timer-pill { 
@@ -178,41 +226,10 @@
       font-size: clamp(10px, 3vw, 12px); 
       color: var(--text-light); 
     }
-
-    /* 3. โหมดจ่ายเงิน (แบบครอปภาพเหลือเฉพาะ QR Code ขนาดใหญ่เท่าแต้ม) */
-    .payment-qr-box {
-      width: 100%;
-      max-width: clamp(180px, 47dvh, 340px); /* ยืดหยุ่นตามความสูงของหน้าจอ ป้องกันการล้นแนวตั้งบนจอเล็ก */
-      aspect-ratio: 1/1;
-      background: white;
-      border-radius: 24px;
-      border: 3px solid var(--border-color);
-      margin-bottom: clamp(10px, 2vh, 18px);
-      position: relative;
-      overflow: hidden; /* ตัดขอบภาพที่ยื่นเลยกล่องออกไป */
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      box-sizing: border-box;
-    }
     
-    .payment-qr-box::after {
-      content: '';
-      position: absolute;
-      left: 0;
-      width: 100%;
-      height: 3px;
-      background: linear-gradient(to right, transparent, #00FF66, transparent);
-      box-shadow: 0 0 12px #00FF66, 0 0 4px #00FF66; /* เรืองแสงเขียวนีออนสว่างเด่นชัด */
-      animation: scanBeam 4s linear infinite; /* วิ่งช้าลงและนุ่มนวลขึ้น */
-      z-index: 2;
-    }
-
     .payment-img { 
-      width: 100%; 
-      height: 100%; 
-      object-fit: contain; /* แสดงผลภาพรูปสี่เหลี่ยมจัตุรัสที่ครอปมาแบบเต็มรูป */
-      display: block;
+      width: calc(100% - 6px) !important;
+      height: calc(100% - 6px) !important;
     }
     
     /* 🥛 กรอบแจ้งเตือนโอนเงินสไตล์กระจกฝ้าโปร่งแสง (Glassmorphism) */
@@ -422,7 +439,7 @@
         htmlContent = `
           <div class="instant-content">
             <div class="badge-title badge-matcha">สแกนรับ +${points} แต้ม</div>
-            <div class="qr-box">
+            <div class="qr-box glow-points">
               <img src="https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(liffUrl)}">
             </div>
             <div id="timer-display" class="timer-pill">รีเฟรชใหม่ใน: 05:00</div>
@@ -435,7 +452,7 @@
         htmlContent = `
           <div class="instant-content">
             <div class="badge-title badge-line">LINE Official 💬</div>
-            <div class="qr-box">
+            <div class="qr-box glow-line">
               <img src="https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(STORE_LINE_OA_LINK)}">
             </div>
             <div class="timer-warning" style="margin-top:10px;">สแกนเพื่อเพิ่มเพื่อนและดูเมนู</div>
@@ -446,7 +463,7 @@
         htmlContent = `
           <div class="instant-content">
             <div class="badge-title badge-blue">พร้อมเพย์ (PromptPay) 🌐</div>
-            <div class="payment-qr-box">
+            <div class="payment-qr-box glow-bank">
               <img src="${PAYMENT_IMAGE_URL}" class="payment-img">
             </div>
             <div class="payment-note">
@@ -460,7 +477,7 @@
         htmlContent = `
           <div class="instant-content">
             <div class="badge-title badge-orange">TrueMoney / ทรูมันนี่ 🔸</div>
-            <div class="payment-qr-box">
+            <div class="payment-qr-box glow-true">
               <img src="${TRUE_IMAGE_URL}" class="payment-img">
             </div>
             <div class="payment-note true-note">
