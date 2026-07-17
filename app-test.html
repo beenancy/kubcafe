@@ -408,7 +408,7 @@
           </div>
           <div style="font-weight: 700; font-size: 13px; color: var(--text-main);" id="txt-scan-btn">สแกนรับแต้ม</div>
         </div>
-        <div class="action-box" onclick="switchTab('rewards')">
+        <div class="action-box" onclick="triggerMainRewardRedeem()">
           <div style="margin-bottom: 4px; display: flex; align-items: center; justify-content: center;">
             <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#4A3F35" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
               <polyline points="20 12 20 22 4 22 4 12"></polyline>
@@ -776,29 +776,42 @@
       } catch (err) { console.error(err); }
     }
 
-    async function redeemPoints(pointsNeeded, logName, displayRewardName) {
-      if (globalTotalPoints < pointsNeeded) return;
-      
-      const txtConfirm = globalLang === "EN" ? `Confirm to use <b style="color:#C57B57">${pointsNeeded} PTS</b><br>for ${displayRewardName}?` : `ยืนยันใช้ <b style="color:#C57B57">${pointsNeeded} แต้ม</b><br>เพื่อแลก ${displayRewardName}?`;
-      const txtYes = globalLang === "EN" ? "Yes" : "ยืนยันแลก";
-      const txtNo = globalLang === "EN" ? "Cancel" : "ยกเลิก";
+    function triggerMainRewardRedeem() {
+      const rw = i18n[globalLang].rewards[0];
+      redeemPoints(rw.cost, rw.logName, rw.name, rw.icon);
+    }
 
-      // 🎨 1. เปลี่ยนหน้าต่างยืนยันให้เป็น Extreme Minimal + SVG Icon
+    async function redeemPoints(pointsNeeded, logName, displayRewardName, rewardIcon = '🍵') {
+      if (globalTotalPoints < pointsNeeded) {
+        showMinimalAlert('❌', globalLang === "EN" ? 'Points Not Enough' : 'แต้มไม่พอแลกค่ะ', globalLang === "EN" ? 'You need 10 points to redeem this reward.' : 'คุณต้องมีสะสมอย่างน้อย 10 แต้มค่ะ', 'ตกลง', true);
+        return;
+      }
+      
+      const txtYes = globalLang === "EN" ? "Confirm" : "ยืนยันแลก";
+      const txtNo = globalLang === "EN" ? "Cancel" : "ยกเลิก";
+      const isEN = globalLang === "EN";
+
+      // 🎨 1. เปลี่ยนหน้าต่างยืนยันให้เป็น Extreme Minimal + การ์ดตั๋วคูปองสุดเก๋ (Cozy Retro Coupon Ticket)
       const confirmHtml = `
-        <div style="text-align: center; padding: 10px 0 5px 0;">
-          <div style="display: flex; justify-content: center; margin-bottom: 14px;">
-            <div style="width: 56px; height: 56px; border-radius: 50%; background: #FFF5EB; display: flex; justify-content: center; align-items: center;">
-              <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="#C57B57" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="20 12 20 22 4 22 4 12"></polyline>
-                <rect x="2" y="7" width="20" height="5"></rect>
-                <line x1="12" y1="22" x2="12" y2="7"></line>
-                <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"></path>
-                <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"></path>
-              </svg>
+        <div style="text-align: center; padding: 5px 0;">
+          <div style="background: #FDFCF0; border: 1.5px solid #E8E2D9; border-radius: 20px; padding: 22px 20px; position: relative; overflow: hidden; box-shadow: 0 10px 25px rgba(122, 139, 98, 0.1);">
+            <div style="position: absolute; left: -10px; top: 50%; transform: translateY(-50%); width: 20px; height: 20px; border-radius: 50%; background: #FAF7F0; border-right: 1.5px solid #E8E2D9;"></div>
+            <div style="position: absolute; right: -10px; top: 50%; transform: translateY(-50%); width: 20px; height: 20px; border-radius: 50%; background: #FAF7F0; border-left: 1.5px solid #E8E2D9;"></div>
+            
+            <div style="font-size: 48px; margin-bottom: 8px; line-height: 1;">${rewardIcon}</div>
+            
+            <div style="color: #4A3F35; font-size: 17px; font-weight: 800; margin-bottom: 4px;">
+              ${displayRewardName}
+            </div>
+            
+            <div style="background: #EAF0E4; color: #7A8B62; font-size: 12px; font-weight: 700; padding: 4px 14px; border-radius: 50px; display: inline-block; margin-bottom: 12px; font-family: 'Prompt';">
+              ${isEN ? `Use ${pointsNeeded} Points` : `ใช้ ${pointsNeeded} แต้ม`}
+            </div>
+            
+            <div style="color: #8C8070; font-size: 13px; line-height: 1.4; font-weight: 500;">
+              ${isEN ? 'Are you sure you want to redeem this reward?' : 'คุณแน่ใจใช่ไหมว่าต้องการใช้แต้มแลกรับสิทธิ์นี้?'}
             </div>
           </div>
-          <div style="color: #4A3F35; font-size: 17px; font-weight: 800; margin-bottom: 6px;">${globalLang === "EN" ? 'Confirm?' : 'ยืนยันการแลก?'}</div>
-          <div style="color: #6B705C; font-size: 14px; line-height: 1.4; margin-bottom: 5px;">${txtConfirm}</div>
         </div>
       `;
 
@@ -815,28 +828,40 @@
       Swal.fire({ title: globalLang === "EN" ? 'Processing...' : 'กำลังดำเนินการ...', allowOutsideClick: false, didOpen: () => { Swal.showLoading() }, customClass: { popup: 'custom-swal-popup' }});
 
       try {
+        const idToken = liff.getIDToken();
         const res = await fetch(`${API_URL}/api/redeem-reward`, {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ userId: globalUserId, customerName: globalUserName, pointsUsed: pointsNeeded, rewardName: logName })
+          body: JSON.stringify({ userId: globalUserId, idToken: idToken, customerName: globalUserName, pointsUsed: pointsNeeded, rewardName: logName })
         });
         const data = await res.json();
         
         if (data.status === "success") {
           
-          // 🎨 2. เปลี่ยนหน้าต่างแลกสำเร็จให้เป็น Extreme Minimal + SVG Icon + กรอบไฮไลท์รหัส
+          // 🎨 2. เปลี่ยนหน้าต่างแลกสำเร็จให้เป็น Extreme Minimal + การ์ดตั๋วคูปองสุดเก๋ (Cozy Retro Coupon Ticket) + รหัสแลกรางวัลตัวโตๆ
           const successHtml = `
-            <div style="text-align: center; padding: 10px 0 5px 0;">
-              <div style="display: flex; justify-content: center; margin-bottom: 14px;">
-                <div style="width: 56px; height: 56px; border-radius: 50%; background: #EAF0E4; display: flex; justify-content: center; align-items: center;">
-                  <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#7A8B62" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="20 6 9 17 4 12"></polyline>
-                  </svg>
+            <div style="text-align: center; padding: 5px 0;">
+              <div style="background: #FDFCF0; border: 1.5px solid #EAE0D5; border-radius: 20px; padding: 22px 20px; position: relative; overflow: hidden; box-shadow: 0 10px 25px rgba(122, 139, 98, 0.1);">
+                <div style="position: absolute; left: -10px; top: 40%; transform: translateY(-50%); width: 20px; height: 20px; border-radius: 50%; background: #FAF7F0; border-right: 1.5px solid #EAE0D5;"></div>
+                <div style="position: absolute; right: -10px; top: 40%; transform: translateY(-50%); width: 20px; height: 20px; border-radius: 50%; background: #FAF7F0; border-left: 1.5px solid #EAE0D5;"></div>
+                
+                <div style="display: flex; justify-content: center; margin-bottom: 12px;">
+                  <div style="width: 52px; height: 52px; border-radius: 50%; background: #EAF0E4; display: flex; justify-content: center; align-items: center;">
+                    <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="#7A8B62" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                  </div>
                 </div>
-              </div>
-              <div style="color: #7A8B62; font-size: 17px; font-weight: 800; margin-bottom: 6px;">${globalLang === "EN" ? 'Success!' : 'แลกรางวัลสำเร็จ!'}</div>
-              <div style="color: #6B705C; font-size: 13px; line-height: 1.4; margin-bottom: 15px;">${globalLang === "EN" ? 'Please show this screen to staff.' : 'โปรดแสดงหน้าจอนี้ให้พนักงาน'}</div>
-              <div style="background: #FFFBF5; border: 1.5px dashed #A3B18A; border-radius: 12px; padding: 12px; color: #4A3F35; font-weight: 800; font-size: 18px; letter-spacing: 1px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);">
-                ${data.refCode}
+                
+                <div style="color: #7A8B62; font-size: 18px; font-weight: 800; margin-bottom: 4px;">
+                  ${isEN ? 'Redeemed Successfully!' : 'แลกรางวัลสำเร็จ!'}
+                </div>
+                <div style="color: #6B705C; font-size: 13px; line-height: 1.4; margin-bottom: 15px; font-weight: 500;">
+                  ${isEN ? 'Please show this code to the barista.' : 'โปรดแสดงรหัสนี้แก่พนักงานที่เคาน์เตอร์'}
+                </div>
+                
+                <div style="background: #FFFDF9; border: 1.5px dashed #A3B18A; border-radius: 12px; padding: 14px 10px; color: #4A3F35; font-weight: 900; font-size: 24px; letter-spacing: 2px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02); font-family: monospace;">
+                  ${data.refCode}
+                </div>
               </div>
             </div>
           `;
@@ -850,7 +875,7 @@
           });
           await fetchMemberData(); 
         } else { 
-          showMinimalAlert('&#10060;', globalLang === "EN" ? 'Failed' : 'ไม่สำเร็จ', data.message, 'OK', true); 
+          showMinimalAlert('❌', isEN ? 'Failed' : 'ไม่สำเร็จ', data.message, 'OK', true); 
         }
       } catch (err) { 
         showMinimalAlert('&#10060;', 'Network Error', 'เครือข่ายขัดข้อง กรุณาลองใหม่', 'OK', true); 
