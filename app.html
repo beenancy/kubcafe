@@ -1378,63 +1378,6 @@ function renderMenu(category, btnElement = null) {
       } catch (err) { console.error(err); }
     }
 
-    async function redeemPoints(pointsNeeded, logName, displayRewardName) {
-      if (globalTotalPoints < pointsNeeded) return;
-      
-      const txtConfirm = globalLang === "EN" ? `Confirm to use <b style="color:#C57B57">${pointsNeeded} PTS</b><br>for ${displayRewardName}?` : `ยืนยันใช้ <b style="color:#C57B57">${pointsNeeded} แต้ม</b><br>เพื่อแลก ${displayRewardName}?`;
-      const txtYes = globalLang === "EN" ? "Yes" : "ยืนยันแลก";
-      const txtNo = globalLang === "EN" ? "Cancel" : "ยกเลิก";
-
-      const confirmHtml = `
-        <div style="text-align: center; padding: 10px 0 5px 0;">
-          <div style="font-size: 42px; margin-bottom: 10px; line-height: 1;">❓</div>
-          <div style="color: #4A3F35; font-size: 18px; font-weight: 800; margin-bottom: 6px;">${globalLang === "EN" ? 'Confirm?' : 'ยืนยันการแลก?'}</div>
-          <div style="color: #6B705C; font-size: 14px; line-height: 1.4; margin-bottom: 5px;">${txtConfirm}</div>
-        </div>
-      `;
-
-      const confirmResult = await Swal.fire({
-        html: confirmHtml,
-        showCancelButton: true,
-        confirmButtonText: txtYes, cancelButtonText: txtNo, reverseButtons: true,
-        customClass: { popup: 'custom-swal-popup', confirmButton: 'swal-btn-confirm', cancelButton: 'swal-btn-cancel' },
-        buttonsStyling: false
-      });
-
-      if (!confirmResult.isConfirmed) return;
-
-      Swal.fire({ title: globalLang === "EN" ? 'Processing...' : 'กำลังดำเนินการ...', allowOutsideClick: false, didOpen: () => { Swal.showLoading() }, customClass: { popup: 'custom-swal-popup' }});
-
-      try {
-        const idToken = liff.getIDToken();
-        const res = await fetch(`${API_URL}/api/redeem-reward`, {
-          method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ userId: globalUserId, idToken: idToken, customerName: globalUserName, pointsUsed: pointsNeeded, rewardName: logName })
-        });
-        const data = await res.json();
-        
-        if (data.status === "success") {
-          const successHtml = `
-            <div style="text-align: center; padding: 10px 0 5px 0;">
-              <div style="font-size: 42px; margin-bottom: 10px; line-height: 1;">🎉</div>
-              <div style="color: #A3B18A; font-size: 18px; font-weight: 800; margin-bottom: 6px;">${globalLang === "EN" ? 'Success!' : 'แลกรางวัลสำเร็จ!'}</div>
-              <div style="color: #6B705C; font-size: 13px; line-height: 1.4; margin-bottom: 15px;">${globalLang === "EN" ? 'Please show this screen to staff.' : 'โปรดแสดงหน้าจอนี้ให้พนักงาน'}</div>
-              <div style="background: #FDFCF0; border: 1.5px dashed #A3B18A; border-radius: 12px; padding: 10px; color: #4A3F35; font-weight: 800; font-size: 16px; letter-spacing: 1px;">
-                ${data.refCode}
-              </div>
-            </div>
-          `;
-          Swal.fire({
-            html: successHtml, customClass: { popup: 'custom-swal-popup', confirmButton: 'swal-btn-confirm' },
-            buttonsStyling: false, confirmButtonText: 'OK'
-          }).then(() => { switchTab('home'); });
-          await fetchMemberData(); 
-        } else { showMinimalAlert('❌', globalLang === "EN" ? 'Failed' : 'ไม่สำเร็จ', data.message, 'OK', true); }
-      } catch (err) { showMinimalAlert('❌', 'Network Error', 'เครือข่ายขัดข้อง กรุณาลองใหม่', 'OK', true); }
-    }
-
-    
-
 window.onload = initApp;
   </script>
 </body>
