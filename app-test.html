@@ -870,13 +870,113 @@
         liff.scanCodeV2().then(result => {
           const value = result && result.value ? result.value : "";
           if (!value) return;
-
-          if (value.startsWith("http")) { window.location.href = value; return; }
-          window.location.href = `https://beenancy.github.io/kubcafe/scan-test.html?code=${encodeURIComponent(value)}`;
+          handleDirectScan(value);
         }).catch(() => { window.location.href = "https://line.me/R/nv/QRCodeReader"; });
       } else {
         window.location.href = "https://line.me/R/nv/QRCodeReader";
       }
+    }
+
+    async function handleDirectScan(value) {
+      let code = "";
+      if (value.startsWith("http")) {
+        try {
+          const urlObj = new URL(value);
+          code = urlObj.searchParams.get("code") || "";
+        } catch (e) {
+          code = "";
+        }
+      } else {
+        code = value;
+      }
+
+      if (!code) {
+        showMinimalAlert('❌', 'ไม่พบข้อมูล', 'คิวอาร์โค้ดไม่ถูกต้องหรือสแกนผิดวิธีค่ะ', 'ตกลง', true);
+        return;
+      }
+
+      // แสดงกรอบโหลดกำลังดำเนินการ
+      Swal.fire({
+        title: globalLang === "EN" ? 'Processing...' : 'กำลังดำเนินการ...',
+        allowOutsideClick: false,
+        didOpen: () => { Swal.showLoading() },
+        customClass: { popup: 'custom-swal-popup' }
+      });
+
+      try {
+        const idToken = liff.getIDToken();
+        const cleanedName = encodeURIComponent((globalUserName || '').replace(/[-]|[^a-zA-Z0-9\u0e00-\u0e7f\s]/g, ''));
+        const response = await fetch(`${API_URL}?action=scanAddPoint&userId=${globalUserId}&idToken=${idToken || ''}&name=${cleanedName}&shopCode=${encodeURIComponent(code)}`);
+        const data = await response.json();
+        const isEN = data.lang === "EN";
+
+        if (data.status === "success") {
+          try { if (navigator.vibrate) navigator.vibrate(200); } catch(e) {}
+          
+          const successHtml = `
+            <div style="text-align: center; padding: 10px 0 5px 0;">
+              <div style="display: flex; align-items: flex-end; justify-content: center; gap: 5px; margin-bottom: 15px;">
+                <span style="font-size: 32px; line-height: 1; margin-bottom: -4px;">☕</span>
+                <span style="color: #A3B18A; font-size: 56px; font-weight: 900; line-height: 1;">+${data.ptsAdded}</span>
+                <span style="color: #A3B18A; font-size: 14px; font-weight: 600; padding-bottom: 5px;">${isEN ? 'PTS' : 'แต้ม'}</span>
+              </div>
+              <div style="background: #FDFCF0; border: 1px solid #E8E2D9; border-radius: 12px; padding: 8px 12px; display: inline-block; font-size: 14px; color: #4A3F35; margin-bottom: 10px;">
+                ${isEN ? 'Total Points:' : 'คะแนนสะสมรวม:'} <span style="color: #E65100; font-size: 17px; font-weight: 900; margin-left: 4px;">${data.totalPts}</span>
+              </div>
+            </div>
+          `;
+
+          Swal.fire({
+            html: successHtml,
+            customClass: { popup: 'custom-swal-popup', confirmButton: 'swal-btn-confirm' },
+            buttonsStyling: false, confirmButtonText: 'OK'
+          });
+
+          // อัปเดตข้อมูลแต้มในหน้าสมาชิกโดยตรงทันที
+          await fetchMemberData();
+        } else if (data.status === "cooldown") {
+          showCooldownSwal(data.remain || 30, data.lang);
+        } else {
+          showMinimalAlert('❌', isEN ? 'Scan Failed' : 'สแกนไม่สำเร็จ', data.message, 'ตกลง', true);
+        }
+      } catch (err) {
+        showMinimalAlert('❌', 'ระบบขัดข้อง', 'กรุณาลองใหม่อีกครั้งค่ะ', 'ตกลง', true);
+      }
+    }
+
+    function showCooldownSwal(remainSec, lang) {
+      let currentRemain = remainSec;
+      let countdownInterval;
+      const isEN = lang === "EN";
+      
+      const cooldownHtml = `
+        <div style="text-align: center; padding: 10px 0 5px 0;">
+          <div style="font-size: 42px; margin-bottom: 10px; line-height: 1;">⏳</div>
+          <div style="color: #C57B57; font-size: 18px; font-weight: 800; margin-bottom: 6px;">${isEN ? 'Wait a moment' : 'ใจเย็นๆ น้า'}</div>
+          <div style="color: #6B705C; font-size: 14px; margin-bottom: 2px;">
+            ${isEN ? 'Next scan available in' : 'สแกนรอบถัดไปได้ในอีก'}
+          </div>
+          <div style="margin-bottom: 5px;">
+            <span style="font-size: 36px; font-weight: 900; color: #C57B57;" id="cd-timer-app">${currentRemain}</span>
+            <span style="font-size: 14px; color: #B0A69D; font-weight: 600; margin-left: 2px;">${isEN ? 'sec' : 'วิ'}</span>
+          </div>
+        </div>
+      `;
+
+      Swal.fire({
+        html: cooldownHtml,
+        customClass: { popup: 'custom-swal-popup', confirmButton: 'swal-btn-confirm matcha-btn warning-btn' },
+        buttonsStyling: false, confirmButtonText: isEN ? 'OK' : 'ตกลง',
+        didOpen: () => {
+          const timerSpan = document.getElementById('cd-timer-app');
+          countdownInterval = setInterval(() => {
+            currentRemain--;
+            if (timerSpan) timerSpan.innerText = currentRemain;
+            if (currentRemain <= 0) { clearInterval(countdownInterval); }
+          }, 1000);
+        },
+        willClose: () => { clearInterval(countdownInterval); }
+      });
     }
 
     function closeAppAndGoToLINE() {
