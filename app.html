@@ -468,6 +468,22 @@
       font-weight: 500;
       border: 1px solid rgba(255, 255, 255, 0.1);
     }
+    
+    @keyframes slideInRight {
+      from { transform: translateX(30px); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+    @keyframes slideInLeft {
+      from { transform: translateX(-30px); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+    @keyframes fadeInAnim {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    .slide-in-right { animation: slideInRight 0.25s cubic-bezier(0.25, 0.8, 0.25, 1) forwards; }
+    .slide-in-left { animation: slideInLeft 0.25s cubic-bezier(0.25, 0.8, 0.25, 1) forwards; }
+    .fade-in-anim { animation: fadeInAnim 0.25s ease-out forwards; }
   
     /* --- BEVERAGE MENU STYLES --- */
     .category-scroll { display: flex; overflow-x: auto; gap: 10px; padding: 0 5px 12px 5px; flex-shrink: 0; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
@@ -1278,10 +1294,19 @@
       { category: "additional", nameTH: "ปั่น", nameEN: "Frappe", img: "https://images.unsplash.com/photo-1572490122747-3968b75cc699?w=200&auto=format&fit=crop&q=60", hot: "-", iced: 5 }
     ];
 
-function renderMenu(category, btnElement = null) {
+function renderMenu(category, btnElement = null, animClass = 'fade-in-anim') {
       if (btnElement) {
         document.querySelectorAll('.cat-btn').forEach(btn => btn.classList.remove('active'));
         btnElement.classList.add('active');
+        
+        // Smooth scroll tab menu
+        const scrollParent = document.getElementById('menu-categories');
+        if (scrollParent) {
+          const btnRect = btnElement.getBoundingClientRect();
+          const parentRect = scrollParent.getBoundingClientRect();
+          const scrollLeftPos = btnElement.offsetLeft - (parentRect.width / 2) + (btnRect.width / 2);
+          scrollParent.scrollTo({ left: scrollLeftPos, behavior: 'smooth' });
+        }
       } else {
         document.querySelectorAll('.cat-btn').forEach(btn => btn.classList.remove('active'));
         const firstCatBtn = document.querySelector('.cat-btn');
@@ -1344,6 +1369,13 @@ function renderMenu(category, btnElement = null) {
       });
 
       container.innerHTML = menuHtml;
+      
+      // Apply Animation
+      container.classList.remove('slide-in-left', 'slide-in-right', 'fade-in-anim');
+      void container.offsetWidth; // trigger reflow
+      if (animClass) {
+        container.classList.add(animClass);
+      }
     }
 
     function renderHistory(historyArr) {
@@ -1422,23 +1454,20 @@ function renderMenu(category, btnElement = null) {
 
       if (menuTouchEndX < menuTouchStartX - swipeThreshold) {
         if (currentIndex < menuCatList.length - 1) {
-          triggerCategoryClick(menuCatList[currentIndex + 1]);
+          triggerCategoryClick(menuCatList[currentIndex + 1], 'slide-in-right');
         }
       } else if (menuTouchEndX > menuTouchStartX + swipeThreshold) {
         if (currentIndex > 0) {
-          triggerCategoryClick(menuCatList[currentIndex - 1]);
+          triggerCategoryClick(menuCatList[currentIndex - 1], 'slide-in-left');
         }
       }
     }
 
-    function triggerCategoryClick(catName) {
+    function triggerCategoryClick(catName, direction) {
       const btns = document.querySelectorAll('.cat-btn');
       btns.forEach(btn => {
         if(btn.getAttribute('onclick') && btn.getAttribute('onclick').includes("'" + catName + "'")) {
-          btn.click();
-          setTimeout(() => {
-            btn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-          }, 50);
+          renderMenu(catName, btn, direction);
         }
       });
     }
