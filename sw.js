@@ -1,5 +1,5 @@
 // =======================================================
-// KUB Cafe - Service Worker (PWA Requirement)
+// KUB Cafe - Service Worker (PWA Requirement) - v2 (Force Refresh)
 // ========================================================
 self.addEventListener('install', (e) => {
   console.log('[Service Worker] Installed');
