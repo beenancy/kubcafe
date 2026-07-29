@@ -18,7 +18,6 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&family=Prompt:wght@300;500;700;900&display=swap" rel="stylesheet">
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
   
@@ -326,7 +325,6 @@
     }
 
     const SCAN_LIFF_ID = "2010206186-u1XRJldq"; 
-    const SECRET_SALT = 'KUB_SECRET_TOKEN_2026'; 
     const STORE_LINE_OA_LINK = "https://line.me/R/ti/p/@848dmzja"; 
     const PAYMENT_IMAGE_URL = "https://raw.githubusercontent.com/beenancy/kubcafe/main/qr%20kshop.jpg";
     const TRUE_IMAGE_URL = "https://raw.githubusercontent.com/beenancy/kubcafe/main/truescan.jpg";
@@ -417,7 +415,7 @@
       if (data.mode === "points") {
         const points = data.points;
         const timestamp = data.timestamp;
-        const hash = CryptoJS.MD5(`${points}-${timestamp}-${SECRET_SALT}`).toString();
+        const hash = data.hash || '';
         const secretCode = `KUBBAR-${points}-${timestamp}-${hash}`; 
         const liffUrl = `https://liff.line.me/${SCAN_LIFF_ID}?code=${secretCode}`;
         

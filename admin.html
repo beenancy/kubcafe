@@ -401,9 +401,22 @@
       if (isChat) iconPrefix = '';
       if (isDup) iconPrefix = '⚠️ ';
       
+      function escapeHtml(str) {
+        if (!str) return '';
+        return String(str)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#039;');
+      }
+
+      const safeItem = escapeHtml(order.item);
+      const safeCustomerName = escapeHtml(order.customerName);
+
       let html = `
-        <div class="kds-toast-title">${iconPrefix}${order.item}</div>
-        <div class="kds-toast-desc">👤 ลูกค้า: ${order.customerName}</div>
+        <div class="kds-toast-title">${iconPrefix}${safeItem}</div>
+        <div class="kds-toast-desc">👤 ลูกค้า: ${safeCustomerName}</div>
         <div style="font-size: 12px; color: #B0A69D; margin-top: 8px;">
           ⏱️ ${timeStr} | แตะพื้นที่ว่างเพื่อรับทราบ (ซ่อนการ์ด)
         </div>

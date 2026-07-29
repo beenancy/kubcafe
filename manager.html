@@ -302,20 +302,40 @@
       } catch (error) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:red; padding:40px;">โหลดข้อมูลไม่สำเร็จ</td></tr>'; }
     }
 
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    function sanitizeUrl(url) {
+      if (!url || typeof url !== 'string') return '';
+      const trimmed = url.trim();
+      if (trimmed.startsWith('https://') || trimmed.startsWith('http://')) {
+        return escapeHtml(trimmed);
+      }
+      return '';
+    }
+
     function renderTable(users) {
       const tbody = document.getElementById('user-table-body'); tbody.innerHTML = '';
       users.forEach((user, index) => {
-        const pic = user.pictureUrl ? `<img src="${user.pictureUrl}" class="profile-pic">` : `<div class="no-pic">👤</div>`;
+        const safePicUrl = sanitizeUrl(user.pictureUrl);
+        const pic = safePicUrl ? `<img src="${safePicUrl}" class="profile-pic">` : `<div class="no-pic">👤</div>`;
         const todayCount = window.todayEarnCounts[user.id] || 0;
         const alertHtml = todayCount > 1 ? `<div class="alert-badge">🚨 สแกนวันนี้ ${todayCount} ครั้ง</div>` : '';
         
-        // 🚀 แก้ปัญหาชื่อลูกค้ามีอักขระพิเศษ (เช่น ' หรือ ")
-        const safeName = user.displayName.replace(/'/g, "\\'").replace(/"/g, "&quot;");
+        const escapedDisplayName = escapeHtml(user.displayName);
+        const safeName = escapedDisplayName.replace(/'/g, "\\'").replace(/"/g, "&quot;");
 
         const tr = document.createElement('tr');
         tr.innerHTML = `
           <td style="color:#B0A69D; font-size:12px;">${index + 1}</td>
-          <td><div class="user-info">${pic}<div><span class="user-name-text">${user.displayName}</span>${alertHtml}</div></div></td>
+          <td><div class="user-info">${pic}<div><span class="user-name-text">${escapedDisplayName}</span>${alertHtml}</div></div></td>
           <td><span class="pill-pts">${user.totalPoints}</span></td>
           <td style="color:#B0A69D;">${user.legacyPoints}</td>
           <td style="font-size:12px; color:#9A958F;">${formatThaiDate(user.lastUpdated)}</td>
@@ -333,16 +353,20 @@
 
     async function editPoints(userId, name, current) {
       const { value: val } = await Swal.fire({ title: 'แก้ไขแต้ม', html: `ระบุแต้มใหม่สำหรับ <b>${name}</b>`, input: 'number', inputValue: current, showCancelButton: true, confirmButtonColor: '#A3B18A' });
-      if (val) {
+      if (val !== undefined && val !== null && val !== "") {
         Swal.fire({ title: 'กำลังบันทึก...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
         const activePin = localStorage.getItem("kub_manager_pin");
         try {
-          await fetch(`${CLOUDFLARE_WORKER_URL}/api/manager-edit?userId=${userId}`, {
+          const res = await fetch(`${CLOUDFLARE_WORKER_URL}/api/manager-edit?userId=${userId}`, {
             method: 'PATCH', headers: { 'Content-Type': 'application/json', 'X-Admin-PIN': activePin },
             body: JSON.stringify({ newPts: val, oldPts: current }) 
           });
-          Swal.fire('สำเร็จ!', 'อัปเดตแต้มเรียบร้อย', 'success').then(fetchData);
-        } catch (e) { Swal.fire('Error', 'บันทึกไม่สำเร็จ', 'error'); }
+          if (res.ok) {
+            Swal.fire('สำเร็จ!', 'อัปเดตแต้มเรียบร้อย', 'success').then(fetchData);
+          } else {
+            throw new Error("HTTP Status " + res.status);
+          }
+        } catch (e) { Swal.fire('Error', 'บันทึกไม่สำเร็จ: ' + e.message, 'error'); }
       }
     }
 
