@@ -330,7 +330,6 @@
         const alertHtml = todayCount > 1 ? `<div class="alert-badge">🚨 สแกนวันนี้ ${todayCount} ครั้ง</div>` : '';
         
         const escapedDisplayName = escapeHtml(user.displayName);
-        const safeName = escapedDisplayName.replace(/'/g, "\\'").replace(/"/g, "&quot;");
 
         const tr = document.createElement('tr');
         tr.innerHTML = `
@@ -339,7 +338,7 @@
           <td><span class="pill-pts">${user.totalPoints}</span></td>
           <td style="color:#B0A69D;">${user.legacyPoints}</td>
           <td style="font-size:12px; color:#9A958F;">${formatThaiDate(user.lastUpdated)}</td>
-          <td><div class="action-group"><button class="btn btn-edit" onclick="editPoints('${user.id}', '${safeName}', ${user.totalPoints})">✏️ แก้ไข</button><button class="btn btn-history" onclick="viewHistory('${user.id}', '${safeName}')">📜 ประวัติ</button></div></td>
+          <td><div class="action-group"><button class="btn btn-edit" onclick="editPoints('${user.id}')">✏️ แก้ไข</button><button class="btn btn-history" onclick="viewHistory('${user.id}')">📜 ประวัติ</button></div></td>
         `;
         tbody.appendChild(tr);
       });
@@ -351,8 +350,13 @@
       renderTable(filtered);
     }
 
-    async function editPoints(userId, name, current) {
-      const { value: val } = await Swal.fire({ title: 'แก้ไขแต้ม', html: `ระบุแต้มใหม่สำหรับ <b>${name}</b>`, input: 'number', inputValue: current, showCancelButton: true, confirmButtonColor: '#A3B18A' });
+    async function editPoints(userId) {
+      const user = window.allUsersData ? window.allUsersData.find(u => u.id === userId) : null;
+      const name = user ? user.displayName : '';
+      const current = user ? user.totalPoints : 0;
+      const safeTitleName = escapeHtml(name);
+
+      const { value: val } = await Swal.fire({ title: 'แก้ไขแต้ม', html: `ระบุแต้มใหม่สำหรับ <b>${safeTitleName}</b>`, input: 'number', inputValue: current, showCancelButton: true, confirmButtonColor: '#A3B18A' });
       if (val !== undefined && val !== null && val !== "") {
         Swal.fire({ title: 'กำลังบันทึก...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
         const activePin = localStorage.getItem("kub_manager_pin");
@@ -370,7 +374,11 @@
       }
     }
 
-    async function viewHistory(userId, name) {
+    async function viewHistory(userId) {
+      const user = window.allUsersData ? window.allUsersData.find(u => u.id === userId) : null;
+      const name = user ? user.displayName : '';
+      const safeTitleName = escapeHtml(name);
+
       Swal.fire({ title: 'กำลังดึงประวัติ...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
       const activePin = localStorage.getItem("kub_manager_pin");
       try {
@@ -405,7 +413,7 @@
           html += `<div class="history-item"><div><div style="font-weight:bold;">${title}</div><div class="history-date">${formatThaiDate(l.timestamp.timestampValue)}</div></div><div class="history-points ${cssClass}">${sign}${pts}</div></div>`;
         });
         html += `</div>`;
-        Swal.fire({ title: `ประวัติคุณ ${name}`, html: html, confirmButtonColor: '#8C7A6B' });
+        Swal.fire({ title: `ประวัติคุณ ${safeTitleName}`, html: html, confirmButtonColor: '#8C7A6B' });
       } catch (e) { Swal.fire('Error', 'ไม่สามารถโหลดประวัติได้', 'error'); }
     }
 
