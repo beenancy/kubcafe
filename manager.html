@@ -240,14 +240,25 @@
         window.todayEarnCounts = {};
         const todayStart = new Date(); todayStart.setHours(0,0,0,0); 
 
+        async function fetchAllManagerUsers() {
+          const FIREBASE_API_KEY = "AIzaSyAi-8gxkAs3N4b5r3EULZHckqq3tHa6tlE";
+          let allDocs = [];
+          let token = "";
+          do {
+            const url = `https://firestore.googleapis.com/v1/projects/kub-cafe-pos/databases/(default)/documents/users?key=${FIREBASE_API_KEY}&pageSize=300${token ? '&pageToken=' + token : ''}`;
+            const res = await fetch(url).then(r => r.json());
+            if (res.documents) allDocs.push(...res.documents);
+            token = res.nextPageToken || "";
+          } while (token);
+          return { documents: allDocs };
+        }
+
         const [txRes, uRes, oldAccessRes] = await Promise.all([
           fetch(`${CLOUDFLARE_WORKER_URL}/api/manager-today-tx`, {
             method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Admin-PIN': activePin },
             body: JSON.stringify({ structuredQuery: { from: [{ collectionId: "transactions" }], where: { fieldFilter: { field: { fieldPath: "timestamp" }, op: "GREATER_THAN_OR_EQUAL", value: { timestampValue: todayStart.toISOString() } } }, limit: 500 } })
           }).then(r => r.json()),
-          fetch(`${CLOUDFLARE_WORKER_URL}/api/manager-users`, {
-            method: 'GET', headers: { 'X-Admin-PIN': activePin }
-          }).then(r => r.json()),
+          fetchAllManagerUsers(),
           fetch(`https://kub-cafe-pos-default-rtdb.asia-southeast1.firebasedatabase.app/old_system_access.json`).then(r => r.json()).catch(() => null)
         ]);
         
