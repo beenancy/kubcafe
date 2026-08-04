@@ -48,51 +48,139 @@
       transition: opacity 0.3s;
     }
     
-    /* Newton's Cradle Loader */
-    .newtons-cradle {
-      --uib-size: 50px;
-      --uib-speed: 1.2s;
-      --uib-color: var(--matcha-dark);
+    /* Speeder Loader (KUB Cafe Matcha Theme) */
+    .loader {
       position: relative;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: var(--uib-size);
-      height: var(--uib-size);
+      width: 160px;
+      height: 60px;
       margin-bottom: 20px;
+      animation: speeder 0.4s linear infinite;
     }
-    .newtons-cradle__dot {
-      position: relative;
-      display: flex;
-      align-items: center;
-      height: 100%;
-      width: 25%;
-      transform-origin: center top;
+    .loader > span {
+      height: 5px;
+      width: 35px;
+      background: var(--matcha-dark);
+      position: absolute;
+      top: 20px;
+      left: 30px;
+      border-radius: 2px 10px 1px 0;
     }
-    .newtons-cradle__dot::after {
-      content: '';
-      display: block;
-      width: 100%;
-      height: 25%;
+    .base span {
+      position: absolute;
+      width: 0;
+      height: 0;
+      border-top: 6px solid transparent;
+      border-right: 100px solid var(--matcha-dark);
+      border-bottom: 6px solid transparent;
+      top: 39px;
+      left: -20px;
+    }
+    .base span:before {
+      content: "";
+      height: 22px;
+      width: 22px;
       border-radius: 50%;
-      background-color: var(--uib-color);
+      background: var(--matcha-dark);
+      position: absolute;
+      right: -110px;
+      top: -16px;
     }
-    .newtons-cradle__dot:first-child {
-      animation: swing var(--uib-speed) linear infinite;
+    .base span:after {
+      content: "";
+      position: absolute;
+      width: 0;
+      height: 0;
+      border-top: 0 solid transparent;
+      border-right: 55px solid var(--matcha-dark);
+      border-bottom: 16px solid transparent;
+      top: -16px;
+      right: -98px;
     }
-    .newtons-cradle__dot:last-child {
-      animation: swing2 var(--uib-speed) linear infinite;
+    .face {
+      position: absolute;
+      height: 12px;
+      width: 20px;
+      background: var(--matcha-dark);
+      border-radius: 20px 20px 0 0;
+      transform: rotate(-40deg);
+      right: 45px;
+      top: 24px;
     }
-    @keyframes swing {
-      0% { transform: rotate(0deg); animation-timing-function: ease-out; }
-      25% { transform: rotate(70deg); animation-timing-function: ease-in; }
-      50% { transform: rotate(0deg); animation-timing-function: linear; }
+    .face:after {
+      content: "";
+      height: 12px;
+      width: 12px;
+      background: var(--matcha-dark);
+      right: 4px;
+      top: 7px;
+      position: absolute;
+      transform: rotate(40deg);
+      transform-origin: 50% 50%;
+      border-radius: 0 0 0 2px;
     }
-    @keyframes swing2 {
-      0% { transform: rotate(0deg); animation-timing-function: linear; }
-      50% { transform: rotate(0deg); animation-timing-function: ease-out; }
-      75% { transform: rotate(-70deg); animation-timing-function: ease-in; }
+    .loader > span > span:nth-child(1),
+    .loader > span > span:nth-child(2),
+    .loader > span > span:nth-child(3),
+    .loader > span > span:nth-child(4) {
+      width: 30px;
+      height: 1px;
+      background: var(--matcha-dark);
+      position: absolute;
+      animation: fazer1 0.2s linear infinite;
     }
+    .loader > span > span:nth-child(2) {
+      top: 3px;
+      animation: fazer2 0.4s linear infinite;
+    }
+    .loader > span > span:nth-child(3) {
+      top: 1px;
+      animation: fazer3 0.4s linear infinite;
+      animation-delay: -1s;
+    }
+    .loader > span > span:nth-child(4) {
+      top: 4px;
+      animation: fazer4 1s linear infinite;
+      animation-delay: -1s;
+    }
+    @keyframes fazer1 { 0% { left: 0; } 100% { left: -80px; opacity: 0; } }
+    @keyframes fazer2 { 0% { left: 0; } 100% { left: -100px; opacity: 0; } }
+    @keyframes fazer3 { 0% { left: 0; } 100% { left: -50px; opacity: 0; } }
+    @keyframes fazer4 { 0% { left: 0; } 100% { left: -150px; opacity: 0; } }
+    @keyframes speeder {
+      0% { transform: translate(2px, 1px) rotate(0deg); }
+      10% { transform: translate(-1px, -3px) rotate(-1deg); }
+      20% { transform: translate(-2px, 0px) rotate(1deg); }
+      30% { transform: translate(1px, 2px) rotate(0deg); }
+      40% { transform: translate(1px, -1px) rotate(1deg); }
+      50% { transform: translate(-1px, 3px) rotate(-1deg); }
+      60% { transform: translate(-1px, 1px) rotate(0deg); }
+      70% { transform: translate(3px, 1px) rotate(-1deg); }
+      80% { transform: translate(-2px, -1px) rotate(1deg); }
+      90% { transform: translate(2px, 1px) rotate(0deg); }
+      100% { transform: translate(1px, -2px) rotate(-1deg); }
+    }
+    .longfazers {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      top: 0;
+      left: 0;
+      pointer-events: none;
+    }
+    .longfazers span {
+      position: absolute;
+      height: 2px;
+      width: 20%;
+      background: var(--matcha-green);
+    }
+    .longfazers span:nth-child(1) { top: 20%; animation: lf 0.6s linear infinite; animation-delay: -5s; }
+    .longfazers span:nth-child(2) { top: 40%; animation: lf2 0.8s linear infinite; animation-delay: -1s; }
+    .longfazers span:nth-child(3) { top: 60%; animation: lf3 0.6s linear infinite; }
+    .longfazers span:nth-child(4) { top: 80%; animation: lf4 0.5s linear infinite; animation-delay: -3s; }
+    @keyframes lf { 0% { left: 200%; } 100% { left: -200%; opacity: 0; } }
+    @keyframes lf2 { 0% { left: 200%; } 100% { left: -200%; opacity: 0; } }
+    @keyframes lf3 { 0% { left: 200%; } 100% { left: -100%; opacity: 0; } }
+    @keyframes lf4 { 0% { left: 200%; } 100% { left: -100%; opacity: 0; } }
 
     .app-content {
       flex: 1;
@@ -522,13 +610,25 @@
 <body>
 
   <div id="loading-overlay">
-    <div class="newtons-cradle">
-      <div class="newtons-cradle__dot"></div>
-      <div class="newtons-cradle__dot"></div>
-      <div class="newtons-cradle__dot"></div>
-      <div class="newtons-cradle__dot"></div>
+    <div class="loader">
+      <span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+      </span>
+      <div class="base">
+        <span></span>
+      </div>
+      <div class="face"></div>
     </div>
-    <div style="font-size: 14px; font-weight: bold; margin-top: 10px;">กำลังเข้าสู่ระบบ...</div>
+    <div class="longfazers">
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+    <div style="font-size: 14px; font-weight: bold; margin-top: 15px; z-index: 10; color: var(--matcha-dark);">กำลังเข้าสู่ระบบ...</div>
   </div>
 
   <div class="app-content">
