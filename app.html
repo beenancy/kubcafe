@@ -707,7 +707,7 @@
           </div>
           <div style="font-weight: 700; font-size: 13px; color: var(--text-main);" id="txt-scan-btn">สแกนรับแต้ม</div>
         </div>
-        <div class="action-box" onclick="triggerMainRewardRedeem()">
+        <div class="action-box" onclick="switchTab('rewards')">
           <div style="margin-bottom: 4px; display: flex; align-items: center; justify-content: center;">
             <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#4A3F35" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
               <polyline points="20 12 20 22 4 22 4 12"></polyline>
@@ -943,7 +943,7 @@
 
         if (autoRedeem) {
           setTimeout(() => {
-            triggerMainRewardRedeem();
+            switchTab('rewards');
           }, 300);
         }
 
