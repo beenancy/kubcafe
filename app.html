@@ -795,11 +795,9 @@
 
     <div id="view-promo" class="view-section">
       <h2 class="header-title" id="txt-promo-title">โปรโมชั่นพิเศษ</h2>
-      <div class="scroll-body" style="display: flex; justify-content: center; align-items: center;">
-        <div class="coming-soon-box" style="width: 100%;">
-          <div style="font-size: 45px; margin-bottom: 10px;">&#128226;</div>
-          <h3 style="margin: 0 0 5px 0; font-size: 18px;">Coming Soon</h3>
-          <p style="font-size: 13px; margin: 0; color: var(--text-light);" id="txt-cs-2">โปรโมชั่นเด็ดๆ กำลังมา</p>
+      <div class="scroll-body" style="padding-top: 10px;">
+        <div id="promoContainer" style="display: flex; flex-direction: column; gap: 12px;">
+          <!-- Promos will be injected here -->
         </div>
       </div>
       <div class="footer-area">
@@ -1010,26 +1008,84 @@
         
         document.querySelectorAll('.text-close-btn').forEach(el => el.innerText = t.closeBtn);
         
-        let rewardHtml = "";
-        t.rewards.forEach(rw => {
-          const isEnough = globalTotalPoints >= rw.cost;
-          const btnClass = isEnough ? "btn-matcha" : "btn-matcha disabled";
-          const btnAttr = isEnough ? `onclick="redeemPoints(${rw.cost}, '${rw.logName}', '${rw.name}')"` : "disabled";
-          const btnText = isEnough ? t.btnRedeem : t.btnNoPts;
-          
-          // 🎨 ออกแบบการ์ดของรางวัลให้มีสีสันสดใส
-          rewardHtml += `
-            <div class="card-box">
-              <div class="card-icon">${rw.icon}</div>
-              <div style="font-weight: 700; font-size: 14px; color: var(--accent-brick);">${rw.name}</div>
-              <div style="font-size: 11px; color: var(--text-light); margin-top: 3px; font-weight: 600;">${rw.req}</div>
-              <button class="${btnClass}" ${btnAttr}>${btnText}</button>
-            </div>
-          `;
-        });
-        document.getElementById('rewardGridContainer').innerHTML = rewardHtml;
+        fetchAndRenderRewards();
         if (typeof renderMenu === 'function') renderMenu('coffee');
       } catch (err) { console.error(err); }
+    }
+
+    let cachedRewardsList = null;
+
+    async function fetchAndRenderRewards() {
+      try {
+        if (!cachedRewardsList) {
+          const res = await fetch('https://kub-cafe-pos-default-rtdb.asia-southeast1.firebasedatabase.app/pos_display/rewards.json');
+          cachedRewardsList = await res.json();
+        }
+      } catch(e) { console.error("Rewards RTDB error:", e); }
+
+      const rewardsToRender = (cachedRewardsList && Array.isArray(cachedRewardsList) && cachedRewardsList.length > 0) 
+        ? cachedRewardsList 
+        : i18n[globalLang].rewards;
+
+      const t = i18n[globalLang];
+      let rewardHtml = "";
+      rewardsToRender.forEach(rw => {
+        const isEnough = globalTotalPoints >= rw.cost;
+        const btnClass = isEnough ? "btn-matcha" : "btn-matcha disabled";
+        const isWalls = rw.type === 'walls_icecream';
+        const safeLogName = (rw.logName || rw.name || '').replace(/'/g, "\\'");
+        const safeName = (rw.name || '').replace(/'/g, "\\'");
+        const safeImg = rw.imgUrl ? rw.imgUrl.replace(/'/g, "\\'") : '';
+        const btnAttr = isEnough ? `onclick="redeemPoints(${rw.cost}, '${safeLogName}', '${safeName}', '${rw.icon || '🍦'}', '${rw.type || ''}', '${safeImg}')"` : "disabled";
+        const btnText = isEnough ? t.btnRedeem : t.btnNoPts;
+        
+        rewardHtml += `
+          <div class="card-box" style="position: relative; padding: 12px; border-radius: 18px; background: white; text-align: center; display: flex; flex-direction: column; justify-content: space-between; ${isWalls ? 'border: 1.5px solid #FF9F9F; background: #FFFDFD;' : ''}">
+            ${isWalls ? '<div style="position: absolute; top: 6px; right: 6px; background: #E63946; color: white; font-size: 9px; font-weight: 800; padding: 2px 6px; border-radius: 6px;">Wall\'s</div>' : ''}
+            <div style="height: 85px; display: flex; align-items: center; justify-content: center; margin-bottom: 6px;">
+              ${rw.imgUrl ? `<img src="${rw.imgUrl}" style="max-height: 80px; max-width: 100%; object-fit: contain; border-radius: 10px;" alt="${rw.name}">` : `<div class="card-icon" style="font-size: 38px;">${rw.icon || '🍵'}</div>`}
+            </div>
+            <div style="font-weight: 800; font-size: 13px; color: var(--text-main); line-height: 1.2;">${rw.name}</div>
+            <div style="font-size: 11px; color: ${isWalls ? '#E63946' : 'var(--matcha-dark)'}; margin: 4px 0 8px 0; font-weight: 700;">${rw.req || `ใช้ ${rw.cost} แต้ม`}</div>
+            <button class="${btnClass}" ${btnAttr}>${btnText}</button>
+          </div>
+        `;
+      });
+      document.getElementById('rewardGridContainer').innerHTML = rewardHtml;
+
+      // 🎨 Populate Promo Container
+      const promoContainer = document.getElementById('promoContainer');
+      if (promoContainer) {
+        let promoHtml = "";
+        rewardsToRender.forEach(rw => {
+          if (rw.type === 'walls_icecream') {
+            promoHtml += `
+              <div class="walls-promo-banner" style="margin: 0; box-shadow: 0 4px 10px rgba(230,57,70,0.15); width: 100%; display: flex; align-items: center; justify-content: space-between;" onclick="switchTab('rewards')">
+                <div class="walls-promo-badge">WALL'S PROMO</div>
+                <div style="display:flex; align-items:center; gap: 12px; width: 100%;">
+                  ${rw.imgUrl ? `<img src="${rw.imgUrl}" style="height: 55px; width: 55px; border-radius: 12px; object-fit: cover;">` : `<div style="font-size:35px;">🍦</div>`}
+                  <div style="flex:1;">
+                    <div style="font-size: 13px; font-weight: 800; color: #D62828;">${rw.name}</div>
+                    <div style="font-size: 11px; color: #6B705C; margin-top: 2px;">เพียง ${rw.cost} แต้ม (มูลค่า ${rw.value || 10}.-)</div>
+                  </div>
+                  <div class="walls-promo-arrow" style="font-size:10px; padding:4px 8px;">แลก &rsaquo;</div>
+                </div>
+              </div>
+            `;
+          }
+        });
+        
+        if (!promoHtml) {
+          promoHtml = `
+            <div class="coming-soon-box" style="width: 100%; text-align: center;">
+              <div style="font-size: 45px; margin-bottom: 10px;">&#128226;</div>
+              <h3 style="margin: 0 0 5px 0; font-size: 18px;">Coming Soon</h3>
+              <p style="font-size: 13px; margin: 0; color: var(--text-light);" id="txt-cs-2">โปรโมชั่นเด็ดๆ กำลังมา</p>
+            </div>
+          `;
+        }
+        promoContainer.innerHTML = promoHtml;
+      }
     }
 
     function renderHistory(historyArr) {
