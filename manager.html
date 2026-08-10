@@ -129,9 +129,10 @@
       </div>
 
       <!-- Navigation Tabs -->
-      <div style="display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid var(--border-color); padding-bottom: 8px;">
+      <div style="display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid var(--border-color); padding-bottom: 8px; flex-wrap: wrap;">
         <button id="tab-members-btn" class="btn" style="background: var(--text-main); color: white; border: none; padding: 10px 20px; border-radius: 12px; font-weight: bold; flex: none;" onclick="switchTab('members')">👥 รายชื่อสมาชิก</button>
         <button id="tab-menu-btn" class="btn" style="background: #EAE5D9; color: var(--text-main); border: none; padding: 10px 20px; border-radius: 12px; font-weight: bold; flex: none;" onclick="switchTab('menu-images')">🖼️ จัดการรูปเมนู</button>
+        <button id="tab-rewards-btn" class="btn" style="background: #EAE5D9; color: var(--text-main); border: none; padding: 10px 20px; border-radius: 12px; font-weight: bold; flex: none;" onclick="switchTab('rewards-manage')">🎁 จัดการของรางวัล & โปรโมชั่น</button>
       </div>
 
       <!-- Tab Contents -->
@@ -183,6 +184,23 @@
           
           <div class="menu-grid" id="menu-management-grid">
             <!-- Dynamic drinks rendered here -->
+          </div>
+        </div>
+      </div>
+
+      <!-- View Rewards & Promotion Management -->
+      <div id="view-rewards-manage" class="tab-content" style="display: none;">
+        <div class="card">
+          <div class="toolbar" style="border-bottom: 1px dashed var(--border-color); margin-bottom: 20px; padding-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+            <div>
+              <h2 style="margin: 0; font-size: 18px; color: #6B705C;">🎁 จัดการของรางวัล & โปรโมชั่นไอศกรีม Wall's</h2>
+              <p style="margin: 5px 0 0 0; font-size: 13px; color: var(--text-muted);">เพิ่ม แก้ไข หรือลบรายการแลกของรางวัล ปรับแต่งจำนวนแต้ม มูลค่าสินค้า และ URL รูปภาพได้ตามต้องการ</p>
+            </div>
+            <button class="btn btn-refresh" style="background: var(--primary-matcha);" onclick="addNewRewardItem()">➕ เพิ่มรายการของรางวัลใหม่</button>
+          </div>
+          
+          <div class="menu-grid" id="rewards-grid-container">
+            <!-- Dynamic rewards rendered here -->
           </div>
         </div>
       </div>
@@ -478,20 +496,23 @@
       document.querySelectorAll('.tab-content').forEach(el => el.style.display = 'none');
       const membersBtn = document.getElementById('tab-members-btn');
       const menuBtn = document.getElementById('tab-menu-btn');
+      const rewardsBtn = document.getElementById('tab-rewards-btn');
       
+      [membersBtn, menuBtn, rewardsBtn].forEach(b => {
+        if(b) { b.style.background = '#EAE5D9'; b.style.color = 'var(--text-main)'; }
+      });
+
       if (tabName === 'members') {
         document.getElementById('view-members').style.display = 'block';
-        membersBtn.style.background = 'var(--text-main)';
-        membersBtn.style.color = 'white';
-        menuBtn.style.background = '#EAE5D9';
-        menuBtn.style.color = 'var(--text-main)';
-      } else {
+        if (membersBtn) { membersBtn.style.background = 'var(--text-main)'; membersBtn.style.color = 'white'; }
+      } else if (tabName === 'menu-images') {
         document.getElementById('view-menu-images').style.display = 'block';
-        menuBtn.style.background = 'var(--text-main)';
-        menuBtn.style.color = 'white';
-        membersBtn.style.background = '#EAE5D9';
-        membersBtn.style.color = 'var(--text-main)';
+        if (menuBtn) { menuBtn.style.background = 'var(--text-main)'; menuBtn.style.color = 'white'; }
         loadMenuManagement();
+      } else if (tabName === 'rewards-manage') {
+        document.getElementById('view-rewards-manage').style.display = 'block';
+        if (rewardsBtn) { rewardsBtn.style.background = 'var(--text-main)'; rewardsBtn.style.color = 'white'; }
+        loadRewardsManagement();
       }
     }
 
@@ -850,6 +871,157 @@
           Swal.fire('เกิดข้อผิดพลาด', 'ไม่สามารถลบราคาได้: ' + err.message, 'error');
         }
       }
+    }
+
+    // --- REWARDS & PROMOTION MANAGEMENT LOGIC ---
+    let currentRewardsData = [];
+
+    async function loadRewardsManagement() {
+      const container = document.getElementById('rewards-grid-container');
+      if (container) container.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:30px; color:#888;">⏳ กำลังโหลดข้อมูลของรางวัล...</div>';
+      
+      try {
+        const res = await fetch('https://kub-cafe-pos-default-rtdb.asia-southeast1.firebasedatabase.app/pos_display/rewards.json');
+        currentRewardsData = await res.json() || [];
+        if (!Array.isArray(currentRewardsData)) currentRewardsData = [];
+        renderRewardsManagementGrid();
+      } catch (err) {
+        console.error("Failed to load rewards:", err);
+        if (container) container.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:30px; color:#d32f2f;">❌ ไม่สามารถดึงข้อมูลของรางวัลได้</div>';
+      }
+    }
+
+    function renderRewardsManagementGrid() {
+      const container = document.getElementById('rewards-grid-container');
+      if (!container) return;
+
+      if (currentRewardsData.length === 0) {
+        container.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:30px; color:#888;">ยังไม่มีรายการของรางวัล กดปุ่ม "+ เพิ่มรายการใหม่" ด้านบนเพื่อเริ่มสร้างได้เลยครับ</div>';
+        return;
+      }
+
+      let html = "";
+      currentRewardsData.forEach((rw, idx) => {
+        const isWalls = rw.type === 'walls_icecream';
+        html += `
+          <div class="menu-card" style="border:1.5px solid ${isWalls ? '#FF8585' : 'var(--border-color)'}; background:${isWalls ? '#FFFDFD' : '#FFF'};">
+            <div class="menu-card-header" style="position:relative;">
+              ${isWalls ? '<span style="position:absolute; top:-5px; right:0; background:#E63946; color:white; font-size:10px; font-weight:bold; padding:2px 8px; border-radius:6px;">Wall\'s Ice Cream</span>' : ''}
+              <img class="menu-card-img" src="${rw.imgUrl || 'https://via.placeholder.com/70'}" alt="${rw.name}" onerror="this.src='https://via.placeholder.com/70'">
+              <div class="menu-card-details">
+                <h4 class="menu-card-title">${rw.name}</h4>
+                <p class="menu-card-subtitle">ใช้: <strong style="color:var(--matcha-dark);">${rw.cost || 10} แต้ม</strong> ${rw.value ? `| มูลค่า: ${rw.value}.-` : ''}</p>
+              </div>
+            </div>
+            
+            <div class="menu-card-actions" style="margin-top:12px;">
+              <div class="menu-input-group">
+                <span style="font-size:12px; width:70px; font-weight:bold;">ชื่อรายการ:</span>
+                <input type="text" class="menu-text-input" id="rw-name-${idx}" value="${rw.name || ''}" placeholder="ชื่อของรางวัล">
+              </div>
+              <div style="display:flex; gap:8px;">
+                <div class="menu-input-group" style="flex:1;">
+                  <span style="font-size:12px; width:55px; font-weight:bold;">แต้มที่ใช้:</span>
+                  <input type="number" class="menu-text-input" id="rw-cost-${idx}" value="${rw.cost || 10}" min="1">
+                </div>
+                <div class="menu-input-group" style="flex:1;">
+                  <span style="font-size:12px; width:55px; font-weight:bold;">มูลค่า(฿):</span>
+                  <input type="number" class="menu-text-input" id="rw-val-${idx}" value="${rw.value || ''}" placeholder="เช่น 10">
+                </div>
+              </div>
+              <div class="menu-input-group">
+                <span style="font-size:12px; width:70px; font-weight:bold;">ประเภท:</span>
+                <select class="menu-text-input" id="rw-type-${idx}">
+                  <option value="walls_icecream" ${isWalls ? 'selected' : ''}>🍦 ไอศกรีม Wall's</option>
+                  <option value="discount" ${!isWalls ? 'selected' : ''}>🍵 ส่วนลดเครื่องดื่ม</option>
+                </select>
+              </div>
+              <div class="menu-input-group">
+                <span style="font-size:12px; width:70px; font-weight:bold;">URL รูปภาพ:</span>
+                <input type="text" class="menu-text-input" id="rw-img-${idx}" value="${rw.imgUrl || ''}" placeholder="https://...">
+              </div>
+
+              <div style="display:flex; gap:8px; margin-top:6px;">
+                <button class="btn-save-img" onclick="saveSingleReward(${idx})">💾 บันทึก</button>
+                <button class="btn-reset-img" onclick="deleteSingleReward(${idx})">🗑️ ลบ</button>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+
+      container.innerHTML = html;
+    }
+
+    async function saveAllRewardsToDB() {
+      try {
+        const res = await fetch('https://kub-cafe-pos-default-rtdb.asia-southeast1.firebasedatabase.app/pos_display/rewards.json', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(currentRewardsData)
+        });
+        if (res.ok) {
+          Swal.fire('บันทึกสำเร็จ!', 'อัปเดตข้อมูลของรางวัลและโปรโมชั่นเรียบร้อยแล้วครับ', 'success');
+          renderRewardsManagementGrid();
+        } else {
+          throw new Error(await res.text());
+        }
+      } catch (err) {
+        Swal.fire('ข้อผิดพลาด', 'ไม่สามารถบันทึกได้: ' + err.message, 'error');
+      }
+    }
+
+    function saveSingleReward(idx) {
+      if (idx < 0 || idx >= currentRewardsData.length) return;
+      const name = document.getElementById(`rw-name-${idx}`).value.trim();
+      const cost = parseInt(document.getElementById(`rw-cost-${idx}`).value) || 10;
+      const val = parseInt(document.getElementById(`rw-val-${idx}`).value) || 0;
+      const type = document.getElementById(`rw-type-${idx}`).value;
+      const img = document.getElementById(`rw-img-${idx}`).value.trim();
+
+      currentRewardsData[idx].name = name;
+      currentRewardsData[idx].cost = cost;
+      currentRewardsData[idx].req = `ใช้ ${cost} แต้ม`;
+      currentRewardsData[idx].value = val;
+      currentRewardsData[idx].type = type;
+      currentRewardsData[idx].imgUrl = img;
+      currentRewardsData[idx].logName = name;
+
+      saveAllRewardsToDB();
+    }
+
+    function addNewRewardItem() {
+      const newId = 'rw_' + Date.now();
+      currentRewardsData.push({
+        id: newId,
+        name: "ไอศกรีม Wall's 10 บาท",
+        type: "walls_icecream",
+        value: 10,
+        cost: 10,
+        req: "ใช้ 10 แต้ม",
+        icon: "🍦",
+        imgUrl: "https://images.unsplash.com/photo-1570197788417-0e82375c9371?w=300&auto=format&fit=crop&q=80",
+        description: "แลกรับไอศกรีมวอลล์ มูลค่า 10 บาท",
+        logName: "ไอศกรีม Wall's 10 บาท"
+      });
+      renderRewardsManagementGrid();
+      saveAllRewardsToDB();
+    }
+
+    function deleteSingleReward(idx) {
+      Swal.fire({
+        title: 'ยืนยันการลบ?',
+        text: `ต้องการลบของรางวัล "${currentRewardsData[idx]?.name}" ใช่หรือไม่?`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'ลบรายการ',
+        cancelButtonText: 'ยกเลิก'
+      }).then(res => {
+        if (res.isConfirmed) {
+          currentRewardsData.splice(idx, 1);
+          saveAllRewardsToDB();
+        }
+      });
     }
   </script>
 </body>

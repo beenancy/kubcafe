@@ -566,6 +566,38 @@
       border: 1px solid rgba(255, 255, 255, 0.1);
     }
     
+    /* 🍦 Wall's Ice Cream Promo Banner Styling */
+    .walls-promo-banner {
+      background: linear-gradient(135deg, #FFF6F6 0%, #FFE5E5 100%);
+      border: 1.5px solid #FF8585;
+      border-radius: 18px;
+      padding: 10px 14px;
+      margin: 10px 0 8px 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 6px 15px rgba(230, 57, 70, 0.1);
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.2s;
+    }
+    .walls-promo-banner:active { transform: scale(0.97); }
+    .walls-promo-badge {
+      position: absolute;
+      top: 0; right: 0;
+      background: #E63946;
+      color: white;
+      font-size: 9px;
+      font-weight: 800;
+      padding: 2px 7px;
+      border-bottom-left-radius: 9px;
+      letter-spacing: 0.5px;
+    }
+    .walls-promo-title { font-size: 13px; font-weight: 800; color: #D62828; }
+    .walls-promo-sub { font-size: 11px; color: #6B705C; margin-top: 2px; }
+    .walls-promo-arrow { background: #E63946; color: white; padding: 5px 10px; border-radius: 12px; font-size: 11px; font-weight: 700; white-space: nowrap; }
+    
     @keyframes slideInRight {
       from { transform: translateX(30px); opacity: 0; }
       to { transform: translateX(0); opacity: 1; }
@@ -687,6 +719,16 @@
           </div>
           <div style="font-weight: 700; font-size: 13px; color: var(--text-main);" id="txt-go-reward-btn">แลกของรางวัล</div>
         </div>
+      </div>
+
+      <!-- 🍦 Wall's Ice Cream Special Promo Banner -->
+      <div class="walls-promo-banner" onclick="switchTab('rewards')">
+        <div class="walls-promo-badge">SPECIAL PROMO</div>
+        <div class="walls-promo-content">
+          <div class="walls-promo-title">🍦 แลกไอศกรีม Wall's สุดฟิน</div>
+          <div class="walls-promo-sub">เริ่มต้นเพียง 10 แต้ม (แลกได้ถึง 29.-)</div>
+        </div>
+        <div class="walls-promo-arrow">แลกเลย &rsaquo;</div>
       </div>
 
       <div style="display: flex; flex-direction: column; overflow: hidden; flex: 1; margin-top: 4px;">
@@ -1047,60 +1089,44 @@
           } else if (item.type === "edit") {
             title = t.txtEdit;
             ptsText = (item.points >= 0 ? `+${item.points}` : `${item.points}`) + unit;
-            ptsColor = item.points >= 0 ? "#7A8B62" : "#C57B57";
-            iconHtml = `
-              <div class="history-icon-wrapper" style="background-color: #E2E8F0;">
-                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#4A3F35" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                  <circle cx="12" cy="12" r="3"></circle>
-                  <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-                </svg>
-              </div>
-            `;
-          } else {
-            title = t.txtEarn;
-            ptsText = `+${item.points}${unit}`;
-            ptsColor = "#7A8B62";
-            iconHtml = `
-              <div class="history-icon-wrapper" style="background-color: #EAE5DB;">
-                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#4A3F35" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M18 8h1a4 4 0 0 1 0 8h-1"></path>
-                  <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path>
-                  <line x1="6" y1="2" x2="6" y2="4"></line>
-                  <line x1="10" y1="2" x2="10" y2="4"></line>
-                  <line x1="14" y1="2" x2="14" y2="4"></line>
-                </svg>
-              </div>
-            `;
+            dateStr = `${dateVal} ${monthVal} ${timeVal}`;
           }
 
-          const itemHtml = `
+          const isEarn = item.type === "earn";
+          const isRedeem = item.type === "redeem";
+          const ptsText = isEarn ? `+${item.points}` : (isRedeem ? `-${item.points}` : `${item.points}`);
+          const ptsClass = isEarn ? "pts-plus" : (isRedeem ? "pts-minus" : "pts-edit");
+          
+          let actName = item.description || (isEarn ? t.txtEarn : (isRedeem ? t.txtRedeem : t.txtEdit));
+          if (actName === "ซื้อเครื่องดื่ม" && globalLang === "EN") actName = "Buy Drink";
+          if (actName === "แลกของรางวัล" && globalLang === "EN") actName = "Redeem Reward";
+          if (actName === "ปรับปรุงคะแนน" && globalLang === "EN") actName = "Points Adjustment";
+
+          const rowHtml = `
             <div class="list-item">
-              <div style="display: flex; align-items: center; gap: 12px;">
-                ${iconHtml}
-                <div>
-                  <div style="font-weight: 600; font-size: 13px; color: var(--text-main);">${title}</div>
-                  <div style="font-size: 11px; color: var(--text-light); margin-top: 1px;">${dateStr}</div>
-                </div>
+              <div>
+                <div class="item-title">${actName}</div>
+                <div class="item-date">${dateStr}</div>
               </div>
-              <div style="color: ${ptsColor}; font-weight: 700; font-size: 15px;">${ptsText}</div>
+              <div class="item-pts ${ptsClass}">${ptsText}</div>
             </div>
           `;
-          fullHtml += itemHtml;
-          if (index < 3) recentHtml += itemHtml;
+
+          fullHtml += rowHtml;
+          if (index < 5) recentHtml += rowHtml;
         });
-        
+
         if (fullContainer) fullContainer.innerHTML = fullHtml;
         if (recentContainer) recentContainer.innerHTML = recentHtml;
-
       } catch (err) { console.error(err); }
     }
 
     function triggerMainRewardRedeem() {
-      const rw = i18n[globalLang].rewards[0];
-      redeemPoints(rw.cost, rw.logName, rw.name, rw.icon);
+      const rw = (cachedRewardsList && cachedRewardsList[0]) || i18n[globalLang].rewards[0];
+      redeemPoints(rw.cost, rw.logName || rw.name, rw.name, rw.icon || '🍵', rw.type || '', rw.imgUrl || '');
     }
 
-    async function redeemPoints(pointsNeeded, logName, displayRewardName, rewardIcon = '🍵') {
+    async function redeemPoints(pointsNeeded, logName, displayRewardName, rewardIcon = '🍵', rewardType = '', rewardImg = '') {
       if (globalTotalPoints < pointsNeeded) {
         showMinimalAlert('❌', globalLang === "EN" ? 'Points Not Enough' : 'แต้มไม่พอแลกค่ะ', globalLang === "EN" ? 'You need 10 points to redeem this reward.' : 'คุณต้องมีสะสมอย่างน้อย 10 แต้มค่ะ', 'ตกลง', true);
         return;
@@ -1109,15 +1135,15 @@
       const txtYes = globalLang === "EN" ? "Confirm" : "ยืนยันแลก";
       const txtNo = globalLang === "EN" ? "Cancel" : "ยกเลิก";
       const isEN = globalLang === "EN";
+      const isWalls = rewardType === 'walls_icecream' || logName.includes("Wall") || logName.includes("ไอศกรีม");
 
-      // 🎨 1. เปลี่ยนหน้าต่างยืนยันให้เป็น Extreme Minimal + การ์ดตั๋วคูปองสุดเก๋ (Cozy Retro Coupon Ticket) [Compact Version]
       const confirmHtml = `
         <div style="text-align: center; padding: 0;">
-          <div style="background: #FDFCF0; border: 1.5px solid #E8E2D9; border-radius: 16px; padding: 12px 15px; position: relative; overflow: hidden; box-shadow: 0 4px 15px rgba(122, 139, 98, 0.08);">
+          <div style="background: ${isWalls ? '#FFF8F8' : '#FDFCF0'}; border: 1.5px solid ${isWalls ? '#FFB4B4' : '#E8E2D9'}; border-radius: 16px; padding: 12px 15px; position: relative; overflow: hidden; box-shadow: 0 4px 15px rgba(122, 139, 98, 0.08);">
             <div style="position: absolute; left: -10px; top: 50%; transform: translateY(-50%); width: 20px; height: 20px; border-radius: 50%; background: #FAF7F0; border-right: 1.5px solid #E8E2D9;"></div>
             <div style="position: absolute; right: -10px; top: 50%; transform: translateY(-50%); width: 20px; height: 20px; border-radius: 50%; background: #FAF7F0; border-left: 1.5px solid #E8E2D9;"></div>
             
-            <!-- Premium Steaming Coffee/Tea Cup SVG Illustration -->
+            ${isWalls && rewardImg ? `<img src="${rewardImg}" style="height: 50px; object-fit: contain; margin: 0 auto 5px auto; display: block;" alt="Wall's Ice Cream">` : `
             <svg viewBox="0 0 100 100" width="45" height="45" style="margin: 0 auto 5px auto; display: block;">
               <path d="M25,38 L75,38 C75,38 72,75 50,75 C28,75 25,38 25,38 Z" fill="#EAF0E4" stroke="#A3B18A" stroke-width="3" stroke-linejoin="round" />
               <path d="M75,48 C83,48 83,60 75,60" fill="none" stroke="#A3B18A" stroke-width="3" stroke-linecap="round" />
@@ -1125,13 +1151,13 @@
               <path d="M42,28 C42,23 48,21 45,15" fill="none" stroke="#A3B18A" stroke-width="2.5" stroke-linecap="round" />
               <path d="M52,30 C52,25 58,23 55,17" fill="none" stroke="#A3B18A" stroke-width="2.5" stroke-linecap="round" />
               <line x1="15" y1="82" x2="85" y2="82" stroke="#EAE0D5" stroke-width="3.5" stroke-linecap="round" />
-            </svg>
+            </svg>`}
             
-            <div style="color: #4A3F35; font-size: 15px; font-weight: 800; margin-bottom: 2px;">
+            <div style="color: ${isWalls ? '#D62828' : '#4A3F35'}; font-size: 15px; font-weight: 800; margin-bottom: 2px;">
               ${displayRewardName}
             </div>
             
-            <div style="background: #EAF0E4; color: #7A8B62; font-size: 11px; font-weight: 700; padding: 2px 10px; border-radius: 50px; display: inline-block; margin-bottom: 6px; font-family: 'Prompt';">
+            <div style="background: ${isWalls ? '#E63946' : '#EAF0E4'}; color: ${isWalls ? '#FFFFFF' : '#7A8B62'}; font-size: 11px; font-weight: 700; padding: 2px 10px; border-radius: 50px; display: inline-block; margin-bottom: 6px; font-family: 'Prompt';">
               ${isEN ? `Use ${pointsNeeded} Points` : `ใช้ ${pointsNeeded} แต้ม`}
             </div>
             
@@ -1164,8 +1190,23 @@
         
         if (data.status === "success") {
           
-          // 🎨 2. เปลี่ยนหน้าต่างแลกสำเร็จให้เป็น Extreme Minimal + การ์ดตั๋วคูปองสุดเก๋ (Cozy Retro Coupon Ticket) [Compact Version]
-          const successHtml = `
+          const successHtml = isWalls ? `
+            <div style="text-align: center; padding: 0;">
+              <div style="background: linear-gradient(135deg, #FFF8F8 0%, #FFEAEA 100%); border: 2px dashed #E63946; border-radius: 18px; padding: 14px 12px; position: relative; overflow: hidden; box-shadow: 0 8px 25px rgba(230, 57, 70, 0.15);">
+                <div style="position: absolute; top: 0; right: 0; background: #E63946; color: white; font-size: 9px; font-weight: 800; padding: 2px 8px; border-bottom-left-radius: 10px; letter-spacing: 0.5px;">WALL'S VOUCHER</div>
+                ${rewardImg ? `<img src="${rewardImg}" style="height: 65px; object-fit: contain; margin: 4px auto 6px auto; display: block;" alt="Wall's Ice Cream">` : '<div style="font-size: 38px; margin: 4px 0;">🍦</div>'}
+                <div style="color: #D62828; font-size: 15px; font-weight: 800; margin-bottom: 2px;">
+                  ${displayRewardName}
+                </div>
+                <div style="color: #6B705C; font-size: 11px; margin-bottom: 8px; font-weight: 600;">
+                  โปรดแสดงรหัสตั๋วนี้แก่พนักงานเพื่อรับไอศกรีมวอลล์
+                </div>
+                <div style="background: #E63946; color: #FFFFFF; border-radius: 12px; padding: 8px; font-weight: 900; font-size: 20px; letter-spacing: 2px; font-family: monospace; box-shadow: 0 4px 10px rgba(230,57,70,0.3);">
+                  ${data.refCode}
+                </div>
+              </div>
+            </div>
+          ` : `
             <div style="text-align: center; padding: 0;">
               <div style="background: #FDFCF0; border: 1.5px solid #EAE0D5; border-radius: 16px; padding: 12px 15px; position: relative; overflow: hidden; box-shadow: 0 4px 15px rgba(122, 139, 98, 0.08);">
                 <div style="position: absolute; left: -10px; top: 40%; transform: translateY(-50%); width: 20px; height: 20px; border-radius: 50%; background: #FAF7F0; border-right: 1.5px solid #EAE0D5;"></div>
