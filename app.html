@@ -1974,29 +1974,120 @@ function renderMenu(category, btnElement = null, animClass = 'fade-in-anim') {
       }
     }
 
+    function downloadQRCode(url, filename) {
+      fetch(url)
+        .then(response => response.blob())
+        .then(blob => {
+          const blobUrl = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.style.display = 'none';
+          a.href = blobUrl;
+          a.download = filename;
+          document.body.appendChild(a);
+          a.click();
+          window.URL.revokeObjectURL(blobUrl);
+          if (typeof Swal !== 'undefined' && Swal.isVisible()) {
+            Swal.showValidationMessage('บันทึกรูป QR Code ลงเครื่องแล้วค่ะ 📥');
+            setTimeout(() => Swal.resetValidationMessage(), 2500);
+          }
+        })
+        .catch(() => {
+          window.open(url, '_blank');
+        });
+    }
+
+    function launchBankApp(scheme) {
+      try {
+        window.location.href = scheme;
+      } catch(e) {
+        console.error("Launch bank app error:", e);
+      }
+    }
+
+    function handleSlipFileChange(input) {
+      const container = document.getElementById('slip-preview-container');
+      const img = document.getElementById('slip-preview-img');
+      const nameLabel = document.getElementById('slip-preview-name');
+      if (input.files && input.files[0]) {
+        const file = input.files[0];
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          if (img) img.src = e.target.result;
+          if (nameLabel) nameLabel.innerText = file.name;
+          if (container) container.style.display = 'flex';
+        };
+        reader.readAsDataURL(file);
+      } else {
+        if (container) container.style.display = 'none';
+      }
+    }
+
     function openPaymentModal(finalAmount, pointsUsed, rewardName) {
       const promptPayNumber = "0848849844"; // เบอร์พร้อมเพย์ KUB Café
       const qrUrl = `https://promptpay.io/${promptPayNumber}/${finalAmount}.png`;
 
       const paymentHtml = `
         <div style="text-align: center; font-family: 'Prompt', sans-serif;">
-          <div style="font-size: 15px; font-weight: 800; color: #7A8B62; margin-bottom: 4px;">สแกนชำระเงินผ่านพร้อมเพย์</div>
-          <div style="font-size: 11px; color: #6B705C; margin-bottom: 10px;">ยอดชำระตรงเป๊ะ สะดวกรวดเร็ว</div>
+          <div style="font-size: 15px; font-weight: 800; color: #7A8B62; margin-bottom: 2px;">สแกนชำระเงินผ่านพร้อมเพย์</div>
+          <div style="font-size: 11px; color: #6B705C; margin-bottom: 8px;">ยอดชำระตรงเป๊ะ สะดวกรวดเร็ว</div>
 
-          <div style="background: #FFFFFF; border: 2px solid #A3B18A; border-radius: 16px; padding: 12px; display: inline-block; box-shadow: 0 4px 15px rgba(122, 139, 98, 0.15); margin-bottom: 10px;">
-            <img src="${qrUrl}" alt="PromptPay QR" style="width: 180px; height: 180px; display: block; border-radius: 8px;" onerror="this.src='https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=promptpay'">
-            <div style="font-size: 11px; color: #4A3F35; font-weight: 700; margin-top: 6px;">KUB CAFÉ (พร้อมเพย์)</div>
+          <!-- กรอบแสดง QR Code -->
+          <div style="background: #FFFFFF; border: 2px solid #A3B18A; border-radius: 16px; padding: 10px; display: inline-block; box-shadow: 0 4px 15px rgba(122, 139, 98, 0.15); margin-bottom: 8px;">
+            <img id="promptpay-qr-img" src="${qrUrl}" alt="PromptPay QR" style="width: 165px; height: 165px; display: block; border-radius: 8px; margin: 0 auto;" onerror="this.src='https://api.qrserver.com/v1/create-qr-code/?size=165x165&data=promptpay'">
+            <div style="font-size: 11px; color: #4A3F35; font-weight: 700; margin-top: 4px;">KUB CAFÉ (พร้อมเพย์)</div>
+            
+            <button type="button" onclick="downloadQRCode('${qrUrl}', 'PromptPay_KUB_${finalAmount}THB.png')" style="margin-top: 6px; background: #7A8B62; color: #FFFFFF; border: none; border-radius: 8px; padding: 6px 12px; font-size: 11px; font-weight: 800; font-family: 'Prompt', sans-serif; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 2px 6px rgba(122, 139, 98, 0.3);">
+              📥 บันทึกภาพ QR ลงเครื่อง
+            </button>
+            <div style="font-size: 9.5px; color: #8C827A; margin-top: 3px;">(หรือแตะค้างที่รูป QR เพื่อบันทึก)</div>
           </div>
 
-          <div style="background: #FDFCF0; border: 1px solid #E8E2D9; border-radius: 12px; padding: 8px 12px; margin-bottom: 12px;">
-            <div style="font-size: 11px; color: #6B705C;">ยอดเงินที่ต้องโอน:</div>
-            <div style="font-size: 24px; font-weight: 900; color: #C57B57;">${finalAmount}.- บาท</div>
+          <!-- แถบทางลัดเปิดแอปธนาคาร -->
+          <div style="background: #FDFCF0; border: 1px solid #E8E2D9; border-radius: 12px; padding: 8px 10px; margin-bottom: 8px; text-align: left;">
+            <div style="font-size: 11px; font-weight: 700; color: #5E6D49; margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between;">
+              <span>⚡ เปิดแอปธนาคารเพื่อสแกนรูป:</span>
+              <span style="font-size: 10px; color: #8C827A;">(แตะเปิดแอป)</span>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px;">
+              <button type="button" onclick="launchBankApp('kplus://')" style="background: #138F2D; color: white; border: none; padding: 6px 4px; border-radius: 8px; font-size: 10px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 3px;">
+                🟢 K PLUS
+              </button>
+              <button type="button" onclick="launchBankApp('scbeasy://')" style="background: #4E2A84; color: white; border: none; padding: 6px 4px; border-radius: 8px; font-size: 10px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 3px;">
+                🟣 SCB Easy
+              </button>
+              <button type="button" onclick="launchBankApp('ktbnext://')" style="background: #00A3E0; color: white; border: none; padding: 6px 4px; border-radius: 8px; font-size: 10px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 3px;">
+                🔵 KTB NEXT
+              </button>
+              <button type="button" onclick="launchBankApp('ttbtouch://')" style="background: #002D62; color: white; border: none; padding: 6px 4px; border-radius: 8px; font-size: 10px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 3px;">
+                🔴 ttb touch
+              </button>
+              <button type="button" onclick="launchBankApp('kma://')" style="background: #FEC500; color: #4A3F35; border: none; padding: 6px 4px; border-radius: 8px; font-size: 10px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 3px;">
+                🟡 Krungsri
+              </button>
+              <button type="button" onclick="launchBankApp('bualuangmbanking://')" style="background: #1E3A8A; color: white; border: none; padding: 6px 4px; border-radius: 8px; font-size: 10px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 3px;">
+                🔷 BBL
+              </button>
+            </div>
           </div>
 
-          <!-- ช่องแนบสลิป -->
-          <div style="text-align: left; margin-bottom: 10px;">
-            <label style="font-size: 12px; font-weight: 700; color: #4A3F35; display: block; margin-bottom: 4px;">📸 แนบสลิปโอนเงิน:</label>
-            <input type="file" id="slip-file-input" accept="image/*" style="width: 100%; padding: 8px; border: 1.5px dashed #A3B18A; border-radius: 10px; font-size: 12px; background: white; box-sizing: border-box;">
+          <!-- ยอดเงินที่ต้องโอน -->
+          <div style="background: #FDFCF0; border: 1px solid #E8E2D9; border-radius: 12px; padding: 6px 10px; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between;">
+            <div style="font-size: 12px; color: #6B705C; font-weight: 700;">ยอดเงินที่ต้องโอน:</div>
+            <div style="font-size: 20px; font-weight: 900; color: #C57B57;">${finalAmount}.- บาท</div>
+          </div>
+
+          <!-- ช่องแนบสลิปพร้อมแสดง Preview -->
+          <div style="text-align: left; margin-bottom: 4px;">
+            <label style="font-size: 11.5px; font-weight: 700; color: #4A3F35; display: block; margin-bottom: 3px;">📸 แนบสลิปโอนเงิน (จำเป็น):</label>
+            <input type="file" id="slip-file-input" accept="image/*" onchange="handleSlipFileChange(this)" style="width: 100%; padding: 7px; border: 1.5px dashed #A3B18A; border-radius: 10px; font-size: 11px; background: white; box-sizing: border-box;">
+            
+            <div id="slip-preview-container" style="display: none; margin-top: 6px; padding: 6px 10px; background: #EAF0E4; border: 1px solid #A3B18A; border-radius: 10px; align-items: center; gap: 8px;">
+              <img id="slip-preview-img" src="" alt="Slip Preview" style="width: 36px; height: 36px; object-fit: cover; border-radius: 6px; border: 1px solid #7A8B62;">
+              <div style="overflow: hidden;">
+                <div style="font-size: 11px; font-weight: 800; color: #5E6D49;">✅ แนบสลิปเรียบร้อยแล้ว</div>
+                <div id="slip-preview-name" style="font-size: 9.5px; color: #7A8B62; max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"></div>
+              </div>
+            </div>
           </div>
         </div>
       `;
@@ -2010,8 +2101,8 @@ function renderMenu(category, btnElement = null, animClass = 'fade-in-anim') {
         buttonsStyling: false,
         preConfirm: () => {
           const fileInput = document.getElementById('slip-file-input');
-          if (!fileInput || !fileInput.files.length) {
-            Swal.showValidationMessage('กรุณาแนบรูปสลิปโอนเงินด้วยนะคะ');
+          if (!fileInput || !fileInput.files || !fileInput.files.length) {
+            Swal.showValidationMessage('กรุณาแนบรูปภาพสลิปโอนเงินก่อนยืนยันค่ะ 📸');
             return false;
           }
           return fileInput.files[0];
