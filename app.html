@@ -1996,12 +1996,19 @@ function renderMenu(category, btnElement = null, animClass = 'fade-in-anim') {
         });
     }
 
-    function launchBankApp(scheme) {
-      try {
-        window.location.href = scheme;
-      } catch(e) {
-        console.error("Launch bank app error:", e);
+    function handleBankSelectAndLaunch(scheme, bankName) {
+      const qrImageUrl = 'images/kub_promptpay_qr.jpg';
+      downloadQRCode(qrImageUrl, 'KUB_Cafe_PromptPay_QR.jpg');
+      if (typeof Swal !== 'undefined' && Swal.isVisible()) {
+        Swal.showValidationMessage(`📥 บันทึก QR แล้ว กำลังเปิด ${bankName}... 🚀`);
       }
+      setTimeout(() => {
+        try {
+          window.location.href = scheme;
+        } catch(e) {
+          console.error("Launch bank app error:", e);
+        }
+      }, 350);
     }
 
     function handleSlipFileChange(input) {
@@ -2023,48 +2030,46 @@ function renderMenu(category, btnElement = null, animClass = 'fade-in-anim') {
     }
 
     function openPaymentModal(finalAmount, pointsUsed, rewardName) {
-      const promptPayNumber = "0848849844"; // เบอร์พร้อมเพย์ KUB Café
-      const qrUrl = `https://promptpay.io/${promptPayNumber}/${finalAmount}.png`;
+      const qrImageUrl = 'images/kub_promptpay_qr.jpg';
 
       const paymentHtml = `
         <div style="text-align: center; font-family: 'Prompt', sans-serif;">
-          <div style="font-size: 15px; font-weight: 800; color: #7A8B62; margin-bottom: 2px;">สแกนชำระเงินผ่านพร้อมเพย์</div>
-          <div style="font-size: 11px; color: #6B705C; margin-bottom: 8px;">ยอดชำระตรงเป๊ะ สะดวกรวดเร็ว</div>
+          <div style="font-size: 15px; font-weight: 800; color: #7A8B62; margin-bottom: 2px;">สแกนชำระเงิน (K SHOP พร้อมเพย์)</div>
+          <div style="font-size: 11px; color: #6B705C; margin-bottom: 8px;">แตะเลือกธนาคาร ➡️ เซฟ QR และเปิดแอปให้อัตโนมัติ</div>
 
-          <!-- กรอบแสดง QR Code -->
+          <!-- กรอบแสดง QR Code ของจริง -->
           <div style="background: #FFFFFF; border: 2px solid #A3B18A; border-radius: 16px; padding: 10px; display: inline-block; box-shadow: 0 4px 15px rgba(122, 139, 98, 0.15); margin-bottom: 8px;">
-            <img id="promptpay-qr-img" src="${qrUrl}" alt="PromptPay QR" style="width: 165px; height: 165px; display: block; border-radius: 8px; margin: 0 auto;" onerror="this.src='https://api.qrserver.com/v1/create-qr-code/?size=165x165&data=promptpay'">
-            <div style="font-size: 11px; color: #4A3F35; font-weight: 700; margin-top: 4px;">KUB CAFÉ (พร้อมเพย์)</div>
+            <img id="promptpay-qr-img" src="${qrImageUrl}" alt="KUB Cafe PromptPay QR" style="width: 170px; height: 170px; display: block; border-radius: 8px; margin: 0 auto; object-fit: contain;" onerror="this.src='qr%20kshop.jpg'">
+            <div style="font-size: 11.5px; color: #4A3F35; font-weight: 800; margin-top: 4px;">KUB CAFÉ (K SHOP พร้อมเพย์)</div>
             
-            <button type="button" onclick="downloadQRCode('${qrUrl}', 'PromptPay_KUB_${finalAmount}THB.png')" style="margin-top: 6px; background: #7A8B62; color: #FFFFFF; border: none; border-radius: 8px; padding: 6px 12px; font-size: 11px; font-weight: 800; font-family: 'Prompt', sans-serif; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 2px 6px rgba(122, 139, 98, 0.3);">
+            <button type="button" onclick="downloadQRCode('${qrImageUrl}', 'KUB_Cafe_PromptPay_QR.jpg')" style="margin-top: 6px; background: #7A8B62; color: #FFFFFF; border: none; border-radius: 8px; padding: 6px 12px; font-size: 11px; font-weight: 800; font-family: 'Prompt', sans-serif; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 2px 6px rgba(122, 139, 98, 0.3);">
               📥 บันทึกภาพ QR ลงเครื่อง
             </button>
             <div style="font-size: 9.5px; color: #8C827A; margin-top: 3px;">(หรือแตะค้างที่รูป QR เพื่อบันทึก)</div>
           </div>
 
-          <!-- แถบทางลัดเปิดแอปธนาคาร -->
-          <div style="background: #FDFCF0; border: 1px solid #E8E2D9; border-radius: 12px; padding: 8px 10px; margin-bottom: 8px; text-align: left;">
-            <div style="font-size: 11px; font-weight: 700; color: #5E6D49; margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between;">
-              <span>⚡ เปิดแอปธนาคารเพื่อสแกนรูป:</span>
-              <span style="font-size: 10px; color: #8C827A;">(แตะเปิดแอป)</span>
+          <!-- แถบทางลัดเลือกธนาคาร (เซฟ QR + เด้งเปิดแอปอัตโนมัติ) -->
+          <div style="background: #FDFCF0; border: 1.5px solid #A3B18A; border-radius: 12px; padding: 8px 10px; margin-bottom: 8px; text-align: left;">
+            <div style="font-size: 11px; font-weight: 800; color: #5E6D49; margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between;">
+              <span>⚡ แตะธนาคารของคุณ (เซฟ QR + เปิดแอปทันที):</span>
             </div>
             <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px;">
-              <button type="button" onclick="launchBankApp('kplus://')" style="background: #138F2D; color: white; border: none; padding: 6px 4px; border-radius: 8px; font-size: 10px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 3px;">
+              <button type="button" onclick="handleBankSelectAndLaunch('kplus://', 'K PLUS')" style="background: #138F2D; color: white; border: none; padding: 7px 4px; border-radius: 8px; font-size: 10px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 3px; box-shadow: 0 2px 4px rgba(19, 143, 45, 0.2);">
                 🟢 K PLUS
               </button>
-              <button type="button" onclick="launchBankApp('scbeasy://')" style="background: #4E2A84; color: white; border: none; padding: 6px 4px; border-radius: 8px; font-size: 10px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 3px;">
+              <button type="button" onclick="handleBankSelectAndLaunch('scbeasy://', 'SCB Easy')" style="background: #4E2A84; color: white; border: none; padding: 7px 4px; border-radius: 8px; font-size: 10px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 3px; box-shadow: 0 2px 4px rgba(78, 42, 132, 0.2);">
                 🟣 SCB Easy
               </button>
-              <button type="button" onclick="launchBankApp('ktbnext://')" style="background: #00A3E0; color: white; border: none; padding: 6px 4px; border-radius: 8px; font-size: 10px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 3px;">
+              <button type="button" onclick="handleBankSelectAndLaunch('ktbnext://', 'KTB NEXT')" style="background: #00A3E0; color: white; border: none; padding: 7px 4px; border-radius: 8px; font-size: 10px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 3px; box-shadow: 0 2px 4px rgba(0, 163, 224, 0.2);">
                 🔵 KTB NEXT
               </button>
-              <button type="button" onclick="launchBankApp('ttbtouch://')" style="background: #002D62; color: white; border: none; padding: 6px 4px; border-radius: 8px; font-size: 10px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 3px;">
+              <button type="button" onclick="handleBankSelectAndLaunch('ttbtouch://', 'ttb touch')" style="background: #002D62; color: white; border: none; padding: 7px 4px; border-radius: 8px; font-size: 10px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 3px; box-shadow: 0 2px 4px rgba(0, 45, 98, 0.2);">
                 🔴 ttb touch
               </button>
-              <button type="button" onclick="launchBankApp('kma://')" style="background: #FEC500; color: #4A3F35; border: none; padding: 6px 4px; border-radius: 8px; font-size: 10px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 3px;">
+              <button type="button" onclick="handleBankSelectAndLaunch('kma://', 'Krungsri')" style="background: #FEC500; color: #4A3F35; border: none; padding: 7px 4px; border-radius: 8px; font-size: 10px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 3px; box-shadow: 0 2px 4px rgba(254, 197, 0, 0.2);">
                 🟡 Krungsri
               </button>
-              <button type="button" onclick="launchBankApp('bualuangmbanking://')" style="background: #1E3A8A; color: white; border: none; padding: 6px 4px; border-radius: 8px; font-size: 10px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 3px;">
+              <button type="button" onclick="handleBankSelectAndLaunch('bualuangmbanking://', 'Bangkok Bank')" style="background: #1E3A8A; color: white; border: none; padding: 7px 4px; border-radius: 8px; font-size: 10px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 3px; box-shadow: 0 2px 4px rgba(30, 58, 138, 0.2);">
                 🔷 BBL
               </button>
             </div>
