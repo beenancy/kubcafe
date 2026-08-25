@@ -1915,7 +1915,7 @@ function renderMenu(category, btnElement = null, animClass = 'fade-in-anim') {
             </div>
           </div>
 
-          <div style="font-size: 11px; color: #7A8B62; text-align: center; font-weight: 700;">
+          <div style="font-size: 11px; color: #7A8B62; text-align: center; font-weight: 700;" id="cart-points-preview">
             ✨ ออเดอร์นี้จะได้รับแต้มสะสมทันที <span style="font-size: 13px; color: #E65100;">+${totalCups} แต้ม</span>
           </div>
         </div>
@@ -1952,16 +1952,25 @@ function renderMenu(category, btnElement = null, animClass = 'fade-in-anim') {
       const discRow = document.getElementById('cart-discount-row');
       const discDisp = document.getElementById('cart-discount-disp');
       const finalDisp = document.getElementById('cart-final-total-disp');
+      const ptsPreview = document.getElementById('cart-points-preview');
+      const totalCups = window.onlineCart.reduce((sum, it) => sum + (it.quantity || 1), 0);
       
       if (cb && cb.checked) {
         const disc = Math.round(subtotal * 0.5);
         const net = subtotal - disc;
+        const earnPts = Math.max(0, totalCups - 1);
         if (discRow) discRow.style.display = 'flex';
         if (discDisp) discDisp.innerText = `-${disc} บาท`;
         if (finalDisp) finalDisp.innerText = `${net} บาท`;
+        if (ptsPreview) {
+          ptsPreview.innerHTML = `✨ ออเดอร์นี้จะได้รับแต้มสะสม <span style="font-size: 13px; color: #E65100;">+${earnPts} แต้ม</span> <span style="font-size:10px; color:#8C827A;">(หักแก้วที่ใช้สิทธิ์ 1 แก้ว)</span>`;
+        }
       } else {
         if (discRow) discRow.style.display = 'none';
         if (finalDisp) finalDisp.innerText = `${subtotal} บาท`;
+        if (ptsPreview) {
+          ptsPreview.innerHTML = `✨ ออเดอร์นี้จะได้รับแต้มสะสมทันที <span style="font-size: 13px; color: #E65100;">+${totalCups} แต้ม</span>`;
+        }
       }
     }
 
