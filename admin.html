@@ -463,32 +463,27 @@
         btn.disabled = true;
         btn.innerText = "กำลังส่ง LINE แจ้งลูกค้า...";
       }
+
+      // ปิดการ์ดทันทีเพื่อไม่ให้บาริสต้าต้องรอนาน
+      const toast = btn ? btn.closest('.kds-toast') : null;
+      if (toast) {
+        toast.style.animation = "slideDown 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) reverse forwards";
+        setTimeout(() => toast.remove(), 300);
+      }
+
+      // อัปเดต Firebase RTDB เป็น completed ทันที
+      if (typeof db !== 'undefined' && dbKey) {
+        db.ref('kds_orders').child(dbKey).update({ status: 'completed' });
+      }
+
       try {
-        const res = await fetch("https://kub-backend.nan23082526.workers.dev/api/complete-order", {
+        await fetch("https://kub-backend.nan23082526.workers.dev/api/complete-order", {
           method: "POST",
           headers: { "Content-Type": "application/json", "X-Admin-PIN": activePin },
           body: JSON.stringify({ orderId: orderId, pin: activePin })
         });
-        const data = await res.json();
-        if (data.status === "success") {
-          const toast = btn.closest('.kds-toast');
-          if (toast) {
-            toast.style.animation = "slideDown 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) reverse forwards";
-            setTimeout(() => toast.remove(), 300);
-          }
-        } else {
-          alert("แจ้งเตือนไม่สำเร็จ: " + data.message);
-          if (btn) {
-            btn.disabled = false;
-            btn.innerText = "🔔 เครื่องดื่มเสร็จแล้ว (ส่ง LINE แจ้งลูกค้า)";
-          }
-        }
       } catch (err) {
-        alert("เครือข่ายขัดข้อง");
-        if (btn) {
-          btn.disabled = false;
-          btn.innerText = "🔔 เครื่องดื่มเสร็จแล้ว (ส่ง LINE แจ้งลูกค้า)";
-        }
+        console.warn("Complete order LINE push API error (fallback succeeded):", err);
       }
     }
 
