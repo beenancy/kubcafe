@@ -10,6 +10,8 @@
   
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;600;700&display=swap');
     
@@ -775,6 +777,10 @@
         </div>
       </div>
 
+      
+      <!-- 🔔 Live Order Status Tracker (Real-Time Dynamic Banner) -->
+      <div id="live-order-tracker" style="display: none; margin: 4px 0 10px 0;"></div>
+
       <!-- 🛒 Smart Online Order Banner -->
       <div style="background: linear-gradient(135deg, #7A8B62 0%, #5E6D49 100%); border-radius: 18px; padding: 12px 16px; margin: 10px 0 6px 0; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 6px 16px rgba(122, 139, 98, 0.25); cursor: pointer;" onclick="switchTab('menu')">
         <div style="display: flex; align-items: center; gap: 10px;">
@@ -1187,6 +1193,182 @@
         }
         promoContainer.innerHTML = promoHtml;
       }
+    }
+
+    
+    let activeCustomerOrder = null;
+    let customerRtdbInitialized = false;
+
+    function initCustomerFirebaseRTDB() {
+      if (customerRtdbInitialized) return;
+      try {
+        const firebaseConfig = {
+          apiKey: "AIzaSyAi-8gxkAs3N4b5r3EULZHckqq3tHa6tlE",
+          authDomain: "kub-cafe-pos.firebaseapp.com",
+          databaseURL: "https://kub-cafe-pos-default-rtdb.asia-southeast1.firebasedatabase.app",
+          projectId: "kub-cafe-pos",
+          storageBucket: "kub-cafe-pos.firebasestorage.app"
+        };
+        if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
+        const rtdb = firebase.database();
+        customerRtdbInitialized = true;
+
+        rtdb.ref('kds_orders').on('value', (snapshot) => {
+          const allOrders = snapshot.val();
+          if (!allOrders || !globalUserId) {
+            activeCustomerOrder = null;
+            renderLiveOrderTracker();
+            return;
+          }
+
+          const now = Date.now();
+          const userOrders = Object.values(allOrders)
+            .filter(o => o && o.userId === globalUserId && (now - (o.timestamp || 0)) < 4 * 3600 * 1000)
+            .sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+
+          if (userOrders.length > 0) {
+            const latest = userOrders[0];
+            if (activeCustomerOrder && activeCustomerOrder.id === latest.id && activeCustomerOrder.status === 'pending_brew' && latest.status === 'completed') {
+              try { if (navigator.vibrate) navigator.vibrate([200, 100, 200]); } catch(e) {}
+              Swal.fire({
+                icon: 'success',
+                title: '🎉 เครื่องดื่มเสร็จแล้วค่ะ!',
+                html: '<div style="font-size: 14px; color: #4A3F35;">ออเดอร์ <b>#' + latest.id + '</b> พร้อมรับที่เคาน์เตอร์แล้วค่ะ ☕✨</div>',
+                confirmButtonText: 'ไปรับเครื่องดื่ม',
+                customClass: { popup: 'custom-swal-popup', confirmButton: 'swal-btn-confirm' },
+                buttonsStyling: false
+              });
+            }
+            activeCustomerOrder = latest;
+          } else {
+            activeCustomerOrder = null;
+          }
+          renderLiveOrderTracker();
+        });
+      } catch(e) {
+        console.error("Customer Firebase RTDB Init Error:", e);
+      }
+    }
+
+    function renderLiveOrderTracker() {
+      const container = document.getElementById('live-order-tracker');
+      if (!container) return;
+
+      if (!activeCustomerOrder) {
+        container.style.display = 'none';
+        container.innerHTML = '';
+        return;
+      }
+
+      const order = activeCustomerOrder;
+      const isPending = order.status === 'pending_brew';
+      const itemsSummary = (order.items || []).map(i => i.name + ' x' + i.quantity).join(', ');
+
+      if (isPending) {
+        container.innerHTML = `
+          <div onclick="openActiveOrderTicket()" style="background: linear-gradient(135deg, #FFFDF0 0%, #FAF4E6 100%); border: 2px solid #E65100; border-radius: 16px; padding: 12px 14px; box-shadow: 0 6px 18px rgba(230, 81, 0, 0.15); cursor: pointer;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <span style="font-size: 16px;">⏳</span>
+                <span style="font-size: 13px; font-weight: 800; color: #E65100;">กำลังชงเครื่องดื่ม (#${order.id})</span>
+              </div>
+              <span style="font-size: 11px; font-weight: 800; color: #7A8B62; background: #EAF0E4; padding: 3px 8px; border-radius: 10px;">แตะดูตั๋ว ›</span>
+            </div>
+            <div style="font-size: 11.5px; color: #4A3F35; font-weight: 600; margin-bottom: 8px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+              ${itemsSummary}
+            </div>
+            <div style="display: flex; align-items: center; justify-content: space-between; position: relative; padding: 0 10px;">
+              <div style="position: absolute; top: 38%; left: 24px; right: 24px; height: 3px; background: #E0D8C8; z-index: 1;"></div>
+              <div style="position: absolute; top: 38%; left: 24px; width: 50%; height: 3px; background: #E65100; z-index: 2;"></div>
+              
+              <div style="z-index: 3; text-align: center;">
+                <div style="width: 20px; height: 20px; border-radius: 50%; background: #4CAF50; color: white; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 800; margin: 0 auto;">✓</div>
+                <div style="font-size: 9.5px; font-weight: 700; color: #4CAF50; margin-top: 2px;">รับออเดอร์</div>
+              </div>
+              <div style="z-index: 3; text-align: center;">
+                <div style="width: 20px; height: 20px; border-radius: 50%; background: #E65100; color: white; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 800; margin: 0 auto; box-shadow: 0 0 0 3px rgba(230, 81, 0, 0.2);">☕</div>
+                <div style="font-size: 9.5px; font-weight: 800; color: #E65100; margin-top: 2px;">กำลังชง</div>
+              </div>
+              <div style="z-index: 3; text-align: center;">
+                <div style="width: 20px; height: 20px; border-radius: 50%; background: #E0D8C8; color: #8C827A; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 800; margin: 0 auto;">🔔</div>
+                <div style="font-size: 9.5px; font-weight: 700; color: #8C827A; margin-top: 2px;">พร้อมรับ</div>
+              </div>
+            </div>
+          </div>
+        `;
+      } else {
+        container.innerHTML = `
+          <div onclick="openActiveOrderTicket()" style="background: linear-gradient(135deg, #EAF0E4 0%, #D4E2CC 100%); border: 2px solid #7A8B62; border-radius: 16px; padding: 12px 14px; box-shadow: 0 6px 18px rgba(122, 139, 98, 0.25); cursor: pointer;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <span style="font-size: 18px;">🎉</span>
+                <span style="font-size: 13.5px; font-weight: 800; color: #5E6D49;">เครื่องดื่มพร้อมรับแล้ว! (#${order.id})</span>
+              </div>
+              <span style="font-size: 11px; font-weight: 800; color: white; background: #7A8B62; padding: 3px 10px; border-radius: 12px;">รับเครื่องดื่ม ›</span>
+            </div>
+            <div style="font-size: 11.5px; color: #4A3F35; font-weight: 600;">
+              📍 ติดต่อรับเครื่องดื่มที่เคาน์เตอร์ KUB Café ได้เลยค่ะ
+            </div>
+          </div>
+        `;
+      }
+      container.style.display = 'block';
+    }
+
+    function openActiveOrderTicket() {
+      if (!activeCustomerOrder) return;
+      const order = activeCustomerOrder;
+      const isPending = order.status === 'pending_brew';
+      const timeStr = new Date(order.timestamp).toLocaleTimeString('th-TH');
+
+      const itemsHtml = (order.items || []).map(it => {
+        const topStr = it.toppings && it.toppings.length > 0 ? ' + ' + it.toppings.join(', ') : '';
+        const noteStr = it.note ? ' [📝 ' + it.note + ']' : '';
+        return `
+          <div style="padding: 6px 0; border-bottom: 1px dashed #E8E2D9; display: flex; justify-content: space-between; align-items: flex-start; text-align: left;">
+            <div>
+              <div style="font-size: 13px; font-weight: 700; color: #4A3F35;">${it.name} (${it.type}) x${it.quantity}</div>
+              <div style="font-size: 11px; color: #7A8B62;">${it.sweetness}${topStr}${noteStr}</div>
+            </div>
+            <div style="font-size: 13px; font-weight: 800; color: #C57B57;">${it.price * it.quantity}.-</div>
+          </div>
+        `;
+      }).join('');
+
+      const statusBadge = isPending 
+        ? '<span style="background: #FFE0B2; color: #E65100; padding: 4px 10px; border-radius: 12px; font-size: 11.5px; font-weight: 800;">☕ กำลังชงเครื่องดื่ม</span>'
+        : '<span style="background: #EAF0E4; color: #5E6D49; padding: 4px 10px; border-radius: 12px; font-size: 11.5px; font-weight: 800;">✅ พร้อมรับที่เคาน์เตอร์</span>';
+
+      const ticketHtml = `
+        <div style="font-family: 'Prompt', sans-serif; text-align: center;">
+          <div style="font-size: 16px; font-weight: 800; color: #7A8B62; margin-bottom: 2px;">ตั๋วออเดอร์ KUB CAFÉ</div>
+          <div style="font-size: 24px; font-weight: 900; color: #C57B57; font-family: monospace; letter-spacing: 2px; margin-bottom: 6px;">#${order.id}</div>
+          <div style="margin-bottom: 12px;">${statusBadge}</div>
+
+          <div style="background: #FDFCF0; border: 1.5px solid #E8E2D9; border-radius: 14px; padding: 10px 12px; margin-bottom: 12px;">
+            <div style="display: flex; justify-content: space-between; font-size: 11px; color: #8C827A; margin-bottom: 6px;">
+              <span>เวลาที่สั่ง: ${timeStr}</span>
+              <span>แต้มที่จะได้รับ: <b style="color: #7A8B62;">+${order.pointsEarned || 0} แต้ม</b></span>
+            </div>
+            ${itemsHtml}
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px; padding-top: 4px;">
+              <span style="font-size: 12px; font-weight: 700; color: #6B705C;">ยอดรวมทั้งสิ้น:</span>
+              <span style="font-size: 18px; font-weight: 900; color: #C57B57;">${order.totalAmount}.- บาท</span>
+            </div>
+          </div>
+          
+          <div style="font-size: 11px; color: #8C827A; background: #FAF7F0; padding: 8px 12px; border-radius: 10px;">
+            ${isPending ? '🔔 ระบบจะส่งข้อความแจ้งเตือนทาง LINE เมื่อเครื่องดื่มพร้อมรับค่ะ' : '🎉 กรุณาแสดงหน้านี้หรือแจ้งรหัสออเดอร์ที่เคาน์เตอร์เพื่อรับเครื่องดื่ม'}
+          </div>
+        </div>
+      `;
+
+      Swal.fire({
+        html: ticketHtml,
+        confirmButtonText: 'ปิดหน้าต่าง',
+        customClass: { popup: 'custom-swal-popup', confirmButton: 'swal-btn-confirm' },
+        buttonsStyling: false
+      });
     }
 
     function renderHistory(historyArr) {
