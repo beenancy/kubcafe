@@ -91,6 +91,9 @@
     .kds-toast-duplicate { border-left-color: #F39C12; } /* ส้ม (สแกนซ้ำ) */
     .kds-toast-duplicate .kds-toast-title { color: #F39C12; }
 
+    .kds-toast-online { border-left-color: #7A8B62; background: #FFFFFF; } /* มัทฉะเขียว (สั่งเครื่องดื่มออนไลน์) */
+    .kds-toast-online .kds-toast-title { color: #7A8B62; }
+
     @-webkit-keyframes slideDown { from { opacity: 0; -webkit-transform: translateY(-50px); } to { opacity: 1; -webkit-transform: translateY(0); } }
     @keyframes slideDown { from { opacity: 0; transform: translateY(-50px); } to { opacity: 1; transform: translateY(0); } }
 
@@ -366,9 +369,9 @@
     }
 
     function initKDSListener(db) {
-      db.ref('kds_orders').orderByChild('status').equalTo('pending').on('child_added', (snapshot) => {
+      db.ref('kds_orders').on('child_added', (snapshot) => {
         const order = snapshot.val();
-        if (order && order.id) {
+        if (order && order.id && order.status !== 'completed') {
           try { showKdsToast(order, snapshot.key, db); } catch(e) { console.error("UI Error:", e); }
           try {
             const chime = document.getElementById('kds-chime');
@@ -384,22 +387,18 @@
       const container = document.getElementById('kds-toast-container');
       const toast = document.createElement('div');
       
-      // 🚀 แยกเงื่อนไขการใช้สี
+      const isOnline = order.type === 'online_order';
       const isChat = order.type === 'chat';
       const isDup = order.type === 'duplicate';
       
       let extraClass = '';
-      if (isChat) extraClass = ' kds-toast-chat';
+      if (isOnline) extraClass = ' kds-toast-online';
+      else if (isChat) extraClass = ' kds-toast-chat';
       else if (isDup) extraClass = ' kds-toast-duplicate';
       
       toast.className = 'kds-toast' + extraClass;
       
       const timeStr = new Date(order.timestamp).toLocaleTimeString('th-TH');
-      
-      // 🚀 เลือกไอคอนนำหน้าให้เข้ากับโหมด
-      let iconPrefix = '🎁 ';
-      if (isChat) iconPrefix = '';
-      if (isDup) iconPrefix = '⚠️ ';
       
       function escapeHtml(str) {
         if (!str) return '';
@@ -411,26 +410,86 @@
           .replace(/'/g, '&#039;');
       }
 
-      const safeItem = escapeHtml(order.item);
       const safeCustomerName = escapeHtml(order.customerName);
 
-      let html = `
-        <div class="kds-toast-title">${iconPrefix}${safeItem}</div>
-        <div class="kds-toast-desc">👤 ลูกค้า: ${safeCustomerName}</div>
-        <div style="font-size: 12px; color: #B0A69D; margin-top: 8px;">
-          ⏱️ ${timeStr} | แตะพื้นที่ว่างเพื่อรับทราบ (ซ่อนการ์ด)
-        </div>
-      `;
+      if (isOnline) {
+        const itemsHtml = (order.items || []).map(it => {
+          const topStr = it.toppings && it.toppings.length > 0 ? ` +${it.toppings.join(', ')}` : '';
+          const noteStr = it.note ? ` [📝 ${it.note}]` : '';
+          return `<div style="font-size: 13px; font-weight: 700; color: #4A3F35; margin-top: 3px;">• ${escapeHtml(it.name)} (${escapeHtml(it.type)}) x${it.quantity} <span style="font-size: 11px; color: #7A8B62; font-weight: 600;">(${escapeHtml(it.sweetness)}${escapeHtml(topStr)}${escapeHtml(noteStr)})</span></div>`;
+        }).join('');
 
-      toast.innerHTML = html;
-      
-      toast.onclick = () => {
-        toast.style.animation = "slideDown 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) reverse forwards";
-        setTimeout(() => toast.remove(), 300);
-        db.ref('kds_orders').child(dbKey).update({ status: 'completed' });
-      };
+        toast.innerHTML = `
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <div class="kds-toast-title" style="margin: 0; font-size: 16px;">☕ ออเดอร์ #${escapeHtml(order.id)}</div>
+            <div style="background: #EAF0E4; color: #5E6D49; font-size: 10px; font-weight: 800; padding: 2px 8px; border-radius: 10px;">✅ ชำระแล้ว</div>
+          </div>
+          <div class="kds-toast-desc" style="font-size: 13px; color: #4A3F35;">👤 ลูกค้า: <b>${safeCustomerName}</b></div>
+          <div style="background: #FDFCF0; border-radius: 10px; padding: 8px 10px; margin: 8px 0; border: 1px solid #E8E2D9;">
+            ${itemsHtml}
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: #6B705C; margin-bottom: 8px;">
+            <span>ยอดรวม: <b style="color: #C57B57; font-size: 14px;">${order.totalAmount}.-</b> (แต้ม +${order.pointsEarned})</span>
+            <span>⏱️ ${timeStr}</span>
+          </div>
+          <button class="btn-complete-online" onclick="event.stopPropagation(); completeOnlineOrder('${order.id}', '${dbKey}', this)" style="width: 100%; background: #7A8B62; color: white; border: none; padding: 11px; border-radius: 10px; font-size: 13px; font-weight: 800; cursor: pointer; box-shadow: 0 4px 10px rgba(122, 139, 98, 0.3);">🔔 เครื่องดื่มเสร็จแล้ว (ส่ง LINE แจ้งลูกค้า)</button>
+        `;
+      } else {
+        let iconPrefix = '🎁 ';
+        if (isChat) iconPrefix = '';
+        if (isDup) iconPrefix = '⚠️ ';
+        const safeItem = escapeHtml(order.item);
+
+        toast.innerHTML = `
+          <div class="kds-toast-title">${iconPrefix}${safeItem}</div>
+          <div class="kds-toast-desc">👤 ลูกค้า: ${safeCustomerName}</div>
+          <div style="font-size: 12px; color: #B0A69D; margin-top: 8px;">
+            ⏱️ ${timeStr} | แตะพื้นที่ว่างเพื่อรับทราบ (ซ่อนการ์ด)
+          </div>
+        `;
+
+        toast.onclick = () => {
+          toast.style.animation = "slideDown 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) reverse forwards";
+          setTimeout(() => toast.remove(), 300);
+          db.ref('kds_orders').child(dbKey).update({ status: 'completed' });
+        };
+      }
 
       container.prepend(toast);
+    }
+
+    async function completeOnlineOrder(orderId, dbKey, btn) {
+      if (btn) {
+        btn.disabled = true;
+        btn.innerText = "กำลังส่ง LINE แจ้งลูกค้า...";
+      }
+      try {
+        const res = await fetch("https://kub-backend.nan23082526.workers.dev/api/complete-order", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "X-Admin-PIN": activePin },
+          body: JSON.stringify({ orderId: orderId, pin: activePin })
+        });
+        const data = await res.json();
+        if (data.status === "success") {
+          const toast = btn.closest('.kds-toast');
+          if (toast) {
+            toast.style.animation = "slideDown 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) reverse forwards";
+            setTimeout(() => toast.remove(), 300);
+          }
+        } else {
+          alert("แจ้งเตือนไม่สำเร็จ: " + data.message);
+          if (btn) {
+            btn.disabled = false;
+            btn.innerText = "🔔 เครื่องดื่มเสร็จแล้ว (ส่ง LINE แจ้งลูกค้า)";
+          }
+        }
+      } catch (err) {
+        alert("เครือข่ายขัดข้อง");
+        if (btn) {
+          btn.disabled = false;
+          btn.innerText = "🔔 เครื่องดื่มเสร็จแล้ว (ส่ง LINE แจ้งลูกค้า)";
+        }
+      }
     }
 
     function updateAdminUI(data) {

@@ -632,9 +632,13 @@
       display: flex; 
       align-items: center;
       gap: 12px;
-      transition: transform 0.2s ease;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      cursor: pointer;
     }
-    .menu-card-item:active { transform: scale(0.99); }
+    .menu-card-item:hover {
+      box-shadow: 0 8px 20px rgba(122, 139, 98, 0.15);
+    }
+    .menu-card-item:active { transform: scale(0.98); }
     .menu-image { 
       width: 60px; 
       height: 60px; 
@@ -646,6 +650,56 @@
       box-shadow: inset 1px 1px 3px rgba(0,0,0,0.03);
     }
 
+    /* 🛒 Online Ordering Styles */
+    #floating-cart-bar {
+      position: fixed;
+      bottom: 25px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: linear-gradient(135deg, #7A8B62 0%, #5E6D49 100%);
+      color: white;
+      padding: 12px 20px;
+      border-radius: 30px;
+      box-shadow: 0 10px 25px rgba(122, 139, 98, 0.45);
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      z-index: 999;
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+      width: calc(100% - 60px);
+      max-width: 380px;
+      box-sizing: border-box;
+      animation: slideUpCart 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    @keyframes slideUpCart {
+      from { bottom: -60px; opacity: 0; }
+      to { bottom: 25px; opacity: 1; }
+    }
+    .order-option-pill {
+      border: 1.5px solid #E8E2D9;
+      background: #FFFFFF;
+      padding: 7px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-main);
+      cursor: pointer;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      font-family: 'Prompt', sans-serif;
+    }
+    .order-option-pill.selected {
+      border-color: #7A8B62 !important;
+      background: #EAF0E4 !important;
+      color: #5E6D49 !important;
+      font-weight: 800;
+    }
 </style>
 </head>
 <body>
@@ -719,6 +773,20 @@
           </div>
           <div style="font-weight: 700; font-size: 13px; color: var(--text-main);" id="txt-go-reward-btn">แลกของรางวัล</div>
         </div>
+      </div>
+
+      <!-- 🛒 Smart Online Order Banner -->
+      <div style="background: linear-gradient(135deg, #7A8B62 0%, #5E6D49 100%); border-radius: 18px; padding: 12px 16px; margin: 10px 0 6px 0; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 6px 16px rgba(122, 139, 98, 0.25); cursor: pointer;" onclick="switchTab('menu')">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <div style="background: rgba(255, 255, 255, 0.2); width: 38px; height: 38px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px;">
+            ☕
+          </div>
+          <div>
+            <div style="font-size: 13px; font-weight: 800; color: #FFFFFF;" id="txt-home-order-title">🛒 สั่งเครื่องดื่มล่วงหน้า (Pickup)</div>
+            <div style="font-size: 11px; color: #EAF0E4; margin-top: 1px;" id="txt-home-order-sub">สั่งปุ๊บ ชงปั๊บ พร้อมรับแต้มสะสมทันที</div>
+          </div>
+        </div>
+        <div style="background: #FFFFFF; color: #5E6D49; padding: 6px 12px; border-radius: 12px; font-size: 11px; font-weight: 800; white-space: nowrap;">สั่งเลย &rsaquo;</div>
       </div>
 
       <!-- 🍦 Wall's Ice Cream Special Promo Banner -->
@@ -800,9 +868,18 @@
           <!-- Promos will be injected here -->
         </div>
       </div>
-      <div class="footer-area">
-        <button class="btn-close-app btn-back-home" onclick="switchTab('home')">&#9664; กลับหน้าหลัก</button>
-        <button class="btn-close-app text-close-btn" onclick="closeAppAndGoToLINE()">OK</button>
+      </div>
+    </div>
+
+    <!-- 🛒 Floating Cart Bar -->
+    <div id="floating-cart-bar" onclick="openCartModal()">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span style="font-size: 18px;">🛒</span>
+        <span id="cart-bar-text">ตะกร้าของคุณ (0 แก้ว)</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span id="cart-bar-total" style="font-size: 15px; font-weight: 800; color: #FFE5D9;">0.-</span>
+        <span style="background: white; color: #5E6D49; padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 800;">สั่งเลย &rsaquo;</span>
       </div>
     </div>
 
@@ -826,6 +903,7 @@
         comingSoon1: "เตรียมพบกับเมนูใหม่เร็วๆ นี้", comingSoon2: "โปรโมชั่นเด็ดๆ กำลังมา",
         colActivity: "รายการ / วันเวลา", colPoints: "จำนวนแต้ม",
         lblHot: "ร้อน", lblIced: "เย็น",
+        homeOrderTitle: "🛒 สั่งเครื่องดื่มล่วงหน้า (Pickup)", homeOrderSub: "สั่งปุ๊บ ชงปั๊บ พร้อมรับแต้มสะสมทันที",
         homePromoTitle: "🍦 แลกไอศกรีม Wall's สุดฟิน", homePromoSub: "เริ่มต้นเพียง 10 แต้ม ก็แลกความอร่อยได้เลย",
         rewards: [
           { icon: "&#127865;", name: "ส่วนลด 50% (1 แก้ว)", req: "ใช้ 10 แต้ม", cost: 10, logName: "ส่วนลด 50% 1 แก้ว" }
@@ -841,6 +919,7 @@
         comingSoon1: "New menus are coming very soon", comingSoon2: "Stay tuned for special offers",
         colActivity: "Activity / Date", colPoints: "Points",
         lblHot: "HOT", lblIced: "ICED",
+        homeOrderTitle: "🛒 Order Ahead (Pickup)", homeOrderSub: "Order, pick up & earn points instantly",
         homePromoTitle: "🍦 Redeem Wall's Ice Cream", homePromoSub: "Start from 10 Pts to redeem your treat",
         rewards: [
           { icon: "&#127865;", name: "50% Discount (1 Cup)", req: "10 Pts req.", cost: 10, logName: "ส่วนลด 50% 1 แก้ว" }
@@ -1006,6 +1085,8 @@
         safeSetText('txt-promo-title', t.promoTitle);
         safeSetText('txt-cs-1', t.comingSoon1); 
         safeSetText('txt-cs-2', t.comingSoon2); 
+        safeSetText('txt-home-order-title', t.homeOrderTitle);
+        safeSetText('txt-home-order-sub', t.homeOrderSub);
         safeSetText('txt-home-promo-title', t.homePromoTitle);
         safeSetText('txt-home-promo-sub', t.homePromoSub); 
         safeSetText('txt-list-header', `<span>${t.colActivity}</span><span>${t.colPoints}</span>`);
@@ -1558,7 +1639,7 @@ function renderMenu(category, btnElement = null, animClass = 'fade-in-anim') {
         }
 
         menuHtml += `
-          <div class="menu-card-item">
+          <div class="menu-card-item" onclick="handleMenuCardClick('${item.nameTH.replace(/'/g, "\\'")}')">
             <img class="menu-image" src="${item.img || 'https://via.placeholder.com/150'}" alt="${nameToDisplay}" onerror="this.src='https://via.placeholder.com/150'">
             <div class="menu-details" style="flex: 1; min-width: 0; padding-left: 4px;">
               <div class="menu-name-th" style="text-align: left; font-size: 14px; font-weight: 700; color: var(--text-main); margin-bottom: 2px;">${nameToDisplay}</div>
@@ -1576,6 +1657,437 @@ function renderMenu(category, btnElement = null, animClass = 'fade-in-anim') {
       void container.offsetWidth; // trigger reflow
       if (animClass) {
         container.classList.add(animClass);
+      }
+    }
+
+    // ==========================================
+    // 🛒 KUB SMART ONLINE ORDERING LOGIC
+    // ==========================================
+    window.onlineCart = [];
+
+    function handleMenuCardClick(nameTH) {
+      const item = menuData.find(m => m.nameTH === nameTH);
+      if (!item) return;
+      if (item.category === "additional") {
+        showMinimalAlert('💡', 'ท็อปปิ้งเพิ่มเติม', 'สามารถเลือกท็อปปิ้งนี้ได้ในขั้นตอนการสั่งเครื่องดื่มนะคะ', 'เข้าใจแล้ว');
+        return;
+      }
+      openDrinkOrderModal(item);
+    }
+
+    function openDrinkOrderModal(item) {
+      const isEN = globalLang === "EN";
+      const name = isEN ? item.nameEN : item.nameTH;
+      
+      const hasHot = item.hot !== "-";
+      const hasIced = item.iced !== "-";
+      const defaultType = hasIced ? "iced" : "hot";
+      const initialPrice = hasIced ? item.iced : item.hot;
+
+      const modalHtml = `
+        <div style="text-align: left; font-family: 'Prompt', sans-serif;">
+          <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 12px;">
+            <img src="${item.img || 'https://via.placeholder.com/150'}" style="width: 55px; height: 55px; border-radius: 12px; object-fit: contain; border: 1px solid #E8E2D9;" onerror="this.src='https://via.placeholder.com/150'">
+            <div>
+              <div style="font-size: 15px; font-weight: 800; color: #4A3F35;">${name}</div>
+              <div style="font-size: 11px; color: #7A8B62; font-weight: 600;">KUB Café Signature</div>
+            </div>
+          </div>
+
+          <!-- 1. รูปแบบเครื่องดื่ม (Type) -->
+          <div style="font-size: 12px; font-weight: 700; color: #4A3F35; margin-bottom: 6px;">1. รูปแบบ (Type)</div>
+          <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px;" id="order-type-group">
+            ${hasHot ? `<div class="order-option-pill ${defaultType === 'hot' ? 'selected' : ''}" onclick="selectOrderType(this, 'hot', ${item.hot})">☕ ร้อน (${item.hot}.-)</div>` : ''}
+            ${hasIced ? `<div class="order-option-pill ${defaultType === 'iced' ? 'selected' : ''}" onclick="selectOrderType(this, 'iced', ${item.iced})">🧊 เย็น (${item.iced}.-)</div>` : ''}
+            <div class="order-option-pill" onclick="selectOrderType(this, 'frappe', ${hasIced ? item.iced + 5 : item.hot + 10})">🥤 ปั่น (+5.-)</div>
+          </div>
+
+          <!-- 2. ระดับความหวาน (Sweetness) -->
+          <div style="font-size: 12px; font-weight: 700; color: #4A3F35; margin-bottom: 6px;">2. ระดับความหวาน (Sweetness)</div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 12px;" id="order-sweetness-group">
+            <div class="order-option-pill" onclick="selectSweetness(this, '0% (ไม่หวาน)')">0% ไม่หวาน</div>
+            <div class="order-option-pill" onclick="selectSweetness(this, '25% (หวานน้อย)')">25% หวานน้อย</div>
+            <div class="order-option-pill selected" onclick="selectSweetness(this, '50% (หวานปกติ)')">50% หวานพอดี (แนะนำ)</div>
+            <div class="order-option-pill" onclick="selectSweetness(this, '100% (หวานเต็ม)')">100% หวานเต็ม</div>
+          </div>
+
+          <!-- 3. ท็อปปิ้ง (Topping) -->
+          <div style="font-size: 12px; font-weight: 700; color: #4A3F35; margin-bottom: 6px;">3. ท็อปปิ้งเพิ่มเติม (Toppings)</div>
+          <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px;" id="order-topping-group">
+            <div class="order-option-pill" onclick="toggleTopping(this, 'เพิ่มช็อตกาแฟ', 10)">+ ช็อตกาแฟ (+10.-)</div>
+            <div class="order-option-pill" onclick="toggleTopping(this, 'บุกบราวน์ซูการ์', 5)">+ บุกบราวน์ซูการ์ (+5.-)</div>
+          </div>
+
+          <!-- 4. หมายเหตุ (Note) -->
+          <div style="font-size: 12px; font-weight: 700; color: #4A3F35; margin-bottom: 6px;">4. หมายเหตุเพิ่มเติม (Note)</div>
+          <input type="text" id="order-note-input" placeholder="เช่น แยกน้ำแข็ง, ไม่ใส่หลอด..." style="width: 100%; padding: 8px 12px; border: 1px solid #E8E2D9; border-radius: 10px; font-size: 12px; font-family: 'Prompt'; box-sizing: border-box; margin-bottom: 12px;">
+
+          <!-- 5. จำนวนแก้ว & ยอดรวม -->
+          <div style="display: flex; justify-content: space-between; align-items: center; background: #FDFCF0; border: 1px solid #E8E2D9; border-radius: 12px; padding: 8px 12px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="font-size: 12px; font-weight: 700; color: #4A3F35;">จำนวน:</span>
+              <button onclick="changeQty(-1)" style="width: 26px; height: 26px; border-radius: 50%; border: 1px solid #C4B5A5; background: white; font-weight: 900; font-size: 14px; cursor: pointer;">-</button>
+              <span id="order-qty-display" style="font-size: 15px; font-weight: 800; color: #7A8B62; min-width: 16px; text-align: center;">1</span>
+              <button onclick="changeQty(1)" style="width: 26px; height: 26px; border-radius: 50%; border: 1px solid #7A8B62; background: #7A8B62; color: white; font-weight: 900; font-size: 14px; cursor: pointer;">+</button>
+            </div>
+            <div>
+              <span style="font-size: 11px; color: #6B705C;">รวม: </span>
+              <span id="order-total-price" style="font-size: 18px; font-weight: 900; color: #C57B57;">${initialPrice}.-</span>
+            </div>
+          </div>
+        </div>
+      `;
+
+      window.currentOrderConfig = {
+        name: name,
+        baseNameTH: item.nameTH,
+        category: item.category,
+        type: defaultType === "iced" ? "เย็น" : "ร้อน",
+        sweetness: "50% (หวานปกติ)",
+        toppings: [],
+        basePrice: initialPrice,
+        toppingPrice: 0,
+        qty: 1
+      };
+
+      Swal.fire({
+        html: modalHtml,
+        showCancelButton: true,
+        confirmButtonText: '🛒 ใส่ตะกร้า',
+        cancelButtonText: 'ยกเลิก',
+        customClass: { popup: 'custom-swal-popup', confirmButton: 'swal-btn-confirm', cancelButton: 'swal-btn-cancel' },
+        buttonsStyling: false
+      }).then((result) => {
+        if (result.isConfirmed) {
+          const note = (document.getElementById('order-note-input')?.value || '').trim();
+          const singleUnitPrice = window.currentOrderConfig.basePrice + window.currentOrderConfig.toppingPrice;
+          
+          window.onlineCart.push({
+            name: window.currentOrderConfig.name,
+            baseName: window.currentOrderConfig.baseNameTH,
+            category: window.currentOrderConfig.category,
+            type: window.currentOrderConfig.type,
+            sweetness: window.currentOrderConfig.sweetness,
+            toppings: [...window.currentOrderConfig.toppings],
+            note: note,
+            price: singleUnitPrice,
+            quantity: window.currentOrderConfig.qty
+          });
+
+          updateFloatingCartUI();
+          
+          Swal.fire({
+            icon: 'success',
+            title: 'เพิ่มลงตะกร้าแล้ว! 🛒',
+            toast: true,
+            position: 'top',
+            showConfirmButton: false,
+            timer: 1500
+          });
+        }
+      });
+    }
+
+    function selectOrderType(el, type, price) {
+      document.querySelectorAll('#order-type-group .order-option-pill').forEach(p => p.classList.remove('selected'));
+      el.classList.add('selected');
+      window.currentOrderConfig.type = type === 'hot' ? 'ร้อน' : (type === 'iced' ? 'เย็น' : 'ปั่น');
+      window.currentOrderConfig.basePrice = price;
+      updateOrderModalPrice();
+    }
+
+    function selectSweetness(el, sweet) {
+      document.querySelectorAll('#order-sweetness-group .order-option-pill').forEach(p => p.classList.remove('selected'));
+      el.classList.add('selected');
+      window.currentOrderConfig.sweetness = sweet;
+    }
+
+    function toggleTopping(el, toppingName, price) {
+      el.classList.toggle('selected');
+      const isSelected = el.classList.contains('selected');
+      if (isSelected) {
+        window.currentOrderConfig.toppings.push(toppingName);
+        window.currentOrderConfig.toppingPrice += price;
+      } else {
+        window.currentOrderConfig.toppings = window.currentOrderConfig.toppings.filter(t => t !== toppingName);
+        window.currentOrderConfig.toppingPrice -= price;
+      }
+      updateOrderModalPrice();
+    }
+
+    function changeQty(delta) {
+      const newQty = Math.max(1, (window.currentOrderConfig.qty || 1) + delta);
+      window.currentOrderConfig.qty = newQty;
+      const qtySpan = document.getElementById('order-qty-display');
+      if (qtySpan) qtySpan.innerText = newQty;
+      updateOrderModalPrice();
+    }
+
+    function updateOrderModalPrice() {
+      const unit = (window.currentOrderConfig.basePrice || 0) + (window.currentOrderConfig.toppingPrice || 0);
+      const total = unit * (window.currentOrderConfig.qty || 1);
+      const totalSpan = document.getElementById('order-total-price');
+      if (totalSpan) totalSpan.innerText = total + '.-';
+    }
+
+    function updateFloatingCartUI() {
+      const bar = document.getElementById('floating-cart-bar');
+      if (!bar) return;
+      
+      const totalCups = window.onlineCart.reduce((sum, it) => sum + (it.quantity || 1), 0);
+      const totalPrice = window.onlineCart.reduce((sum, it) => sum + (it.price * (it.quantity || 1)), 0);
+
+      if (totalCups > 0) {
+        bar.style.display = 'flex';
+        const txt = document.getElementById('cart-bar-text');
+        const tot = document.getElementById('cart-bar-total');
+        if (txt) txt.innerText = `ตะกร้าของคุณ (${totalCups} แก้ว)`;
+        if (tot) tot.innerText = `${totalPrice}.-`;
+      } else {
+        bar.style.display = 'none';
+      }
+    }
+
+    function openCartModal() {
+      if (window.onlineCart.length === 0) {
+        showMinimalAlert('🛒', 'ตะกร้าว่างเปล่า', 'กรุณาเลือกเครื่องดื่มที่ต้องการสั่งก่อนนะคะ', 'ตกลง');
+        return;
+      }
+
+      const totalCups = window.onlineCart.reduce((sum, it) => sum + (it.quantity || 1), 0);
+      const subtotal = window.onlineCart.reduce((sum, it) => sum + (it.price * (it.quantity || 1)), 0);
+      const canRedeem = globalTotalPoints >= 10;
+
+      let itemsHtml = window.onlineCart.map((it, idx) => {
+        const topStr = it.toppings && it.toppings.length > 0 ? ` +${it.toppings.join(', ')}` : '';
+        const noteStr = it.note ? ` [${it.note}]` : '';
+        return `
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; padding: 8px 0; border-bottom: 1px dashed #E8E2D9; font-size: 13px;">
+            <div style="flex: 1; padding-right: 8px;">
+              <div style="font-weight: 700; color: #4A3F35;">${it.name} (${it.type}) x${it.quantity}</div>
+              <div style="font-size: 11px; color: #7A8B62;">${it.sweetness}${topStr}${noteStr}</div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="font-weight: 800; color: #C57B57;">${it.price * it.quantity}.-</span>
+              <button onclick="removeCartItem(${idx})" style="background: none; border: none; color: #E63946; font-size: 14px; cursor: pointer; padding: 2px 4px;">✕</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      const cartContentHtml = `
+        <div style="text-align: left; font-family: 'Prompt', sans-serif;">
+          <div style="font-size: 16px; font-weight: 800; color: #7A8B62; margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">
+            <span>🛒</span> รายการในตะกร้า (${totalCups} แก้ว)
+          </div>
+
+          <div style="max-height: 180px; overflow-y: auto; margin-bottom: 12px; padding-right: 4px;">
+            ${itemsHtml}
+          </div>
+
+          <!-- 🎁 ตัวเลือกใช้แต้มแลกส่วนลด -->
+          ${canRedeem ? `
+            <div style="background: #FDFCF0; border: 1.5px solid #A3B18A; border-radius: 12px; padding: 10px; margin-bottom: 12px;">
+              <label style="display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 700; color: #5E6D49; cursor: pointer;">
+                <input type="checkbox" id="cart-use-reward-cb" onchange="toggleCartRewardDiscount(${subtotal})" style="width: 16px; height: 16px;">
+                <span>🎁 ใช้ 10 แต้ม ลด 50% (คุณมี ${globalTotalPoints} แต้ม)</span>
+              </label>
+            </div>
+          ` : `
+            <div style="font-size: 11px; color: #8C827A; margin-bottom: 10px; background: #FAF7F0; padding: 6px 10px; border-radius: 8px;">
+              💡 สะสมครบ 10 แต้ม ใช้แลกส่วนลด 50% ได้ทันที (ปัจจุบันมี ${globalTotalPoints} แต้ม)
+            </div>
+          `}
+
+          <!-- สรุปยอด -->
+          <div style="background: #FAF7F0; border-radius: 12px; padding: 10px 12px; margin-bottom: 10px;">
+            <div style="display: flex; justify-content: space-between; font-size: 12px; color: #6B705C; margin-bottom: 4px;">
+              <span>ยอดรวมสินค้า:</span>
+              <span id="cart-subtotal-disp">${subtotal} บาท</span>
+            </div>
+            <div id="cart-discount-row" style="display: none; justify-content: space-between; font-size: 12px; color: #E63946; margin-bottom: 4px; font-weight: 700;">
+              <span>ส่วนลด 10 แต้ม (50%):</span>
+              <span id="cart-discount-disp">-0 บาท</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; font-size: 15px; font-weight: 900; color: #4A3F35; border-top: 1px solid #E8E2D9; padding-top: 6px; margin-top: 4px;">
+              <span>ยอดที่ต้องชำระ:</span>
+              <span id="cart-final-total-disp" style="color: #C57B57; font-size: 18px;">${subtotal} บาท</span>
+            </div>
+          </div>
+
+          <div style="font-size: 11px; color: #7A8B62; text-align: center; font-weight: 700;">
+            ✨ ออเดอร์นี้จะได้รับแต้มสะสมทันที <span style="font-size: 13px; color: #E65100;">+${totalCups} แต้ม</span>
+          </div>
+        </div>
+      `;
+
+      Swal.fire({
+        html: cartContentHtml,
+        showCancelButton: true,
+        confirmButtonText: '💳 ไปหน้าชำระเงิน (พร้อมเพย์)',
+        cancelButtonText: 'เลือกเมนูเพิ่ม',
+        customClass: { popup: 'custom-swal-popup', confirmButton: 'swal-btn-confirm', cancelButton: 'swal-btn-cancel' },
+        buttonsStyling: false
+      }).then((res) => {
+        if (res.isConfirmed) {
+          const isDiscountUsed = document.getElementById('cart-use-reward-cb')?.checked || false;
+          const discountAmt = isDiscountUsed ? Math.round(subtotal * 0.5) : 0;
+          const finalPay = subtotal - discountAmt;
+          openPaymentModal(finalPay, isDiscountUsed ? 10 : 0, isDiscountUsed ? "ใช้ 10 แต้ม ลด 50%" : "");
+        }
+      });
+    }
+
+    function removeCartItem(index) {
+      window.onlineCart.splice(index, 1);
+      updateFloatingCartUI();
+      Swal.close();
+      if (window.onlineCart.length > 0) {
+        setTimeout(openCartModal, 200);
+      }
+    }
+
+    function toggleCartRewardDiscount(subtotal) {
+      const cb = document.getElementById('cart-use-reward-cb');
+      const discRow = document.getElementById('cart-discount-row');
+      const discDisp = document.getElementById('cart-discount-disp');
+      const finalDisp = document.getElementById('cart-final-total-disp');
+      
+      if (cb && cb.checked) {
+        const disc = Math.round(subtotal * 0.5);
+        const net = subtotal - disc;
+        if (discRow) discRow.style.display = 'flex';
+        if (discDisp) discDisp.innerText = `-${disc} บาท`;
+        if (finalDisp) finalDisp.innerText = `${net} บาท`;
+      } else {
+        if (discRow) discRow.style.display = 'none';
+        if (finalDisp) finalDisp.innerText = `${subtotal} บาท`;
+      }
+    }
+
+    function openPaymentModal(finalAmount, pointsUsed, rewardName) {
+      const promptPayNumber = "0848849844"; // เบอร์พร้อมเพย์ KUB Café
+      const qrUrl = `https://promptpay.io/${promptPayNumber}/${finalAmount}.png`;
+
+      const paymentHtml = `
+        <div style="text-align: center; font-family: 'Prompt', sans-serif;">
+          <div style="font-size: 15px; font-weight: 800; color: #7A8B62; margin-bottom: 4px;">สแกนชำระเงินผ่านพร้อมเพย์</div>
+          <div style="font-size: 11px; color: #6B705C; margin-bottom: 10px;">ยอดชำระตรงเป๊ะ สะดวกรวดเร็ว</div>
+
+          <div style="background: #FFFFFF; border: 2px solid #A3B18A; border-radius: 16px; padding: 12px; display: inline-block; box-shadow: 0 4px 15px rgba(122, 139, 98, 0.15); margin-bottom: 10px;">
+            <img src="${qrUrl}" alt="PromptPay QR" style="width: 180px; height: 180px; display: block; border-radius: 8px;" onerror="this.src='https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=promptpay'">
+            <div style="font-size: 11px; color: #4A3F35; font-weight: 700; margin-top: 6px;">KUB CAFÉ (พร้อมเพย์)</div>
+          </div>
+
+          <div style="background: #FDFCF0; border: 1px solid #E8E2D9; border-radius: 12px; padding: 8px 12px; margin-bottom: 12px;">
+            <div style="font-size: 11px; color: #6B705C;">ยอดเงินที่ต้องโอน:</div>
+            <div style="font-size: 24px; font-weight: 900; color: #C57B57;">${finalAmount}.- บาท</div>
+          </div>
+
+          <!-- ช่องแนบสลิป -->
+          <div style="text-align: left; margin-bottom: 10px;">
+            <label style="font-size: 12px; font-weight: 700; color: #4A3F35; display: block; margin-bottom: 4px;">📸 แนบสลิปโอนเงิน:</label>
+            <input type="file" id="slip-file-input" accept="image/*" style="width: 100%; padding: 8px; border: 1.5px dashed #A3B18A; border-radius: 10px; font-size: 12px; background: white; box-sizing: border-box;">
+          </div>
+        </div>
+      `;
+
+      Swal.fire({
+        html: paymentHtml,
+        showCancelButton: true,
+        confirmButtonText: '🚀 ยืนยันการชำระเงิน',
+        cancelButtonText: 'ย้อนกลับ',
+        customClass: { popup: 'custom-swal-popup', confirmButton: 'swal-btn-confirm', cancelButton: 'swal-btn-cancel' },
+        buttonsStyling: false,
+        preConfirm: () => {
+          const fileInput = document.getElementById('slip-file-input');
+          if (!fileInput || !fileInput.files.length) {
+            Swal.showValidationMessage('กรุณาแนบรูปสลิปโอนเงินด้วยนะคะ');
+            return false;
+          }
+          return fileInput.files[0];
+        }
+      }).then(async (result) => {
+        if (result.isConfirmed && result.value) {
+          await submitOnlineOrder(result.value, finalAmount, pointsUsed, rewardName);
+        }
+      });
+    }
+
+    async function submitOnlineOrder(slipFile, finalAmount, pointsUsed, rewardName) {
+      Swal.fire({
+        title: 'กำลังส่งออเดอร์...',
+        html: '<div style="font-size:12px; color:#6B705C;">ระบบกำลังตรวจสอบสลิปและบันทึกแต้มสะสม...</div>',
+        allowOutsideClick: false,
+        didOpen: () => { Swal.showLoading(); }
+      });
+
+      try {
+        const reader = new FileReader();
+        reader.readAsDataURL(slipFile);
+        reader.onload = async () => {
+          const base64Image = reader.result;
+          const idToken = typeof liff !== 'undefined' ? liff.getIDToken() : '';
+
+          const payload = {
+            userId: globalUserId,
+            idToken: idToken,
+            customerName: globalUserName,
+            items: window.onlineCart,
+            totalAmount: finalAmount,
+            pointsUsed: pointsUsed || 0,
+            rewardName: rewardName || "",
+            slipImage: base64Image
+          };
+
+          const response = await fetch(`${API_URL}/api/create-online-order`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+
+          const data = await response.json();
+
+          if (data.status === 'success') {
+            try { if (navigator.vibrate) navigator.vibrate([100, 50, 100]); } catch(e) {}
+            
+            window.onlineCart = [];
+            updateFloatingCartUI();
+
+            const successHtml = `
+              <div style="text-align: center; padding: 10px 0; font-family: 'Prompt', sans-serif;">
+                <div style="font-size: 40px; margin-bottom: 8px;">☕✨</div>
+                <div style="font-size: 18px; font-weight: 800; color: #7A8B62; margin-bottom: 4px;">สั่งซื้อสำเร็จแล้วค่ะ!</div>
+                <div style="font-size: 12px; color: #6B705C; margin-bottom: 12px;">บาริสต้าได้รับออเดอร์และกำลังเตรียมชงให้คุณ</div>
+
+                <div style="background: #FDFCF0; border: 1.5px dashed #A3B18A; border-radius: 14px; padding: 12px; margin-bottom: 12px;">
+                  <div style="font-size: 11px; color: #6B705C;">รหัสออเดอร์ของคุณ</div>
+                  <div style="font-size: 26px; font-weight: 900; color: #C57B57; font-family: monospace; letter-spacing: 2px;">#${data.orderId}</div>
+                  <div style="font-size: 12px; font-weight: 700; color: #A3B18A; margin-top: 4px;">ได้รับแต้มสะสม +${data.pointsEarned} แต้ม 🎉</div>
+                </div>
+
+                <div style="font-size: 11px; color: #8C827A; background: #FAF7F0; padding: 8px 12px; border-radius: 10px;">
+                  🔔 เมื่อเครื่องดื่มพร้อมรับ ระบบจะส่งข้อความแจ้งเตือนผ่านแชต LINE ทันทีค่ะ
+                </div>
+              </div>
+            `;
+
+            Swal.fire({
+              html: successHtml,
+              confirmButtonText: 'ตกลง',
+              customClass: { popup: 'custom-swal-popup', confirmButton: 'swal-btn-confirm' },
+              buttonsStyling: false
+            }).then(() => {
+              switchTab('home');
+            });
+
+            await fetchMemberData();
+          } else {
+            showMinimalAlert('❌', 'เกิดข้อผิดพลาด', data.message || 'ไม่สามารถทำรายการได้', 'ตกลง');
+          }
+        };
+      } catch (err) {
+        showMinimalAlert('❌', 'ระบบขัดข้อง', 'กรุณาลองใหม่อีกครั้งค่ะ', 'ตกลง');
       }
     }
 
