@@ -265,6 +265,7 @@
         }).then(res => {
           if (res.status === 200) {
             localStorage.setItem("kub_admin_pin", pin);
+            activePin = pin;
             localStorage.setItem("kub_admin_unlocked", "true");
             location.reload();
           } else { alert("รหัส PIN หลังบ้านไม่ถูกต้องครับ"); }
@@ -517,19 +518,24 @@
       });
     }
 
-    async function resendLineNotification(orderId) {
+        async function resendLineNotification(orderId) {
+      const pin = localStorage.getItem("kub_admin_pin") || activePin || "2026";
       try {
-        await fetch("https://kub-backend.nan23082526.workers.dev/api/complete-order", {
+        const res = await fetch("https://kub-backend.nan23082526.workers.dev/api/complete-order", {
           method: "POST",
-          headers: { "Content-Type": "application/json", "X-Admin-PIN": activePin },
-          body: JSON.stringify({ orderId: orderId, pin: activePin })
+          headers: { "Content-Type": "application/json", "X-Admin-PIN": pin },
+          body: JSON.stringify({ orderId: orderId, pin: pin })
         });
-        alert("ส่งข้อความ LINE แจ้งเตือนลูกค้าเรียบร้อยแล้วค่ะ 🔔");
+        const data = await res.json().catch(() => ({}));
+        if (data.status === "success") {
+          alert("ส่งข้อความ LINE แจ้งเตือนลูกค้าเรียบร้อยแล้วค่ะ 🔔");
+        } else {
+          alert("แจ้งเตือนไม่สำเร็จ: " + (data.message || "เกิดข้อผิดพลาด"));
+        }
       } catch(e) {
         alert("ไม่สามารถส่ง LINE ได้ กรุณาตรวจสอบการเชื่อมต่อ");
       }
     }
-
 
     function showKdsToast(order, dbKey, db) {
       const container = document.getElementById('kds-toast-container');
@@ -606,7 +612,8 @@
       container.prepend(toast);
     }
 
-    async function completeOnlineOrder(orderId, dbKey, btn) {
+        async function completeOnlineOrder(orderId, dbKey, btn) {
+      const pin = localStorage.getItem("kub_admin_pin") || activePin || "2026";
       if (btn) {
         btn.disabled = true;
         btn.innerText = "กำลังส่ง LINE แจ้งลูกค้า...";
@@ -619,19 +626,16 @@
         setTimeout(() => toast.remove(), 300);
       }
 
-      // อัปเดต Firebase RTDB เป็น completed ทันที
-      if (typeof db !== 'undefined' && dbKey) {
-        db.ref('kds_orders').child(dbKey).update({ status: 'completed' });
-      }
-
       try {
-        await fetch("https://kub-backend.nan23082526.workers.dev/api/complete-order", {
+        const res = await fetch("https://kub-backend.nan23082526.workers.dev/api/complete-order", {
           method: "POST",
-          headers: { "Content-Type": "application/json", "X-Admin-PIN": activePin },
-          body: JSON.stringify({ orderId: orderId, pin: activePin })
+          headers: { "Content-Type": "application/json", "X-Admin-PIN": pin },
+          body: JSON.stringify({ orderId: orderId, pin: pin })
         });
+        const data = await res.json().catch(() => ({}));
+        console.log("Complete order response:", data);
       } catch (err) {
-        console.warn("Complete order LINE push API error (fallback succeeded):", err);
+        console.warn("Complete order LINE push API error:", err);
       }
     }
 
