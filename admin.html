@@ -184,6 +184,13 @@
     .btn-key, .btn-copy, .btn-lock, .btn-home, .qr-preview-box {
       touch-action: manipulation;
     }
+  
+    .btn-complete-online {
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+      -webkit-user-select: none;
+    }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
@@ -572,7 +579,7 @@
             <span>ยอดรวม: <b style="color: #C57B57; font-size: 14px;">${order.totalAmount}.-</b> (แต้ม +${order.pointsEarned})</span>
             <span>⏱️ ${timeStr}</span>
           </div>
-          <button class="btn-complete-online" onclick="event.stopPropagation(); completeOnlineOrder('${order.id}', '${dbKey}', this)" style="width: 100%; background: #7A8B62; color: white; border: none; padding: 11px; border-radius: 10px; font-size: 13px; font-weight: 800; cursor: pointer; box-shadow: 0 4px 10px rgba(122, 139, 98, 0.3);">🔔 เครื่องดื่มเสร็จแล้ว (ส่ง LINE แจ้งลูกค้า)</button>
+          <button class="btn-complete-online" onclick="completeOnlineOrder('${order.id}', '${dbKey}', this)" style="width: 100%; background: #7A8B62; color: white; border: none; padding: 11px; border-radius: 10px; font-size: 13px; font-weight: 800; cursor: pointer; box-shadow: 0 4px 10px rgba(122, 139, 98, 0.3);">🔔 เครื่องดื่มเสร็จแล้ว (ส่ง LINE แจ้งลูกค้า)</button>
         `;
       } else {
         let iconPrefix = '🎁 ';
@@ -598,8 +605,14 @@
       container.prepend(toast);
     }
 
-        async function completeOnlineOrder(orderId, dbKey, btn) {
-      const pin = localStorage.getItem("kub_admin_pin") || activePin || "2026";
+            async function completeOnlineOrder(orderId, dbKey, btn) {
+      let pin = "2026";
+      try {
+        pin = localStorage.getItem("kub_admin_pin") || activePin || "2026";
+      } catch(e) {
+        pin = activePin || "2026";
+      }
+
       if (btn) {
         btn.disabled = true;
         btn.innerText = "กำลังส่ง LINE แจ้งลูกค้า...";
@@ -610,6 +623,15 @@
       if (toast) {
         toast.style.animation = "slideDown 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) reverse forwards";
         setTimeout(() => toast.remove(), 300);
+      }
+
+      // อัปเดต Firebase RTDB โดยตรงเป็น fallback
+      if (typeof db !== 'undefined' && dbKey) {
+        try {
+          db.ref('kds_orders').child(dbKey).update({ status: 'completed' });
+        } catch(e) {
+          console.warn("RTDB client-side update error:", e);
+        }
       }
 
       try {
