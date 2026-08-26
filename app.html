@@ -703,6 +703,7 @@
       font-weight: 800;
     }
 </style>
+  <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
 </head>
 <body>
 
@@ -2209,10 +2210,59 @@ function renderMenu(category, btnElement = null, animClass = 'fade-in-anim') {
       }, 350);
     }
 
-    function handleSlipFileChange(input) {
+    
+    let isSlipQrVerified = false;
+
+    function scanSlipQR(file) {
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = (event) => {
+          const img = new Image();
+          img.src = event.target.result;
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            let width = img.width;
+            let height = img.height;
+            const maxDim = 1000;
+            if (width > maxDim || height > maxDim) {
+              if (width > height) {
+                height = Math.round((height * maxDim) / width);
+                width = maxDim;
+              } else {
+                width = Math.round((width * maxDim) / height);
+                height = maxDim;
+              }
+            }
+            canvas.width = width;
+            canvas.height = height;
+            ctx.drawImage(img, 0, 0, width, height);
+            const imageData = ctx.getImageData(0, 0, width, height);
+            
+            if (typeof jsQR !== 'undefined') {
+              const code = jsQR(imageData.data, imageData.width, imageData.height, {
+                inversionAttempts: "attemptBoth"
+              });
+              if (code && code.data) {
+                resolve({ valid: true, data: code.data });
+                return;
+              }
+            }
+            resolve({ valid: false, error: 'no_qr_found' });
+          };
+          img.onerror = () => resolve({ valid: false, error: 'img_load_error' });
+        };
+        reader.onerror = () => resolve({ valid: false, error: 'file_read_error' });
+      });
+    }
+
+    async function handleSlipFileChange(input) {
       const container = document.getElementById('slip-preview-container');
       const img = document.getElementById('slip-preview-img');
       const nameLabel = document.getElementById('slip-preview-name');
+      const statusBadge = document.getElementById('slip-status-badge');
+
       if (input.files && input.files[0]) {
         const file = input.files[0];
         const reader = new FileReader();
@@ -2222,10 +2272,32 @@ function renderMenu(category, btnElement = null, animClass = 'fade-in-anim') {
           if (container) container.style.display = 'flex';
         };
         reader.readAsDataURL(file);
+
+        if (statusBadge) {
+          statusBadge.innerHTML = '⏳ กำลังตรวจสอบ Mini QR บนสลิป...';
+          statusBadge.style.color = '#E65100';
+        }
+
+        const scanRes = await scanSlipQR(file);
+        if (scanRes.valid) {
+          isSlipQrVerified = true;
+          if (statusBadge) {
+            statusBadge.innerHTML = '✅ สลิปธนาคารถูกต้อง (ตรวจพบ QR)';
+            statusBadge.style.color = '#5E6D49';
+          }
+        } else {
+          isSlipQrVerified = false;
+          if (statusBadge) {
+            statusBadge.innerHTML = '⚠️ ไม่พบ Mini QR บนรูป (โปรดแนบสลิปธนาคารที่มี QR ค่ะ)';
+            statusBadge.style.color = '#C57B57';
+          }
+        }
       } else {
+        isSlipQrVerified = false;
         if (container) container.style.display = 'none';
       }
     }
+
 
     function openPaymentModal(finalAmount, pointsUsed, rewardName) {
       const qrImageUrl = KUB_KSHOP_QR_BASE64;
@@ -2287,7 +2359,7 @@ function renderMenu(category, btnElement = null, animClass = 'fade-in-anim') {
             <div id="slip-preview-container" style="display: none; margin-top: 6px; padding: 6px 10px; background: #EAF0E4; border: 1px solid #A3B18A; border-radius: 10px; align-items: center; gap: 8px;">
               <img id="slip-preview-img" src="" alt="Slip Preview" style="width: 36px; height: 36px; object-fit: cover; border-radius: 6px; border: 1px solid #7A8B62;">
               <div style="overflow: hidden;">
-                <div style="font-size: 11px; font-weight: 800; color: #5E6D49;">✅ แนบสลิปเรียบร้อยแล้ว</div>
+                <div id="slip-status-badge" style="font-size: 11px; font-weight: 800; color: #5E6D49;">✅ แนบสลิปเรียบร้อยแล้ว</div>
                 <div id="slip-preview-name" style="font-size: 9.5px; color: #7A8B62; max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"></div>
               </div>
             </div>
