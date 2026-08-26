@@ -985,6 +985,7 @@
 
         const profile = await liff.getProfile();
         globalUserId = profile.userId; globalUserName = profile.displayName;
+        initCustomerFirebaseRTDB();
         document.getElementById('userProfilePic').src = profile.pictureUrl || "https://via.placeholder.com/70";
 
         // ☕ Fetch custom menu configuration (images and prices) from RTDB
@@ -1027,6 +1028,7 @@
         
         switchTab(targetTab); 
         await fetchMemberData();
+        initCustomerFirebaseRTDB();
 
         if (autoRedeem) {
           setTimeout(() => {
