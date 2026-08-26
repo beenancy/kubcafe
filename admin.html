@@ -416,8 +416,13 @@
 
     function openTodayOrdersDrawer(tab = 'pending') {
       activeKdsTab = tab;
+      const startOfToday = new Date();
+      startOfToday.setHours(0, 0, 0, 0);
+      const startOfTodayMs = startOfToday.getTime();
+
       const orders = Object.entries(window.todayKdsOrders)
         .map(([dbKey, ord]) => ({ dbKey, ...ord }))
+        .filter(o => o.type === 'online_order' && (o.timestamp || 0) >= startOfTodayMs)
         .sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
 
       const pendingOrders = orders.filter(o => o.status === 'pending_brew');
@@ -426,7 +431,7 @@
 
       let listHtml = '';
       if (currentList.length === 0) {
-        listHtml = '<div style="padding: 24px; text-align: center; color: #8C827A; font-size: 13px;">ไม่มีรายการออเดอร์ในแท็บนี้</div>';
+        listHtml = '<div style="padding: 24px; text-align: center; color: #8C827A; font-size: 13px;">ไม่มีรายการออเดอร์ของวันนี้ในแท็บนี้</div>';
       } else {
         listHtml = currentList.map(o => {
           const timeStr = new Date(o.timestamp || Date.now()).toLocaleTimeString('th-TH');
@@ -442,7 +447,7 @@
 
           const actionBtn = o.status === 'pending_brew'
             ? '<button type="button" onclick="completeOnlineOrder(\'' + o.id + '\', \'' + o.dbKey + '\', null); Swal.close();" style="background: #7A8B62; color: white; border: none; border-radius: 8px; padding: 6px 12px; font-size: 11.5px; font-weight: 800; cursor: pointer;">🔔 เครื่องดื่มเสร็จแล้ว</button>'
-            : '<button type="button" onclick="resendLineNotification(\'' + o.id + '\')" style="background: #FAF7F0; color: #7A8B62; border: 1px solid #A3B18A; border-radius: 8px; padding: 4px 10px; font-size: 11px; font-weight: 700; cursor: pointer;">🔄 ส่ง LINE แจ้งซ้ำ</button>';
+            : '<span style="font-size: 11px; font-weight: 700; color: #5E6D49; background: #EAF0E4; padding: 4px 10px; border-radius: 8px;">✅ เสร็จแล้ว</span>';
 
           return `
             <div style="background: #FDFCF0; border: 1.5px solid #E8E2D9; border-radius: 12px; padding: 10px 12px; margin-bottom: 8px; text-align: left;">
@@ -516,25 +521,6 @@
         customClass: { popup: 'custom-swal-popup', confirmButton: 'swal-btn-confirm' },
         buttonsStyling: false
       });
-    }
-
-        async function resendLineNotification(orderId) {
-      const pin = localStorage.getItem("kub_admin_pin") || activePin || "2026";
-      try {
-        const res = await fetch("https://kub-backend.nan23082526.workers.dev/api/complete-order", {
-          method: "POST",
-          headers: { "Content-Type": "application/json", "X-Admin-PIN": pin },
-          body: JSON.stringify({ orderId: orderId, pin: pin })
-        });
-        const data = await res.json().catch(() => ({}));
-        if (data.status === "success") {
-          alert("ส่งข้อความ LINE แจ้งเตือนลูกค้าเรียบร้อยแล้วค่ะ 🔔");
-        } else {
-          alert("แจ้งเตือนไม่สำเร็จ: " + (data.message || "เกิดข้อผิดพลาด"));
-        }
-      } catch(e) {
-        alert("ไม่สามารถส่ง LINE ได้ กรุณาตรวจสอบการเชื่อมต่อ");
-      }
     }
 
     function showKdsToast(order, dbKey, db) {
