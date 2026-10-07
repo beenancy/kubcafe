@@ -605,7 +605,7 @@
             </div>
             <div id="timer-display" class="timer-pill">รีเฟรชใหม่ใน: 05:00</div>
             <div class="timer-warning">📲 ใช้กล้องมือถือ หรือ LINE สแกนหักแต้มทันที</div>
-            <button type="button" class="btn-cancel-redeem" onclick="revertToPoints()">↩ กลับไปรับแต้มปกติ</button>
+            <button type="button" class="btn-cancel-redeem" onclick="revertToHome()">↩ กลับหน้าหลัก</button>
           </div>
         `;
         startTimer(timestamp);
@@ -664,11 +664,11 @@
         
         if (remain < 0) { 
           clearInterval(timerInterval); 
-          // รีเฟรชกลับเป็น 1 แต้มปกติ
+          // รีเฟรชกลับเป็นหน้า Screen Saver (idle) อัตโนมัติ
           fetch("https://kub-backend.nan23082526.workers.dev/api/pos-update", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ mode: "points", points: 1, timestamp: Date.now() })
+            body: JSON.stringify({ mode: "idle", points: 0, timestamp: Date.now() })
           }).catch(() => {
             renderStandby();
           });
@@ -708,21 +708,24 @@
       }
     }
 
-    // ↩ ฟังก์ชันกลับไปรับแต้มปกติ (+1 แต้ม)
-    async function revertToPoints() {
+    // ↩ ฟังก์ชันกลับหน้าหลัก (Screen Saver / Standby)
+    async function revertToHome() {
       if (navigator.vibrate) { navigator.vibrate(20); }
       [10, 20, 30, 40, 50].forEach(p => {
         const btn = document.getElementById(`btn-redeem-${p}`);
         if (btn) btn.classList.remove('active');
       });
 
+      // สลับหน้าจอเป็น Screen Saver ทันที (Instant UI feedback)
+      renderStandby();
+
       try {
         await fetch("https://kub-backend.nan23082526.workers.dev/api/pos-update", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            mode: "points",
-            points: 1,
+            mode: "idle",
+            points: 0,
             timestamp: Date.now()
           })
         });
@@ -730,6 +733,7 @@
         console.error("pos-update revert error:", err);
       }
     }
+    const revertToPoints = revertToHome;
   </script>
 </body>
 </html>
