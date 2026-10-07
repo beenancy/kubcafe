@@ -48,11 +48,22 @@
       max-height: 680px; 
       border-radius: 28px;
       box-shadow: 0 15px 40px rgba(140, 122, 107, 0.08);
-      display: flex; flex-direction: column; justify-content: center; align-items: center;
-      padding: clamp(15px, 3vh, 25px) 3px; /* บนล่างพอเหมาะ ซ้ายขวาชิดขอบการ์ด 3px */
+      display: flex; flex-direction: column; justify-content: flex-start; align-items: center;
+      padding: clamp(10px, 2vh, 16px) 3px; /* บนล่างพอเหมาะ ซ้ายขวาชิดขอบการ์ด 3px */
       box-sizing: border-box;
       position: relative;
       border: 1px solid var(--border-color);
+    }
+
+    /* 📦 พื้นที่แสดงผลด้านล่างของแผงปุ่มด้านบน */
+    .card-content-area {
+      flex: 1;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: 0;
     }
 
     /* ⚡ ถอด Animation ออก เพื่อให้เปลี่ยนจอทันที (Instant) */
@@ -126,6 +137,10 @@
     .badge-line { background-color: var(--line-green); }
     .badge-blue { background-color: #0079C1; }
     .badge-orange { background-color: #FF6600; }
+    .badge-redeem { 
+      background: linear-gradient(135deg, #C57B57 0%, #A05A38 100%); 
+      box-shadow: 0 6px 15px rgba(197, 123, 87, 0.35);
+    }
     
     .qr-box, .payment-qr-box { 
       background: transparent; 
@@ -166,6 +181,18 @@
         #A3B18A 45%, /* เขียวมัทฉะ */
         #FF6600 50%, /* แดงไฟแรง */
         #FFCC00 55%, /* ส้มทองสว่าง */
+        transparent 60%,
+        transparent 100%
+      );
+    }
+    .glow-redeem::before {
+      background: conic-gradient(
+        from 0deg,
+        transparent 0%,
+        transparent 40%,
+        #C57B57 45%, /* สีคอปเปอร์/ส้มอิฐ */
+        #FF7A00 50%, /* ส้มสว่าง */
+        #FFD166 55%, /* ทอง */
         transparent 60%,
         transparent 100%
       );
@@ -257,7 +284,84 @@
       100% { transform: scale(1); box-shadow: 0 6px 15px rgba(163, 177, 138, 0.2); }
     }
 
-    
+    /* 🎁 แถบปุ่มแลกแต้มด้านบน (สำหรับลูกค้ากดเลือกแต้มได้เอง) */
+    .top-bar-container {
+      width: calc(100% - 14px);
+      background: #FFFDF9;
+      border: 1.5px solid #EEDDCF;
+      border-radius: 18px;
+      padding: 6px 8px;
+      margin-bottom: 6px;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      box-shadow: 0 4px 14px rgba(197, 123, 87, 0.08);
+      z-index: 10;
+    }
+    .top-bar-label {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 5px;
+      font-size: clamp(10.5px, 2.8vw, 12px);
+      font-weight: 700;
+      color: #A05A38;
+      letter-spacing: 0.5px;
+    }
+    .redeem-btn-group {
+      display: flex;
+      width: 100%;
+      gap: 5px;
+      justify-content: space-between;
+    }
+    .btn-top-redeem {
+      flex: 1;
+      padding: 7px 2px;
+      font-size: clamp(11px, 3.2vw, 13px);
+      font-weight: 800;
+      font-family: 'Prompt', 'Outfit', sans-serif;
+      border-radius: 12px;
+      border: 1.5px solid #F2CCB7;
+      background: #FFFFFF;
+      color: #C57B57;
+      cursor: pointer;
+      white-space: nowrap;
+      text-align: center;
+      transition: all 0.15s ease;
+      box-shadow: 0 2px 5px rgba(197, 123, 87, 0.08);
+      -webkit-tap-highlight-color: transparent;
+    }
+    .btn-top-redeem:active {
+      transform: scale(0.94);
+      background: #C57B57;
+      color: white;
+    }
+    .btn-top-redeem.active {
+      background: linear-gradient(135deg, #C57B57 0%, #A05A38 100%);
+      color: #FFFFFF;
+      border-color: #8C4325;
+      box-shadow: 0 4px 12px rgba(197, 123, 87, 0.4);
+      transform: scale(1.02);
+    }
+    .btn-cancel-redeem {
+      margin-top: 8px;
+      background: #FDFCF0;
+      border: 1px solid #D8CFC4;
+      color: #6B705C;
+      font-size: clamp(11px, 3vw, 13px);
+      font-family: inherit;
+      font-weight: 700;
+      padding: 6px 16px;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+    }
+    .btn-cancel-redeem:active {
+      transform: scale(0.96);
+      background: #E8E2D9;
+    }
 
     /* 📱 สำหรับ iPhone 5s / SE (1st Gen) - ดึงให้อยู่กึ่งกลางจอแบบ Fix เป๊ะๆ ไม่เลื่อนไหล */
     @media (max-width: 330px) and (max-height: 570px) {
@@ -276,35 +380,56 @@
         width: 300px;
         height: 548px;
         max-height: 548px;
-        padding: 10px 3px;
+        padding: 8px 3px;
         border-radius: 20px;
       }
+      .top-bar-container {
+        padding: 4px 5px;
+        margin-bottom: 4px;
+      }
+      .top-bar-label {
+        font-size: 10px;
+        margin-bottom: 3px;
+      }
+      .pts-text {
+        display: none;
+      }
+      .btn-top-redeem {
+        padding: 5px 1px;
+        font-size: 11px;
+        border-radius: 9px;
+      }
       .logo-icon {
-        font-size: 40px;
+        font-size: 38px;
       }
       .cafe-name {
-        font-size: 20px;
+        font-size: 19px;
       }
       .cafe-desc {
-        margin-bottom: 12px;
+        margin-bottom: 10px;
       }
       .add-friend-box {
-        padding: 8px;
+        padding: 6px;
       }
       .add-friend-qr {
-        width: 90px;
-        height: 90px;
+        width: 85px;
+        height: 85px;
       }
       .qr-box, .payment-qr-box {
-        width: 280px;
-        height: 280px;
-        max-width: 280px;
-        margin-bottom: 12px;
+        width: 250px;
+        height: 250px;
+        max-width: 250px;
+        margin-bottom: 8px;
       }
       .badge-title {
-        font-size: 18px;
-        padding: 6px 12px;
-        margin-bottom: 12px;
+        font-size: 16px;
+        padding: 5px 10px;
+        margin-bottom: 8px;
+      }
+      .btn-cancel-redeem {
+        margin-top: 5px;
+        padding: 4px 12px;
+        font-size: 11px;
       }
       .laser-scanner {
         height: 2px;
@@ -314,7 +439,24 @@
 </head>
 <body>
 
-  <div class="display-card" id="main-display"></div>
+  <div class="display-card">
+    <!-- 🎁 แถบปุ่มแลกแต้มด้านบน (สำหรับลูกค้ากดเลือกแต้มได้เอง) -->
+    <div class="top-bar-container" id="top-bar-container">
+      <div class="top-bar-label">
+        <span>🎁 แลกส่วนลด (แตะเลือกแต้ม)</span>
+      </div>
+      <div class="redeem-btn-group">
+        <button type="button" class="btn-top-redeem" id="btn-redeem-10" onclick="triggerCustomerRedeem(10)">-10<span class="pts-text"> แต้ม</span></button>
+        <button type="button" class="btn-top-redeem" id="btn-redeem-20" onclick="triggerCustomerRedeem(20)">-20<span class="pts-text"> แต้ม</span></button>
+        <button type="button" class="btn-top-redeem" id="btn-redeem-30" onclick="triggerCustomerRedeem(30)">-30<span class="pts-text"> แต้ม</span></button>
+        <button type="button" class="btn-top-redeem" id="btn-redeem-40" onclick="triggerCustomerRedeem(40)">-40<span class="pts-text"> แต้ม</span></button>
+        <button type="button" class="btn-top-redeem" id="btn-redeem-50" onclick="triggerCustomerRedeem(50)">-50<span class="pts-text"> แต้ม</span></button>
+      </div>
+    </div>
+
+    <!-- 📦 พื้นที่แสดงผลหลัก (Main Content) -->
+    <div class="card-content-area" id="main-display"></div>
+  </div>
 
   <script>
     // 📱 Service Worker ลงทะเบียนให้รองรับ PWA
@@ -368,9 +510,25 @@
     }
     setInterval(pollDatabaseFallback, 2500);
 
+    function updateTopBarRedeem(data) {
+      const isRedeem = data && data.mode === "redeem";
+      const pts = data && data.points ? Number(data.points) : 0;
+      [10, 20, 30, 40, 50].forEach(p => {
+        const btn = document.getElementById(`btn-redeem-${p}`);
+        if (btn) {
+          if (isRedeem && pts === p) {
+            btn.classList.add('active');
+          } else {
+            btn.classList.remove('active');
+          }
+        }
+      });
+    }
+
     function handleStateUpdate(data) {
       const currentHash = `${data.mode}-${data.points}-${data.timestamp}`;
       lastHash = currentHash;
+      updateTopBarRedeem(data);
       if (data.mode === "idle") {
         renderStandby();
       } else {
@@ -394,6 +552,7 @@
 
     function renderStandby() {
       clearInterval(timerInterval);
+      updateTopBarRedeem({ mode: "idle" });
       displayCard.innerHTML = `
         <div class="instant-content">
           <div class="logo-icon">🍵</div>
@@ -427,6 +586,26 @@
             </div>
             <div id="timer-display" class="timer-pill">รีเฟรชใหม่ใน: 05:00</div>
             <div class="timer-warning">⚠️ คิวอาร์โค้ดรับแต้มมีอายุ 5 นาที</div>
+          </div>
+        `;
+        startTimer(timestamp);
+      } 
+      else if (data.mode === "redeem") {
+        const points = data.points || 10;
+        const timestamp = data.timestamp || Date.now();
+        const hash = data.hash || '';
+        const secretCode = `KUBREDEEM-${points}-${timestamp}-${hash}`; 
+        const liffUrl = `https://liff.line.me/${SCAN_LIFF_ID}?code=${secretCode}`;
+        
+        htmlContent = `
+          <div class="instant-content">
+            <div class="badge-title badge-redeem">🎁 ใช้สิทธิ์แลก -${points} แต้ม</div>
+            <div class="qr-box glow-redeem">
+              <img src="https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(liffUrl)}">
+            </div>
+            <div id="timer-display" class="timer-pill">รีเฟรชใหม่ใน: 05:00</div>
+            <div class="timer-warning">📲 ใช้กล้องมือถือ หรือ LINE สแกนหักแต้มทันที</div>
+            <button type="button" class="btn-cancel-redeem" onclick="revertToPoints()">↩ กลับไปรับแต้มปกติ</button>
           </div>
         `;
         startTimer(timestamp);
@@ -485,7 +664,14 @@
         
         if (remain < 0) { 
           clearInterval(timerInterval); 
-          renderStandby(); 
+          // รีเฟรชกลับเป็น 1 แต้มปกติ
+          fetch("https://kub-backend.nan23082526.workers.dev/api/pos-update", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ mode: "points", points: 1, timestamp: Date.now() })
+          }).catch(() => {
+            renderStandby();
+          });
           return; 
         }
         
@@ -493,6 +679,56 @@
         let s = remain % 60;
         display.innerText = `รีเฟรชใหม่ใน: ${m}:${s < 10 ? '0'+s : s}`;
       }, 1000);
+    }
+
+    // 🎁 ฟังก์ชันกดแลกแต้มหน้าเคาน์เตอร์ (ลูกค้ากดเอง)
+    async function triggerCustomerRedeem(points) {
+      if (navigator.vibrate) { navigator.vibrate(20); }
+      // ไฮไลต์ปุ่มทันทีแบบ Instant Feedback
+      [10, 20, 30, 40, 50].forEach(p => {
+        const btn = document.getElementById(`btn-redeem-${p}`);
+        if (btn) {
+          if (p === points) btn.classList.add('active');
+          else btn.classList.remove('active');
+        }
+      });
+
+      try {
+        await fetch("https://kub-backend.nan23082526.workers.dev/api/pos-update", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            mode: "redeem",
+            points: points,
+            timestamp: Date.now()
+          })
+        });
+      } catch (err) {
+        console.error("pos-update redeem error:", err);
+      }
+    }
+
+    // ↩ ฟังก์ชันกลับไปรับแต้มปกติ (+1 แต้ม)
+    async function revertToPoints() {
+      if (navigator.vibrate) { navigator.vibrate(20); }
+      [10, 20, 30, 40, 50].forEach(p => {
+        const btn = document.getElementById(`btn-redeem-${p}`);
+        if (btn) btn.classList.remove('active');
+      });
+
+      try {
+        await fetch("https://kub-backend.nan23082526.workers.dev/api/pos-update", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            mode: "points",
+            points: 1,
+            timestamp: Date.now()
+          })
+        });
+      } catch (err) {
+        console.error("pos-update revert error:", err);
+      }
     }
   </script>
 </body>
