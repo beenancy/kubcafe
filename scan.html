@@ -342,17 +342,34 @@ Changelog: Extreme Minimal UI, Button Countdown, Enforce Deep Link, Add Haptic F
         const idToken = liff.getIDToken(); 
         const cleanedName = encodeURIComponent((profile.displayName || '').replace(/[-]|���[���-���]|���[���-���]|[‑-⛿]|���[���-���]/g, ''));
         
-        const response = await fetch(`${API_URL}?action=scanAddPoint&userId=${profile.userId}&idToken=${idToken || ''}&name=${cleanedName}&shopCode=${encodeURIComponent(shopCode)}`);
+        const isRedeem = shopCode.startsWith("KUBREDEEM-");
+        const actionParam = isRedeem ? "scanRedeemPoint" : "scanAddPoint";
+        const response = await fetch(`${API_URL}?action=${actionParam}&userId=${profile.userId}&idToken=${idToken || ''}&name=${cleanedName}&shopCode=${encodeURIComponent(shopCode)}`);
         const data = await response.json();
         const isEN = data.lang === "EN";
         
         if (data.status === "success") {
-          // 📳 ระบบเสียงและระบบสั่นตอบสนอง (Haptic Feedback) เพื่อความพรีเมียม
+          // 📳 ระบบเสียงและระบบสั่นตอบสนอง (Haptic Feedback)
           try { document.getElementById('dingSound').play().catch(()=>{}); } catch(e) {}
-          try { if (navigator.vibrate) navigator.vibrate(200); } catch(e) {}
+          try { if (navigator.vibrate) navigator.vibrate([100, 50, 150]); } catch(e) {}
 
-          // ✨ Extreme Minimal Custom HTML (Tight Compact layout)
-          const minimalHtml = `
+          const minimalHtml = isRedeem ? `
+            <div style="text-align: center; padding: 10px 0 5px 0;">
+              <div style="font-size: 40px; margin-bottom: 4px; line-height: 1;">🎁</div>
+              <div style="color: #4A3F35; font-size: 17px; font-weight: 800; margin-bottom: 2px;">
+                ${isEN ? 'Redeemed Successfully!' : 'ใช้แต้มแลกสิทธิ์สำเร็จ!'}
+              </div>
+              <div style="color: #C57B57; font-size: 42px; font-weight: 900; line-height: 1; margin: 6px 0 4px 0;">
+                -${data.ptsDeducted} <span style="font-size: 15px; font-weight: 700; color: #C57B57;">${isEN ? 'PTS' : 'แต้ม'}</span>
+              </div>
+              <div style="background: #FDFCF0; border: 1.5px solid #E8E2D9; border-radius: 12px; padding: 6px 12px; display: inline-block; font-size: 13px; color: #4A3F35; margin-bottom: 6px;">
+                ${isEN ? 'Remaining Points:' : 'แต้มสะสมคงเหลือ:'} <span style="color: #5E6D49; font-size: 16px; font-weight: 900; margin-left: 4px;">${data.newTotal}</span>
+              </div>
+              <div style="font-size: 11px; color: #8C8070; margin-top: 2px;">
+                ${data.rewardTitle || ''}
+              </div>
+            </div>
+          ` : `
             <div style="text-align: center; padding: 10px 0 5px 0;">
               <div style="display: flex; align-items: flex-end; justify-content: center; gap: 5px; margin-bottom: 15px;">
                 <span style="font-size: 32px; line-height: 1; margin-bottom: -4px;">&#9749;</span>

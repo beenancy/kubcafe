@@ -191,7 +191,49 @@
       user-select: none;
       -webkit-user-select: none;
     }
-  </style>
+  
+    /* 🎁 แถบปุ่มเลือกใช้แต้ม (Redeem Top Bar) ด้านบนสุด */
+    .redeem-top-container {
+      background: #FFFDF9;
+      border: 1.5px solid #F2CCB7;
+      border-radius: 14px;
+      padding: 6px 10px;
+      margin: 4px 0 8px 0;
+      box-shadow: 0 2px 8px rgba(197, 123, 87, 0.08);
+    }
+    .redeem-btn-row {
+      display: flex;
+      gap: 6px;
+      justify-content: space-between;
+    }
+    .btn-redeem-chip {
+      flex: 1;
+      background: #FFFFFF;
+      color: #C57B57;
+      border: 1.5px solid #E8A588;
+      border-radius: 10px;
+      padding: 7px 2px;
+      font-size: 12px;
+      font-weight: 800;
+      cursor: pointer;
+      font-family: 'Prompt', sans-serif;
+      transition: all 0.15s ease;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+      box-shadow: 0 2px 4px rgba(197, 123, 87, 0.1);
+    }
+    .btn-redeem-chip:active, .btn-redeem-chip.active {
+      background: #C57B57 !important;
+      color: #FFFFFF !important;
+      transform: scale(0.96);
+    }
+    @media (max-width: 480px) {
+      .btn-redeem-chip {
+        font-size: 11px;
+        padding: 6px 1px;
+      }
+    }
+</style>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body ontouchstart="">
@@ -362,6 +404,9 @@
         if (data.mode === 'points') {
           const hash = data.hash || ''; 
           window.currentLiffUrl = `https://liff.line.me/2010206186-u1XRJldq?code=KUBBAR-${data.points}-${data.timestamp}-${hash}`;
+        } else if (data.mode === 'redeem') {
+          const hash = data.hash || ''; 
+          window.currentLiffUrl = `https://liff.line.me/2010206186-u1XRJldq?code=KUBREDEEM-${data.points}-${data.timestamp}-${hash}`;
         }
         updateAdminUI(data);
       }
@@ -667,6 +712,13 @@
         startGlobalTimer(data.timestamp);
         hintText.innerHTML = "🔄 แตะที่รูปเพื่อรีเฟรชแต้มเดิมใหม่<br>(หากทิ้งไว้ 5 นาที ระบบจะเด้งเป็น 1 แต้มอัตโนมัติ)";
       } 
+      else if (data.mode === "redeem") {
+        label.innerHTML = `🎁 <b style="font-size: 18px; color: #C57B57;">-${data.points}</b> <span style="color: #C57B57;">แต้ม</span>`; 
+        label.style.color = "#C57B57"; label.style.backgroundColor = "#FFF4EE"; label.style.borderColor = "#F2CCB7";
+        previewImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(window.currentLiffUrl)}`;
+        startGlobalTimer(data.timestamp);
+        hintText.innerHTML = `📲 ให้ลูกค้าสแกนเพื่อหัก <b>${data.points} แต้ม</b> ทันที<br>(หากทิ้งไว้ 5 นาที ระบบจะรีเฟรชเป็น 1 แต้มอัตโนมัติ)`;
+      } 
       else if (data.mode === "store_line") {
         label.innerHTML = `💬 LINE OA`; label.style.color = "#06C755"; label.style.backgroundColor = "white"; label.style.borderColor = "var(--border-color)";
         previewImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent("https://line.me/R/ti/p/@848dmzja")}`; timerDisplay.innerText = "---";
@@ -721,6 +773,12 @@
         label.style.color = "#D32F2F"; 
         label.style.backgroundColor = "#FFEBEE"; 
         label.style.borderColor = "#EF9A9A";
+      }
+      else if (mode === "redeem") {
+        label.innerHTML = `🎁 <b style="font-size: 18px; color: #C57B57;">-${points}</b> <span style="color: #C57B57;">แต้ม</span>`; 
+        label.style.color = "#C57B57"; 
+        label.style.backgroundColor = "#FFF4EE"; 
+        label.style.borderColor = "#F2CCB7";
       } 
       else if (mode === "store_line") {
         label.innerHTML = `💬 LINE OA`; 
@@ -776,7 +834,13 @@
     }
 
     function refreshCurrentPoint() {
-      if (window.syncedState.mode === 'points' && window.syncedState.points > 0) { fireAction('points', window.syncedState.points); } else { fireAction('idle'); }
+      if (window.syncedState.mode === 'points' && window.syncedState.points > 0) { 
+        fireAction('points', window.syncedState.points); 
+      } else if (window.syncedState.mode === 'redeem' && window.syncedState.points > 0) {
+        fireAction('redeem', window.syncedState.points);
+      } else { 
+        fireAction('idle'); 
+      }
     }
 
     function copyCurrentLink() {
