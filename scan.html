@@ -345,91 +345,17 @@ Changelog: Extreme Minimal UI, Button Countdown, Enforce Deep Link, Add Haptic F
         const actionParam = isRedeem ? "scanRedeemPoint" : "scanAddPoint";
         const RTDB_URL = "https://kub-cafe-pos-default-rtdb.asia-southeast1.firebasedatabase.app";
 
-        // 🛡️ ตรวจสอบการสแกนซ้ำภายใน 2 นาที (120,000 ms) พร้อมให้บาริสต้ากดยืนยัน Yes/No
-        if (!isRedeem) {
-          const now = Date.now();
-          let lastScanTime = parseInt(localStorage.getItem("kub_last_scan_" + profile.userId) || "0", 10);
-          
-          if (!lastScanTime || (now - lastScanTime) > 120000) {
-            try {
-              const checkLastRes = await fetch(`${RTDB_URL}/kds_orders/user_last_scans_${profile.userId}.json`);
-              const checkLastData = await checkLastRes.json();
-              if (checkLastData && checkLastData.timestamp) {
-                lastScanTime = Math.max(lastScanTime, checkLastData.timestamp);
-              }
-            } catch(e) {}
-          }
-
-          if (lastScanTime > 0 && (now - lastScanTime) < 120000) {
-            // แจ้งเตือนส่งคำขอไปยังหน้าจอบาริสต้า
-            const appvId = "APPV_" + now + "_" + Math.floor(Math.random() * 1000);
-            const ptsFromCode = parseInt((shopCode.split('-')[1]) || '1', 10);
-            
-            try {
-              await fetch(`${RTDB_URL}/kds_orders/${appvId}.json`, {
-                method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  id: appvId,
-                  customerName: profile.displayName || "ลูกค้า",
-                  userId: profile.userId,
-                  points: ptsFromCode,
-                  status: "pending_approval",
-                  type: "scan_approval",
-                  timestamp: now
-                })
-              });
-
-              // หน่วงเวลาโหลดปกติเพื่อรอคำตอบจากบาริสต้า (สูงสุด 12 วินาที)
-              let isApproved = false;
-              const pollStart = Date.now();
-              while (Date.now() - pollStart < 13000) {
-                await new Promise(r => setTimeout(r, 1000));
-                try {
-                  const pollRes = await fetch(`${RTDB_URL}/kds_orders/${appvId}.json`);
-                  const pollData = await pollRes.json();
-                  if (pollData) {
-                    if (pollData.status === "approved") {
-                      isApproved = true;
-                      break;
-                    } else if (pollData.status === "rejected") {
-                      isApproved = false;
-                      break;
-                    }
-                  }
-                } catch(e) {}
-              }
-
-              // หากครบ 12 วินาทีแล้วบาริสต้าไม่กด -> อนุมัติอัตโนมัติ (ไม่ให้ลูกค้ารอนาน)
-              if (!isApproved && (Date.now() - pollStart >= 12000)) {
-                isApproved = true;
-              }
-
-              if (!isApproved) {
-                // บาริสต้ากดปฏิเสธ (NO)
-                await showAlert('สแกนซ้ำ', 'คุณได้รับแต้มไปแล้วค่ะ', 'warning', 'ตกลง', true);
-                return;
-              }
-            } catch(e) {
-              console.warn("Approval handshake error, fallback to normal scan:", e);
-            }
-          }
-        }
-
         const response = await fetch(`${API_URL}?action=${actionParam}&userId=${profile.userId}&idToken=${idToken || ''}&name=${cleanedName}&shopCode=${encodeURIComponent(shopCode)}`);
         const data = await response.json();
         const isEN = data.lang === "EN";
         
         if (data.status === "success") {
-          // บันทึกเวลาสแกนสำเร็จล่าสุด
-          try {
-            localStorage.setItem("kub_last_scan_" + profile.userId, Date.now().toString());
-            fetch(`${RTDB_URL}/kds_orders/user_last_scans_${profile.userId}.json`, {
-              method: "PUT",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ timestamp: Date.now() })
-            }).catch(()=>{});
-          } catch(e) {}
+          // 🔄 รีเซ็ตหน้าจอ POS Display หน้าร้านกลับมาเป็น 1 แต้มเสมอทันที
+          fetch("https://kub-backend.nan23082526.workers.dev/api/pos-update", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ mode: "points", points: 1, timestamp: Date.now() })
+          }).catch(()=>{});
 
           // 📳 ระบบเสียงและระบบสั่นตอบสนอง (Haptic Feedback)
           try { document.getElementById('dingSound').play().catch(()=>{}); } catch(e) {}

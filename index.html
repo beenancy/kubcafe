@@ -526,14 +526,21 @@
     }
 
     function handleStateUpdate(data) {
+      if (!data || data.mode === "idle") {
+        // 🔒 ในเวลาทำการ หากได้รับสถานะ idle ให้แปลงเป็น 1 แต้มอัตโนมัติทันที
+        fetch("https://kub-backend.nan23082526.workers.dev/api/pos-update", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ mode: "points", points: 1, timestamp: Date.now() })
+        }).catch(() => {});
+        renderActive({ mode: "points", points: 1, timestamp: Date.now() });
+        return;
+      }
+
       const currentHash = `${data.mode}-${data.points}-${data.timestamp}`;
       lastHash = currentHash;
       updateTopBarRedeem(data);
-      if (data.mode === "idle") {
-        renderStandby();
-      } else {
-        renderActive(data);
-      }
+      renderActive(data);
     }
 
     // 🔄 บังคับให้ระบบเชื่อมต่อใหม่ทันทีเมื่อเบราว์เซอร์ตื่นจากโหมดสลีป (Sleep) หรือเมื่อสลับกลับมาโฟกัสที่แท็บเล็ต
