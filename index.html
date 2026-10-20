@@ -670,7 +670,7 @@
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ mode: "points", points: 1, timestamp: Date.now() })
           }).catch(() => {
-            renderStandby();
+            handleStateUpdate({ mode: "points", points: 1, timestamp: Date.now() });
           });
           return; 
         }
@@ -708,7 +708,7 @@
       }
     }
 
-    // ↩ ฟังก์ชันกลับหน้าหลัก (Screen Saver / Standby)
+    // ↩ ฟังก์ชันกลับหน้าหลัก (กลับมาเป็น 1 แต้ม)
     async function revertToHome() {
       if (navigator.vibrate) { navigator.vibrate(20); }
       [10, 20, 30, 40, 50].forEach(p => {
@@ -716,16 +716,16 @@
         if (btn) btn.classList.remove('active');
       });
 
-      // สลับหน้าจอเป็น Screen Saver ทันที (Instant UI feedback)
-      renderStandby();
+      // สลับหน้าจอกลับมาเป็น 1 แต้มทันที (Instant UI feedback)
+      handleStateUpdate({ mode: "points", points: 1, timestamp: Date.now() });
 
       try {
         await fetch("https://kub-backend.nan23082526.workers.dev/api/pos-update", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            mode: "idle",
-            points: 0,
+            mode: "points",
+            points: 1,
             timestamp: Date.now()
           })
         });

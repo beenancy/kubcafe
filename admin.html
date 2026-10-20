@@ -259,7 +259,7 @@
       <div class="qr-preview-box" onclick="refreshCurrentPoint()">
         <img id="qr-preview-img" src="https://via.placeholder.com/300x300.png?text=STANDBY" alt="QR Preview">
       </div>
-      <div class="refresh-hint" id="qr-hint-text">🔄 แตะที่รูปเพื่อรีเฟรชแต้มเดิมใหม่<br>(หากทิ้งไว้ 10 นาที ระบบจะเด้งกลับหน้าพักหน้าจออัตโนมัติ)</div>
+      <div class="refresh-hint" id="qr-hint-text">🔄 แตะที่รูปเพื่อรีเฟรชแต้มเดิมใหม่<br>(รีเฟรชคิวอาร์โค้ดใหม่ทุก 5 นาที)</div>
     </div>
 
     <div class="control-section">
@@ -310,7 +310,7 @@
       if (pin.length === 4) {
         fetch(`${CLOUDFLARE_WORKER_URL}/api/pos-update`, {
           method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Admin-PIN': pin },
-          body: JSON.stringify({ mode: 'idle', pin: pin })
+          body: JSON.stringify({ mode: 'points', points: 1, pin: pin })
         }).then(res => {
           if (res.status === 200) {
             localStorage.setItem("kub_admin_pin", pin);
@@ -330,7 +330,7 @@
 
     function resetActivityTimer() {
       clearTimeout(absoluteIdleTimeout);
-      absoluteIdleTimeout = setTimeout(() => { fireAction('idle'); }, 1200000); 
+      absoluteIdleTimeout = setTimeout(() => { fireAction('points', 1); }, 1200000); 
     }
 
     let audioUnlocked = false;
@@ -605,26 +605,32 @@
 
       const safeCustomerName = escapeHtml(order.customerName);
 
-      if (isApproval) {
+      if (isApproval || isDup) {
         toast.style.border = '2px solid #E65100';
         toast.style.background = '#FFFDF7';
         toast.style.cursor = 'default';
 
+        const toastTitle = isApproval ? '⚠️ สแกนซ้ำใน 2 นาที!' : '⚠️ สแกนซ้ำวันนี้!';
+        const toastSubtitle = isApproval 
+          ? `ขอรับแต้มเพิ่ม (+${order.points || 1} แต้ม) อนุมัติหรือไม่?`
+          : (order.item || `สแกนรับแต้มซ้ำ (+${order.points || 1} แต้ม) อนุมัติหรือไม่?`);
+
         let countdown = 12;
         toast.innerHTML = `
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-            <div class="kds-toast-title" style="color: #E65100; margin: 0; font-size: 15px;">⚠️ สแกนซ้ำใน 2 นาที!</div>
+            <div class="kds-toast-title" style="color: #E65100; margin: 0; font-size: 15px;">${toastTitle}</div>
             <div style="background: #FFE082; color: #E65100; font-size: 10px; font-weight: 800; padding: 2px 8px; border-radius: 8px;">รอการตัดสินใจ</div>
           </div>
           <div class="kds-toast-desc" style="font-size: 13px; color: #4A3F35; margin-bottom: 4px;">👤 ลูกค้า: <b>${safeCustomerName}</b></div>
-          <div style="font-size: 12px; color: #6B705C; margin-bottom: 10px;">ขอรับแต้มเพิ่ม (+${order.points || 1} แต้ม) อนุมัติหรือไม่?</div>
+          <div style="font-size: 12px; color: #6B705C; margin-bottom: 10px;">${escapeHtml(toastSubtitle)}</div>
           <div style="display: flex; gap: 8px;">
-            <button type="button" id="btn-no-${dbKey}" style="flex: 1; background: #FFEBEE; color: #D32F2F; border: 1.5px solid #EF9A9A; padding: 10px 4px; border-radius: 10px; font-weight: 800; font-size: 13px; cursor: pointer;">❌ ปฏิเสธ (NO)</button>
-            <button type="button" id="btn-yes-${dbKey}" style="flex: 1.2; background: #7A8B62; color: white; border: none; padding: 10px 4px; border-radius: 10px; font-weight: 800; font-size: 13px; cursor: pointer; box-shadow: 0 3px 8px rgba(122,139,98,0.3);">✅ อนุมัติ (YES) <span id="timer-${dbKey}">(12)</span></button>
+            <button type="button" id="btn-no-${dbKey}" style="flex: 1; background: #FFEBEE; color: #D32F2F; border: 1.5px solid #EF9A9A; padding: 12px 6px; border-radius: 10px; font-weight: 800; font-size: 14px; cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent;">❌ ปฏิเสธ (NO)</button>
+            <button type="button" id="btn-yes-${dbKey}" style="flex: 1.2; background: #7A8B62; color: white; border: none; padding: 12px 6px; border-radius: 10px; font-weight: 800; font-size: 14px; cursor: pointer; box-shadow: 0 3px 8px rgba(122,139,98,0.3); touch-action: manipulation; -webkit-tap-highlight-color: transparent;">✅ อนุมัติ (YES) <span id="timer-${dbKey}">(12)</span></button>
           </div>
         `;
 
         let approvalInterval;
+        let handled = false;
         const cleanup = () => {
           clearInterval(approvalInterval);
           toast.style.animation = "slideDown 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) reverse forwards";
@@ -632,8 +638,23 @@
         };
 
         const handleDecision = (decision) => {
+          if (handled) return;
+          handled = true;
           cleanup();
           db.ref('kds_orders').child(dbKey).update({ status: decision });
+        };
+
+        const attachButtonEvent = (el, decision) => {
+          if (!el) return;
+          el.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            handleDecision(decision);
+          }, { passive: false });
+          el.addEventListener('click', (e) => {
+            e.stopPropagation();
+            handleDecision(decision);
+          });
         };
 
         setTimeout(() => {
@@ -641,8 +662,8 @@
           const btnYes = toast.querySelector(`#btn-yes-${dbKey}`);
           const timerSpan = toast.querySelector(`#timer-${dbKey}`);
 
-          if (btnNo) btnNo.onclick = (e) => { e.stopPropagation(); handleDecision('rejected'); };
-          if (btnYes) btnYes.onclick = (e) => { e.stopPropagation(); handleDecision('approved'); };
+          attachButtonEvent(btnNo, 'rejected');
+          attachButtonEvent(btnYes, 'approved');
 
           approvalInterval = setInterval(() => {
             countdown--;
@@ -752,21 +773,21 @@
         label.innerHTML = "⚪ ว่าง (STANDBY)"; label.style.color = "#B0A69D"; label.style.backgroundColor = "white"; label.style.borderColor = "var(--border-color)";
         previewImg.src = "https://via.placeholder.com/300x300.png?text=STANDBY";
         timerDisplay.innerText = "---"; window.currentLiffUrl = "";
-        hintText.innerHTML = "🔄 แตะที่รูปเพื่อรีเฟรชแต้มเดิมใหม่<br>(หากทิ้งไว้ 10 นาที ระบบจะเด้งกลับหน้าพักหน้าจออัตโนมัติ)";
+        hintText.innerHTML = "🔄 แตะที่รูปเพื่อรีเฟรชแต้มเดิมใหม่<br>(รีเฟรชคิวอาร์โค้ดใหม่ทุก 5 นาที)";
       } 
       else if (data.mode === "points") {
         label.innerHTML = `☕ <b style="font-size: 18px; color: #D32F2F;">${data.points}</b> <span style="color: #D32F2F;">แต้ม</span>`; 
         label.style.color = "#D32F2F"; label.style.backgroundColor = "#FFEBEE"; label.style.borderColor = "#EF9A9A";
         previewImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(window.currentLiffUrl)}`;
         startGlobalTimer(data.timestamp);
-        hintText.innerHTML = "🔄 แตะที่รูปเพื่อรีเฟรชแต้มเดิมใหม่<br>(หากทิ้งไว้ 10 นาที ระบบจะเด้งกลับหน้าพักหน้าจออัตโนมัติ)";
+        hintText.innerHTML = "🔄 แตะที่รูปเพื่อรีเฟรชแต้มเดิมใหม่<br>(รีเฟรชคิวอาร์โค้ดใหม่ทุก 5 นาที)";
       } 
       else if (data.mode === "redeem") {
         label.innerHTML = `🎁 <b style="font-size: 18px; color: #C57B57;">-${data.points}</b> <span style="color: #C57B57;">แต้ม</span>`; 
         label.style.color = "#C57B57"; label.style.backgroundColor = "#FFF4EE"; label.style.borderColor = "#F2CCB7";
         previewImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(window.currentLiffUrl)}`;
         startGlobalTimer(data.timestamp);
-        hintText.innerHTML = `📲 ให้ลูกค้าสแกนเพื่อหัก <b>${data.points} แต้ม</b> ทันที<br>(หากทิ้งไว้ 10 นาที ระบบจะเด้งกลับหน้าพักหน้าจออัตโนมัติ)`;
+        hintText.innerHTML = `📲 ให้ลูกค้าสแกนเพื่อหัก <b>${data.points} แต้ม</b> ทันที<br>(รีเฟรชคิวอาร์โค้ดใหม่ทุก 5 นาที)`;
       } 
       else if (data.mode === "store_line") {
         label.innerHTML = `💬 LINE OA`; label.style.color = "#06C755"; label.style.backgroundColor = "white"; label.style.borderColor = "var(--border-color)";
@@ -787,11 +808,11 @@
 
     function startGlobalTimer(startTimeMs) {
       window.globalTimerInterval = setInterval(() => {
-        const remain = (10 * 60) - Math.floor((Date.now() - startTimeMs) / 1000);
+        const remain = (5 * 60) - Math.floor((Date.now() - startTimeMs) / 1000);
         if (remain < 0) {
           clearInterval(window.globalTimerInterval);
-          document.getElementById('timer-display').innerText = "กำลังกลับหน้าพักหน้าจอ...";
-          fireAction('idle', 0);
+          document.getElementById('timer-display').innerText = "กำลังรีเฟรชแต้ม...";
+          fireAction('points', 1);
           return;
         }
         document.getElementById('timer-display').innerText = `เหลือเวลา: ${Math.floor(remain / 60)}:${String(remain % 60).padStart(2, '0')}`;
@@ -888,7 +909,7 @@
       } else if (window.syncedState.mode === 'redeem' && window.syncedState.points > 0) {
         fireAction('redeem', window.syncedState.points);
       } else { 
-        fireAction('idle'); 
+        fireAction('points', 1); 
       }
     }
 
