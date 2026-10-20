@@ -253,16 +253,8 @@ Changelog: Extreme Minimal UI, Button Countdown, Enforce Deep Link, Add Haptic F
   <script>
     const API_URL = "https://kub-backend.nan23082526.workers.dev";
     const SCAN_LIFF_ID = "2010206186-u1XRJldq";
-    // 🚀 ฟังก์ชันปิดหน้าต่างและกลับเข้า LINE OA อย่างปลอดภัย 100% (ป้องกัน 400 Bad Request จากการเปิดข้าม LIFF)
+    // 🚀 ฟังก์ชันกระชากเข้า LINE OA แบบบังคับ 100%
     function closeAppAndGoToLINE() {
-      try {
-        if (typeof liff !== "undefined" && liff.isInClient && liff.isInClient()) {
-          liff.closeWindow();
-          return;
-        }
-      } catch (e) {
-        console.error("liff.closeWindow error:", e);
-      }
       window.location.href = "https://line.me/R/ti/p/@848dmzja";
     }
 
