@@ -584,8 +584,8 @@
             <div class="qr-box glow-points">
               <img src="https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(liffUrl)}">
             </div>
-            <div id="timer-display" class="timer-pill">รีเฟรชใหม่ใน: 10:00</div>
-            <div class="timer-warning">⚠️ คิวอาร์โค้ดรับแต้มมีอายุ 10 นาที</div>
+            <div id="timer-display" class="timer-pill">รีเฟรชใหม่ใน: 05:00</div>
+            <div class="timer-warning">⚠️ คิวอาร์โค้ดรับแต้มมีอายุ 5 นาที</div>
           </div>
         `;
         startTimer(timestamp);
@@ -603,8 +603,8 @@
             <div class="qr-box glow-redeem">
               <img src="https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(liffUrl)}">
             </div>
-            <div id="timer-display" class="timer-pill">รีเฟรชใหม่ใน: 10:00</div>
-            <div class="timer-warning">📲 ใช้กล้องมือถือ หรือ LINE สแกนหักแต้มทันที (อายุ 10 นาที)</div>
+            <div id="timer-display" class="timer-pill">รีเฟรชใหม่ใน: 05:00</div>
+            <div class="timer-warning">📲 ใช้กล้องมือถือ หรือ LINE สแกนหักแต้มทันที (อายุ 5 นาที)</div>
             <button type="button" class="btn-cancel-redeem" onclick="revertToHome()">↩ กลับหน้าหลัก</button>
           </div>
         `;
@@ -653,7 +653,7 @@
     }
 
     function startTimer(startTimeMs) {
-      const limitSeconds = 10 * 60; 
+      const limitSeconds = 5 * 60; 
       
       timerInterval = setInterval(() => {
         const display = document.getElementById('timer-display');
@@ -664,11 +664,11 @@
         
         if (remain < 0) { 
           clearInterval(timerInterval); 
-          // รีเฟรชกลับเป็นหน้า Screen Saver (idle) อัตโนมัติ
+          // รีเฟรชสร้าง QR โค้ด 1 แต้มรอบใหม่ต่อเนื่อง
           fetch("https://kub-backend.nan23082526.workers.dev/api/pos-update", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ mode: "idle", points: 0, timestamp: Date.now() })
+            body: JSON.stringify({ mode: "points", points: 1, timestamp: Date.now() })
           }).catch(() => {
             renderStandby();
           });

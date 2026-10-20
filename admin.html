@@ -582,11 +582,12 @@
       const isOnline = order.type === 'online_order';
       const isChat = order.type === 'chat';
       const isDup = order.type === 'duplicate';
+      const isApproval = order.type === 'scan_approval';
       
       let extraClass = '';
       if (isOnline) extraClass = ' kds-toast-online';
       else if (isChat) extraClass = ' kds-toast-chat';
-      else if (isDup) extraClass = ' kds-toast-duplicate';
+      else if (isDup || isApproval) extraClass = ' kds-toast-duplicate';
       
       toast.className = 'kds-toast' + extraClass;
       
@@ -604,7 +605,55 @@
 
       const safeCustomerName = escapeHtml(order.customerName);
 
-      if (isOnline) {
+      if (isApproval) {
+        toast.style.border = '2px solid #E65100';
+        toast.style.background = '#FFFDF7';
+        toast.style.cursor = 'default';
+
+        let countdown = 12;
+        toast.innerHTML = `
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <div class="kds-toast-title" style="color: #E65100; margin: 0; font-size: 15px;">⚠️ สแกนซ้ำใน 2 นาที!</div>
+            <div style="background: #FFE082; color: #E65100; font-size: 10px; font-weight: 800; padding: 2px 8px; border-radius: 8px;">รอการตัดสินใจ</div>
+          </div>
+          <div class="kds-toast-desc" style="font-size: 13px; color: #4A3F35; margin-bottom: 4px;">👤 ลูกค้า: <b>${safeCustomerName}</b></div>
+          <div style="font-size: 12px; color: #6B705C; margin-bottom: 10px;">ขอรับแต้มเพิ่ม (+${order.points || 1} แต้ม) อนุมัติหรือไม่?</div>
+          <div style="display: flex; gap: 8px;">
+            <button type="button" id="btn-no-${dbKey}" style="flex: 1; background: #FFEBEE; color: #D32F2F; border: 1.5px solid #EF9A9A; padding: 10px 4px; border-radius: 10px; font-weight: 800; font-size: 13px; cursor: pointer;">❌ ปฏิเสธ (NO)</button>
+            <button type="button" id="btn-yes-${dbKey}" style="flex: 1.2; background: #7A8B62; color: white; border: none; padding: 10px 4px; border-radius: 10px; font-weight: 800; font-size: 13px; cursor: pointer; box-shadow: 0 3px 8px rgba(122,139,98,0.3);">✅ อนุมัติ (YES) <span id="timer-${dbKey}">(12)</span></button>
+          </div>
+        `;
+
+        let approvalInterval;
+        const cleanup = () => {
+          clearInterval(approvalInterval);
+          toast.style.animation = "slideDown 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) reverse forwards";
+          setTimeout(() => toast.remove(), 300);
+        };
+
+        const handleDecision = (decision) => {
+          cleanup();
+          db.ref('kds_orders').child(dbKey).update({ status: decision });
+        };
+
+        setTimeout(() => {
+          const btnNo = toast.querySelector(`#btn-no-${dbKey}`);
+          const btnYes = toast.querySelector(`#btn-yes-${dbKey}`);
+          const timerSpan = toast.querySelector(`#timer-${dbKey}`);
+
+          if (btnNo) btnNo.onclick = (e) => { e.stopPropagation(); handleDecision('rejected'); };
+          if (btnYes) btnYes.onclick = (e) => { e.stopPropagation(); handleDecision('approved'); };
+
+          approvalInterval = setInterval(() => {
+            countdown--;
+            if (timerSpan) timerSpan.innerText = `(${countdown})`;
+            if (countdown <= 0) {
+              handleDecision('approved');
+            }
+          }, 1000);
+        }, 50);
+
+      } else if (isOnline) {
         const itemsHtml = (order.items || []).map(it => {
           const topStr = it.toppings && it.toppings.length > 0 ? ` +${it.toppings.join(', ')}` : '';
           const noteStr = it.note ? ` [📝 ${it.note}]` : '';
