@@ -259,7 +259,7 @@
       <div class="qr-preview-box" onclick="refreshCurrentPoint()">
         <img id="qr-preview-img" src="https://via.placeholder.com/300x300.png?text=STANDBY" alt="QR Preview">
       </div>
-      <div class="refresh-hint" id="qr-hint-text">🔄 แตะที่รูปเพื่อรีเฟรชแต้มเดิมใหม่<br>(หากทิ้งไว้ 5 นาที ระบบจะเด้งเป็น 1 แต้มอัตโนมัติ)</div>
+      <div class="refresh-hint" id="qr-hint-text">🔄 แตะที่รูปเพื่อรีเฟรชแต้มเดิมใหม่<br>(หากทิ้งไว้ 10 นาที ระบบจะเด้งกลับหน้าพักหน้าจออัตโนมัติ)</div>
     </div>
 
     <div class="control-section">
@@ -703,21 +703,21 @@
         label.innerHTML = "⚪ ว่าง (STANDBY)"; label.style.color = "#B0A69D"; label.style.backgroundColor = "white"; label.style.borderColor = "var(--border-color)";
         previewImg.src = "https://via.placeholder.com/300x300.png?text=STANDBY";
         timerDisplay.innerText = "---"; window.currentLiffUrl = "";
-        hintText.innerHTML = "🔄 แตะที่รูปเพื่อรีเฟรชแต้มเดิมใหม่<br>(หากทิ้งไว้ 5 นาที ระบบจะเด้งเป็น 1 แต้มอัตโนมัติ)";
+        hintText.innerHTML = "🔄 แตะที่รูปเพื่อรีเฟรชแต้มเดิมใหม่<br>(หากทิ้งไว้ 10 นาที ระบบจะเด้งกลับหน้าพักหน้าจออัตโนมัติ)";
       } 
       else if (data.mode === "points") {
         label.innerHTML = `☕ <b style="font-size: 18px; color: #D32F2F;">${data.points}</b> <span style="color: #D32F2F;">แต้ม</span>`; 
         label.style.color = "#D32F2F"; label.style.backgroundColor = "#FFEBEE"; label.style.borderColor = "#EF9A9A";
         previewImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(window.currentLiffUrl)}`;
         startGlobalTimer(data.timestamp);
-        hintText.innerHTML = "🔄 แตะที่รูปเพื่อรีเฟรชแต้มเดิมใหม่<br>(หากทิ้งไว้ 5 นาที ระบบจะเด้งเป็น 1 แต้มอัตโนมัติ)";
+        hintText.innerHTML = "🔄 แตะที่รูปเพื่อรีเฟรชแต้มเดิมใหม่<br>(หากทิ้งไว้ 10 นาที ระบบจะเด้งกลับหน้าพักหน้าจออัตโนมัติ)";
       } 
       else if (data.mode === "redeem") {
         label.innerHTML = `🎁 <b style="font-size: 18px; color: #C57B57;">-${data.points}</b> <span style="color: #C57B57;">แต้ม</span>`; 
         label.style.color = "#C57B57"; label.style.backgroundColor = "#FFF4EE"; label.style.borderColor = "#F2CCB7";
         previewImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(window.currentLiffUrl)}`;
         startGlobalTimer(data.timestamp);
-        hintText.innerHTML = `📲 ให้ลูกค้าสแกนเพื่อหัก <b>${data.points} แต้ม</b> ทันที<br>(หากทิ้งไว้ 5 นาที ระบบจะรีเฟรชเป็น 1 แต้มอัตโนมัติ)`;
+        hintText.innerHTML = `📲 ให้ลูกค้าสแกนเพื่อหัก <b>${data.points} แต้ม</b> ทันที<br>(หากทิ้งไว้ 10 นาที ระบบจะเด้งกลับหน้าพักหน้าจออัตโนมัติ)`;
       } 
       else if (data.mode === "store_line") {
         label.innerHTML = `💬 LINE OA`; label.style.color = "#06C755"; label.style.backgroundColor = "white"; label.style.borderColor = "var(--border-color)";
@@ -738,11 +738,11 @@
 
     function startGlobalTimer(startTimeMs) {
       window.globalTimerInterval = setInterval(() => {
-        const remain = (5 * 60) - Math.floor((Date.now() - startTimeMs) / 1000);
+        const remain = (10 * 60) - Math.floor((Date.now() - startTimeMs) / 1000);
         if (remain < 0) {
           clearInterval(window.globalTimerInterval);
-          document.getElementById('timer-display').innerText = "กำลังรีเฟรชเป็น 1 แต้ม...";
-          fireAction('points', 1);
+          document.getElementById('timer-display').innerText = "กำลังกลับหน้าพักหน้าจอ...";
+          fireAction('idle', 0);
           return;
         }
         document.getElementById('timer-display').innerText = `เหลือเวลา: ${Math.floor(remain / 60)}:${String(remain % 60).padStart(2, '0')}`;
