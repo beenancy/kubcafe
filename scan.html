@@ -253,15 +253,16 @@ Changelog: Extreme Minimal UI, Button Countdown, Enforce Deep Link, Add Haptic F
   <script>
     const API_URL = "https://kub-backend.nan23082526.workers.dev";
     const SCAN_LIFF_ID = "2010206186-u1XRJldq";
-    const APP_LIFF_URL = "https://liff.line.me/2010206186-p1vWfgui"; // หน้าบัตรสมาชิก / โชว์แต้มสะสม
-
-    // 🚀 ฟังก์ชันเด้งเปิดหน้าบัตรสมาชิก (โชว์แต้มสะสม)
-    function goToMemberApp() {
-      window.location.href = APP_LIFF_URL;
-    } 
-
-    // 🚀 ฟังก์ชันกระชากเข้า LINE OA แบบบังคับ 100%
+    // 🚀 ฟังก์ชันปิดหน้าต่างและกลับเข้า LINE OA อย่างปลอดภัย 100% (ป้องกัน 400 Bad Request จากการเปิดข้าม LIFF)
     function closeAppAndGoToLINE() {
+      try {
+        if (typeof liff !== "undefined" && liff.isInClient && liff.isInClient()) {
+          liff.closeWindow();
+          return;
+        }
+      } catch (e) {
+        console.error("liff.closeWindow error:", e);
+      }
       window.location.href = "https://line.me/R/ti/p/@848dmzja";
     }
 
@@ -313,7 +314,7 @@ Changelog: Extreme Minimal UI, Button Countdown, Enforce Deep Link, Add Haptic F
       await Swal.fire({
         html: cooldownHtml,
         customClass: { popup: 'custom-swal-popup', confirmButton: 'matcha-btn warning-btn' },
-        allowOutsideClick: false, showConfirmButton: true, confirmButtonText: isEN ? 'View Card' : 'ดูแต้มสะสม', buttonsStyling: false,
+        allowOutsideClick: false, showConfirmButton: true, confirmButtonText: isEN ? 'OK' : 'ตกลง', buttonsStyling: false,
         didOpen: () => {
           const timerSpan = document.getElementById('cd-timer');
           countdownInterval = setInterval(() => {
@@ -324,7 +325,7 @@ Changelog: Extreme Minimal UI, Button Countdown, Enforce Deep Link, Add Haptic F
         },
         willClose: () => { clearInterval(countdownInterval); }
       });
-      goToMemberApp(); 
+      closeAppAndGoToLINE(); 
     }
 
     async function processPoints() {
@@ -395,22 +396,22 @@ Changelog: Extreme Minimal UI, Button Countdown, Enforce Deep Link, Add Haptic F
           Swal.fire({
             html: minimalHtml,
             showConfirmButton: true, 
-            confirmButtonText: isEN ? 'View Card (3)' : 'ดูแต้มสะสม (3)',
+            confirmButtonText: isEN ? 'OK (3)' : 'ตกลง (3)',
             customClass: { popup: 'custom-swal-popup', confirmButton: 'matcha-btn' },
             buttonsStyling: false, 
-            timer: 3000, // ⏱️ ตั้งเวลา 3 วินาที ให้เห็นแต้มชัดเจนแล้วเด้งไปหน้าโชว์แต้ม
+            timer: 3000, // ⏱️ ตั้งเวลา 3 วินาที ให้เห็นแต้มชัดเจนแล้วปิดหน้าต่างกลับเข้า LINE
             timerProgressBar: false, // ❌ ปิดหลอดเวลา ให้ดูคลีน
             allowOutsideClick: false,
             didOpen: () => {
               const btn = Swal.getConfirmButton();
               timerInterval = setInterval(() => {
                 const timeLeft = Math.ceil(Swal.getTimerLeft() / 1000);
-                if(btn) btn.innerHTML = isEN ? `View Card (${timeLeft})` : `ดูแต้มสะสม (${timeLeft})`;
+                if(btn) btn.innerHTML = isEN ? `OK (${timeLeft})` : `ตกลง (${timeLeft})`;
               }, 100);
             },
             willClose: () => { clearInterval(timerInterval); }
           }).then(() => { 
-            goToMemberApp(); 
+            closeAppAndGoToLINE(); 
           });
 
         } else if (data.status === "already_scanned" || (data.message && (data.message.includes("ใช้สิทธิ์") || data.message.includes("Already") || data.message.includes("เคยรับ")))) {
@@ -431,9 +432,6 @@ Changelog: Extreme Minimal UI, Button Countdown, Enforce Deep Link, Add Haptic F
                   ${isEN ? 'Total Points:' : 'คะแนนสะสมของคุณ:'} <span style="color: #E65100; font-size: 18px; font-weight: 900; margin-left: 4px;">${data.totalPts}</span> ${isEN ? 'PTS' : 'แต้ม'}
                 </div>
               ` : ''}
-              <div style="font-size: 12px; color: #8C8070; margin-top: 2px;">
-                ${isEN ? 'Opening your member card...' : 'กำลังพาไปที่หน้าบัตรสมาชิก...'}
-              </div>
             </div>
           `;
 
@@ -444,7 +442,7 @@ Changelog: Extreme Minimal UI, Button Countdown, Enforce Deep Link, Add Haptic F
           Swal.fire({
             html: alreadyHtml,
             showConfirmButton: true,
-            confirmButtonText: isEN ? 'View Card (2)' : 'ดูแต้มสะสม (2)',
+            confirmButtonText: isEN ? 'OK (2)' : 'ตกลง (2)',
             customClass: { popup: 'custom-swal-popup', confirmButton: 'matcha-btn' },
             buttonsStyling: false,
             timer: 2500,
@@ -453,12 +451,12 @@ Changelog: Extreme Minimal UI, Button Countdown, Enforce Deep Link, Add Haptic F
               const btn = Swal.getConfirmButton();
               timerInterval = setInterval(() => {
                 const timeLeft = Math.ceil(Swal.getTimerLeft() / 1000);
-                if(btn) btn.innerHTML = isEN ? `View Card (${timeLeft})` : `ดูแต้มสะสม (${timeLeft})`;
+                if(btn) btn.innerHTML = isEN ? `OK (${timeLeft})` : `ตกลง (${timeLeft})`;
               }, 100);
             },
             willClose: () => { clearInterval(timerInterval); }
           }).then(() => {
-            goToMemberApp();
+            closeAppAndGoToLINE();
           });
 
         } else if (data.status === "cooldown") {
