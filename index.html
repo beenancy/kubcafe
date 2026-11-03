@@ -289,25 +289,31 @@
       color: var(--text-light); 
     }
     
-    /* 🖼️ ภาพหัวพร้อมเพย์ และป้าย K SHOP ท้ายจอ */
+    /* 🖼️ ภาพหัวพร้อมเพย์ และป้าย K SHOP ท้ายจอ (ปรับความกว้างด้านข้างให้เท่ากับกล่อง QR ทุกขนาดหน้าจอ) */
     .payment-header-img {
-      width: clamp(210px, 58vw, 290px);
-      max-width: 90%;
+      width: 100%;
+      max-width: clamp(180px, 47dvh, 340px);
       height: auto;
-      border-radius: 14px;
-      margin-bottom: clamp(6px, 1.4vh, 12px);
+      border-radius: 20px;
+      margin-bottom: clamp(6px, 1.2vh, 10px);
       box-shadow: 0 4px 14px rgba(15, 62, 104, 0.16);
       display: block;
+      box-sizing: border-box;
+    }
+
+    .payment-qr-box {
+      margin-bottom: clamp(6px, 1.2vh, 10px) !important;
     }
 
     .payment-footer-img {
-      width: clamp(220px, 62vw, 305px);
-      max-width: 92%;
+      width: 100%;
+      max-width: clamp(180px, 47dvh, 340px);
       height: auto;
-      border-radius: 14px;
-      margin-top: clamp(4px, 1vh, 8px);
+      border-radius: 20px;
+      margin-top: clamp(2px, 0.8vh, 6px);
       box-shadow: 0 4px 14px rgba(22, 193, 87, 0.16);
       display: block;
+      box-sizing: border-box;
     }
     
     /* 🥛 กรอบแจ้งเตือนโอนเงินสไตล์กระจกฝ้าโปร่งแสง (Glassmorphism) */
@@ -490,11 +496,13 @@
         margin-bottom: 8px;
       }
       .payment-header-img {
-        width: 210px;
+        width: 100%;
+        max-width: 250px;
         margin-bottom: 5px;
       }
       .payment-footer-img {
-        width: 220px;
+        width: 100%;
+        max-width: 250px;
         margin-top: 4px;
       }
       .btn-cancel-redeem {
