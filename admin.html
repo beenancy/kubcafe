@@ -330,7 +330,7 @@
 
     function resetActivityTimer() {
       clearTimeout(absoluteIdleTimeout);
-      absoluteIdleTimeout = setTimeout(() => { fireAction('points', 1); }, 1200000); 
+      absoluteIdleTimeout = setTimeout(() => { fireAction('idle', 0); }, 1200000); 
     }
 
     let audioUnlocked = false;
@@ -710,8 +710,14 @@
       const hintText = document.getElementById('qr-hint-text');
 
       if (data.mode === "idle") {
-        fireAction('points', 1);
-        return;
+        clearInterval(window.globalTimerInterval);
+        label.innerHTML = "🏦 พักจอ (QR ธนาคาร)";
+        label.style.color = "#1565C0";
+        label.style.backgroundColor = "#E3F2FD";
+        label.style.borderColor = "#90CAF9";
+        previewImg.src = "https://raw.githubusercontent.com/beenancy/kubcafe/main/qr%20kshop.jpg";
+        timerDisplay.innerText = "---";
+        hintText.innerHTML = "🏦 หน้าจอหลักแสดง QR ธนาคาร (พร้อมเพย์) รอสแกนจ่ายเงิน<br>(แตะที่รูปหรือกดตัวเลขเพื่อเปิดรับแต้ม)";
       } 
       else if (data.mode === "points") {
         label.innerHTML = `☕ <b style="font-size: 18px; color: #D32F2F;">${data.points}</b> <span style="color: #D32F2F;">แต้ม</span>`; 
@@ -749,8 +755,8 @@
         const remain = (5 * 60) - Math.floor((Date.now() - startTimeMs) / 1000);
         if (remain < 0) {
           clearInterval(window.globalTimerInterval);
-          document.getElementById('timer-display').innerText = "กำลังรีเฟรชแต้ม...";
-          fireAction('points', 1);
+          document.getElementById('timer-display').innerText = "พักจอ (QR ธนาคาร)";
+          fireAction('idle', 0);
           return;
         }
         document.getElementById('timer-display').innerText = `เหลือเวลา: ${Math.floor(remain / 60)}:${String(remain % 60).padStart(2, '0')}`;
@@ -771,10 +777,10 @@
 
       // 🚀 Optimistic Update: แสดงค่าใหม่บนแผงบาริสต้าทันทีโดยไม่รอการตอบกลับจากเซิร์ฟเวอร์
       if (mode === "idle") {
-        label.innerHTML = "⚪ ว่าง (STANDBY)"; 
-        label.style.color = "#B0A69D"; 
-        label.style.backgroundColor = "white"; 
-        label.style.borderColor = "var(--border-color)";
+        label.innerHTML = "🏦 พักจอ (QR ธนาคาร)"; 
+        label.style.color = "#1565C0"; 
+        label.style.backgroundColor = "#E3F2FD"; 
+        label.style.borderColor = "#90CAF9";
       } 
       else if (mode === "points") {
         label.innerHTML = `☕ <b style="font-size: 18px; color: #D32F2F;">${points}</b> <span style="color: #D32F2F;">แต้ม</span>`; 

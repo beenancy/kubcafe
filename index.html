@@ -526,21 +526,17 @@
     }
 
     function handleStateUpdate(data) {
-      if (!data || data.mode === "idle") {
-        // 🔒 ในเวลาทำการ หากได้รับสถานะ idle ให้แปลงเป็น 1 แต้มอัตโนมัติทันที
-        fetch("https://kub-backend.nan23082526.workers.dev/api/pos-update", {
-          method: "POST",
-          headers: { "Content-Type": "application/json", "X-Admin-PIN": "2026" },
-          body: JSON.stringify({ mode: "points", points: 1, timestamp: Date.now(), pin: "2026" })
-        }).catch(() => {});
-        renderActive({ mode: "points", points: 1, timestamp: Date.now() });
-        return;
-      }
+      if (!data) return;
 
       const currentHash = `${data.mode}-${data.points}-${data.timestamp}`;
       lastHash = currentHash;
       updateTopBarRedeem(data);
-      renderActive(data);
+
+      if (data.mode === "idle") {
+        renderStandby();
+      } else {
+        renderActive(data);
+      }
     }
 
     // 🔄 บังคับให้ระบบเชื่อมต่อใหม่ทันทีเมื่อเบราว์เซอร์ตื่นจากโหมดสลีป (Sleep) หรือเมื่อสลับกลับมาโฟกัสที่แท็บเล็ต
@@ -562,14 +558,17 @@
       updateTopBarRedeem({ mode: "idle" });
       displayCard.innerHTML = `
         <div class="instant-content">
-          <div class="logo-icon">🍵</div>
-          <div class="cafe-name">KUB CAFÉ</div>
-          <div class="cafe-desc">ยินดีต้อนรับค่ะ<br>สั่งเครื่องดื่มและขนมได้ที่บาร์นะคะ</div>
-          
-          <div class="add-friend-box">
-            <div class="add-friend-title">Add Line Official</div>
-            <img class="add-friend-qr" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(STORE_LINE_OA_LINK)}">
+          <div class="badge-title badge-blue">พร้อมเพย์ (PromptPay) 🌐</div>
+          <div class="payment-qr-box glow-bank">
+            <img src="${PAYMENT_IMAGE_URL}" class="payment-img" alt="QR ธนาคาร">
           </div>
+          <div class="payment-note">
+            ⚠️ กรุณาใช้ <span style="color:#d35400;">"แอปธนาคาร"</span> สแกนจ่ายเท่านั้น<br>
+            <span style="font-size: clamp(9px, 2.5vw, 11px); color:#888; font-weight: normal;">(สแกนด้วยแอป LINE จะดึงไปที่ LINE BK)</span>
+          </div>
+          <button type="button" class="btn-cancel-redeem" onclick="revertToPoints()" style="margin-top: 10px; background: #EEF3E6; border-color: #B5C99A; color: #4B6043;">
+            ☕ แตะเพื่อสแกนรับแต้ม (+1 แต้ม)
+          </button>
         </div>
       `;
     }
@@ -671,14 +670,13 @@
         
         if (remain < 0) { 
           clearInterval(timerInterval); 
-          // รีเฟรชสร้าง QR โค้ด 1 แต้มรอบใหม่ต่อเนื่อง
+          // ปล่อยจอทิ้งไว้จนหมดเวลา -> สลับเข้าหน้าพักหน้าจอ (QR ธนาคาร) อัตโนมัติ
+          renderStandby();
           fetch("https://kub-backend.nan23082526.workers.dev/api/pos-update", {
             method: "POST",
             headers: { "Content-Type": "application/json", "X-Admin-PIN": "2026" },
-            body: JSON.stringify({ mode: "points", points: 1, timestamp: Date.now(), pin: "2026" })
-          }).catch(() => {
-            handleStateUpdate({ mode: "points", points: 1, timestamp: Date.now() });
-          });
+            body: JSON.stringify({ mode: "idle", points: 0, timestamp: Date.now(), pin: "2026" })
+          }).catch(() => {});
           return; 
         }
         
@@ -716,7 +714,7 @@
       }
     }
 
-    // ↩ ฟังก์ชันกลับหน้าหลัก (กลับมาเป็น 1 แต้ม)
+    // ↩ ฟังก์ชันกลับหน้าหลัก (กลับมาหน้าพักหน้าจอ QR ธนาคาร)
     async function revertToHome() {
       if (navigator.vibrate) { navigator.vibrate(20); }
       [10, 20, 30, 40, 50].forEach(p => {
@@ -724,7 +722,34 @@
         if (btn) btn.classList.remove('active');
       });
 
-      // สลับหน้าจอกลับมาเป็น 1 แต้มทันที (Instant UI feedback)
+      // สลับหน้าจอเป็น Screen Saver (QR ธนาคาร) ทันที (Instant UI feedback)
+      renderStandby();
+
+      try {
+        await fetch("https://kub-backend.nan23082526.workers.dev/api/pos-update", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "X-Admin-PIN": "2026" },
+          body: JSON.stringify({
+            mode: "idle",
+            points: 0,
+            timestamp: Date.now(),
+            pin: "2026"
+          })
+        });
+      } catch (err) {
+        console.error("pos-update revert error:", err);
+      }
+    }
+
+    // ☕ ฟังก์ชันสลับไปรับ 1 แต้มปกติ
+    async function revertToPoints() {
+      if (navigator.vibrate) { navigator.vibrate(20); }
+      [10, 20, 30, 40, 50].forEach(p => {
+        const btn = document.getElementById(`btn-redeem-${p}`);
+        if (btn) btn.classList.remove('active');
+      });
+
+      // สลับหน้าจอเป็น 1 แต้มทันที (Instant UI feedback)
       handleStateUpdate({ mode: "points", points: 1, timestamp: Date.now() });
 
       try {
@@ -739,10 +764,9 @@
           })
         });
       } catch (err) {
-        console.error("pos-update revert error:", err);
+        console.error("pos-update revert points error:", err);
       }
     }
-    const revertToPoints = revertToHome;
   </script>
 </body>
 </html>
