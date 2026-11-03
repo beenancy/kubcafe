@@ -41,13 +41,13 @@
 
     /* 📦 กรอบหลัก (Card) ที่ขยายเหลือขอบรอบนอกประมาณ 10px */
     .display-card {
-      background: var(--card-white);
+      background: linear-gradient(180deg, #FFFFFF 0%, #FAF7F0 100%);
       width: calc(100vw - 20px);    /* เว้นขอบซ้าย-ขวา ข้างละ 10px */
       height: calc(100dvh - 20px);  /* เว้นขอบบน-ล่าง ข้างละ 10px */
       max-width: 420px;
       max-height: 680px; 
       border-radius: 28px;
-      box-shadow: 0 15px 40px rgba(140, 122, 107, 0.08);
+      box-shadow: 0 15px 40px rgba(140, 122, 107, 0.12);
       display: flex; flex-direction: column; justify-content: flex-start; align-items: center;
       padding: clamp(10px, 2vh, 16px) 3px; /* บนล่างพอเหมาะ ซ้ายขวาชิดขอบการ์ด 3px */
       box-sizing: border-box;
@@ -142,10 +142,10 @@
       box-shadow: 0 6px 15px rgba(197, 123, 87, 0.35);
     }
     
-    /* 🎨 3D Embossed Container สำหรับ QR Code ทุกโหมด (นูนสามมิติ สวยงาม สะอาดตา) */
+    /* 🎨 3D Elevated Stepped Platform (แท่นรอง 3D นูนขึ้นมาจากหน้าจออย่างชัดเจน) */
     .qr-box, .payment-qr-box { 
-      background: #FFFFFF; 
-      margin-bottom: clamp(15px, 3vh, 25px); 
+      background: linear-gradient(145deg, #FFFFFF 0%, #F5EFEB 100%); 
+      margin-bottom: clamp(10px, 2.5vh, 20px); 
       position: relative;
       width: 100%; 
       max-width: clamp(180px, 47dvh, 340px); /* ยืดหยุ่นตามความสูงของหน้าจอ */
@@ -155,69 +155,105 @@
       justify-content: center;
       align-items: center;
       border-radius: 28px;
-      padding: clamp(10px, 2.2vmin, 16px);
+      padding: clamp(12px, 2.5vmin, 18px);
       transition: transform 0.2s ease, box-shadow 0.2s ease;
       
-      /* มิติ 3D นูนเสมือนจริง: ขอบบนสะท้อนแสง + สันล่างหนาแบบมีมิติ + เงาตกกระทบแบบนุ่มนวล */
+      /* สันความหนานูน 3 มิติ 5 ระดับ + เงาลึกสองระยะ + แสงสะท้อนสีขาวด้านบนซ้าย */
       border: 2px solid #E6DED4;
-      border-bottom: 7px solid #C4B7A6;
       box-shadow: 
-        0 16px 32px rgba(74, 63, 53, 0.15),
-        0 4px 10px rgba(74, 63, 53, 0.08),
-        inset 0 2px 4px rgba(255, 255, 255, 1);
+        0 2px 0 #D0C5B4,
+        0 4px 0 #C2B5A2,
+        0 6px 0 #B4A590,
+        0 8px 0 #A6957E,
+        0 10px 0 #98856C,
+        0 18px 24px rgba(74, 63, 53, 0.20),
+        0 30px 45px rgba(74, 63, 53, 0.12),
+        -6px -6px 14px rgba(255, 255, 255, 1),
+        inset 0 2px 3px rgba(255, 255, 255, 1);
       z-index: 1;
     }
 
-    /* 🟢 3D นูนสามมิติ - โหมดรับแต้ม (Matcha Green 3D) */
+    /* 🟢 3D นูนขึ้น - โหมดรับแต้ม (Matcha Green 3D Platform) */
     .qr-3d-points, .glow-points {
-      border: 2px solid #C8D8B6 !important;
-      border-bottom: 7px solid #7A8B62 !important;
+      background: linear-gradient(145deg, #FFFFFF 0%, #EEF5E8 100%) !important;
+      border: 2px solid #C4D7B2 !important;
       box-shadow: 
-        0 16px 32px rgba(122, 139, 98, 0.22),
-        0 5px 12px rgba(74, 63, 53, 0.08),
-        inset 0 2px 4px rgba(255, 255, 255, 1) !important;
+        0 2px 0 #ADC499,
+        0 4px 0 #9BB485,
+        0 6px 0 #89A371,
+        0 8px 0 #77935D,
+        0 10px 0 #658349,
+        0 18px 24px rgba(101, 131, 73, 0.25),
+        0 30px 45px rgba(74, 63, 53, 0.12),
+        -6px -6px 14px rgba(255, 255, 255, 1),
+        inset 0 2px 3px rgba(255, 255, 255, 1) !important;
     }
 
-    /* 🟠 3D นูนสามมิติ - โหมดหักแต้ม (Terracotta Copper 3D) */
+    /* 🟠 3D นูนขึ้น - โหมดหักแต้ม (Terracotta Copper 3D Platform) */
     .qr-3d-redeem, .glow-redeem {
-      border: 2px solid #F3CDBC !important;
-      border-bottom: 7px solid #A05A38 !important;
+      background: linear-gradient(145deg, #FFFFFF 0%, #FAF0EA 100%) !important;
+      border: 2px solid #F2CBBA !important;
       box-shadow: 
-        0 16px 32px rgba(197, 123, 87, 0.26),
-        0 5px 12px rgba(74, 63, 53, 0.08),
-        inset 0 2px 4px rgba(255, 255, 255, 1) !important;
+        0 2px 0 #E3B29C,
+        0 4px 0 #D39C84,
+        0 6px 0 #C3866C,
+        0 8px 0 #B37054,
+        0 10px 0 #9E5B40,
+        0 18px 24px rgba(158, 91, 64, 0.28),
+        0 30px 45px rgba(74, 63, 53, 0.12),
+        -6px -6px 14px rgba(255, 255, 255, 1),
+        inset 0 2px 3px rgba(255, 255, 255, 1) !important;
     }
 
-    /* 🔵 3D นูนสามมิติ - โหมดพักหน้าจอ & ธนาคาร (PromptPay Blue 3D) */
+    /* 🔵 3D นูนขึ้น - โหมดพักหน้าจอ & ธนาคาร (PromptPay Blue 3D Platform) */
     .qr-3d-bank, .glow-bank {
-      border: 2px solid #BCE0F5 !important;
-      border-bottom: 7px solid #005F99 !important;
+      background: linear-gradient(145deg, #FFFFFF 0%, #EBF4FB 100%) !important;
+      border: 2px solid #B8DCF2 !important;
       box-shadow: 
-        0 16px 32px rgba(0, 121, 193, 0.24),
-        0 5px 12px rgba(74, 63, 53, 0.08),
-        inset 0 2px 4px rgba(255, 255, 255, 1) !important;
+        0 2px 0 #9DC6E4,
+        0 4px 0 #7CB0D5,
+        0 6px 0 #5B9BC6,
+        0 8px 0 #3A85B7,
+        0 10px 0 #1870A8,
+        0 18px 24px rgba(24, 112, 168, 0.28),
+        0 30px 45px rgba(74, 63, 53, 0.12),
+        -6px -6px 14px rgba(255, 255, 255, 1),
+        inset 0 2px 3px rgba(255, 255, 255, 1) !important;
     }
 
-    /* 💬 3D นูนสามมิติ - โหมด LINE OA (LINE Green 3D) */
+    /* 💬 3D นูนขึ้น - โหมด LINE OA (LINE Green 3D Platform) */
     .qr-3d-line, .glow-line {
-      border: 2px solid #B6F0CB !important;
-      border-bottom: 7px solid #05A346 !important;
+      background: linear-gradient(145deg, #FFFFFF 0%, #EDFBF2 100%) !important;
+      border: 2px solid #B2EFC8 !important;
       box-shadow: 
-        0 16px 32px rgba(6, 199, 85, 0.22),
-        0 5px 12px rgba(74, 63, 53, 0.08),
-        inset 0 2px 4px rgba(255, 255, 255, 1) !important;
+        0 2px 0 #92DEAC,
+        0 4px 0 #73CD90,
+        0 6px 0 #54BD74,
+        0 8px 0 #36AC58,
+        0 10px 0 #1B9B3E,
+        0 18px 24px rgba(27, 155, 62, 0.25),
+        0 30px 45px rgba(74, 63, 53, 0.12),
+        -6px -6px 14px rgba(255, 255, 255, 1),
+        inset 0 2px 3px rgba(255, 255, 255, 1) !important;
     }
 
-    /* 🟧 3D นูนสามมิติ - โหมด TrueMoney (True Orange 3D) */
+    /* 🟧 3D นูนขึ้น - โหมด TrueMoney (True Orange 3D Platform) */
     .qr-3d-true, .glow-true {
-      border: 2px solid #FFD0AB !important;
-      border-bottom: 7px solid #D65100 !important;
+      background: linear-gradient(145deg, #FFFFFF 0%, #FFF3EB 100%) !important;
+      border: 2px solid #FFCDA6 !important;
       box-shadow: 
-        0 16px 32px rgba(255, 102, 0, 0.24),
-        0 5px 12px rgba(74, 63, 53, 0.08),
-        inset 0 2px 4px rgba(255, 255, 255, 1) !important;
+        0 2px 0 #F5B282,
+        0 4px 0 #E9975F,
+        0 6px 0 #DD7C3B,
+        0 8px 0 #D16118,
+        0 10px 0 #B84E07,
+        0 18px 24px rgba(184, 78, 7, 0.28),
+        0 30px 45px rgba(74, 63, 53, 0.12),
+        -6px -6px 14px rgba(255, 255, 255, 1),
+        inset 0 2px 3px rgba(255, 255, 255, 1) !important;
     }
 
+    /* 📄 แผ่น QR Code ด้านใน ลอยนูนขึ้นมาอีกหนึ่งระดับ (Double-Layer 3D Floating) */
     .qr-box img, .payment-qr-box img, .payment-img { 
       width: 100% !important;
       height: 100% !important;
@@ -225,14 +261,14 @@
       object-fit: contain; 
       display: block;
       background: #FFFFFF;
-      border-radius: 18px;
-      padding: clamp(6px, 1.5vmin, 10px);
+      border-radius: 20px;
+      padding: clamp(8px, 2vmin, 14px);
       box-sizing: border-box;
-      /* กรอบบุ๋มล้อมรอบ QR เพิ่มมิติชั้นใน */
-      border: 1px solid rgba(0, 0, 0, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.9);
       box-shadow: 
-        inset 0 2px 4px rgba(0, 0, 0, 0.04),
-        0 1px 2px rgba(255, 255, 255, 0.9);
+        0 4px 10px rgba(74, 63, 53, 0.12),
+        0 1px 3px rgba(74, 63, 53, 0.08),
+        inset 0 1px 2px rgba(255, 255, 255, 1);
       z-index: 1;
     }
 
