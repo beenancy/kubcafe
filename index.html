@@ -289,9 +289,25 @@
       color: var(--text-light); 
     }
     
-    .payment-img { 
-      width: calc(100% - 6px) !important;
-      height: calc(100% - 6px) !important;
+    /* 🖼️ ภาพหัวพร้อมเพย์ และป้าย K SHOP ท้ายจอ */
+    .payment-header-img {
+      width: clamp(210px, 58vw, 290px);
+      max-width: 90%;
+      height: auto;
+      border-radius: 14px;
+      margin-bottom: clamp(6px, 1.4vh, 12px);
+      box-shadow: 0 4px 14px rgba(15, 62, 104, 0.16);
+      display: block;
+    }
+
+    .payment-footer-img {
+      width: clamp(220px, 62vw, 305px);
+      max-width: 92%;
+      height: auto;
+      border-radius: 14px;
+      margin-top: clamp(4px, 1vh, 8px);
+      box-shadow: 0 4px 14px rgba(22, 193, 87, 0.16);
+      display: block;
     }
     
     /* 🥛 กรอบแจ้งเตือนโอนเงินสไตล์กระจกฝ้าโปร่งแสง (Glassmorphism) */
@@ -473,6 +489,14 @@
         padding: 5px 10px;
         margin-bottom: 8px;
       }
+      .payment-header-img {
+        width: 210px;
+        margin-bottom: 5px;
+      }
+      .payment-footer-img {
+        width: 220px;
+        margin-top: 4px;
+      }
       .btn-cancel-redeem {
         margin-top: 5px;
         padding: 4px 12px;
@@ -605,15 +629,12 @@
       updateTopBarRedeem({ mode: "idle" });
       displayCard.innerHTML = `
         <div class="instant-content">
-          <div class="badge-title badge-blue">พร้อมเพย์ (PromptPay) 🌐</div>
+          <img src="images/promptpay_header.png" onerror="this.src='promptpay_header.png'" class="payment-header-img" alt="THAI QR PAYMENT">
           <div class="payment-qr-box qr-3d-bank">
             <img src="${PAYMENT_IMAGE_URL}" class="payment-img" alt="QR ธนาคาร">
           </div>
-          <div class="payment-note">
-            ⚠️ กรุณาใช้ <span style="color:#d35400;">"แอปธนาคาร"</span> สแกนจ่ายเท่านั้น<br>
-            <span style="font-size: clamp(9px, 2.5vw, 11px); color:#888; font-weight: normal;">(สแกนด้วยแอป LINE จะดึงไปที่ LINE BK)</span>
-          </div>
-          <button type="button" class="btn-cancel-redeem" onclick="revertToPoints()" style="margin-top: 10px; background: #EEF3E6; border-color: #B5C99A; color: #4B6043;">
+          <img src="images/kshop_footer.png" onerror="this.src='kshop_footer.png'" class="payment-footer-img" alt="K SHOP รับเงินง่าย ได้เงินชัวร์">
+          <button type="button" class="btn-cancel-redeem" onclick="revertToPoints()" style="margin-top: 8px; background: #EEF3E6; border-color: #B5C99A; color: #4B6043;">
             ☕ แตะเพื่อสแกนรับแต้ม (+1 แต้ม)
           </button>
         </div>
@@ -677,14 +698,11 @@
       else if (data.mode === "payment") {
         htmlContent = `
           <div class="instant-content">
-            <div class="badge-title badge-blue">พร้อมเพย์ (PromptPay) 🌐</div>
+            <img src="images/promptpay_header.png" onerror="this.src='promptpay_header.png'" class="payment-header-img" alt="THAI QR PAYMENT">
             <div class="payment-qr-box qr-3d-bank">
               <img src="${PAYMENT_IMAGE_URL}" class="payment-img">
             </div>
-            <div class="payment-note">
-              ⚠️ กรุณาใช้ <span style="color:#d35400;">"แอปธนาคาร"</span> สแกนจ่ายเท่านั้น<br>
-              <span style="font-size: clamp(9px, 2.5vw, 11px); color:#888; font-weight: normal;">(สแกนด้วยแอป LINE จะดึงไปที่ LINE BK)</span>
-            </div>
+            <img src="images/kshop_footer.png" onerror="this.src='kshop_footer.png'" class="payment-footer-img" alt="K SHOP รับเงินง่าย ได้เงินชัวร์">
           </div>
         `;
       } 
