@@ -407,12 +407,11 @@ Changelog: Global Single-Use Atomic QR Lock (Prevent Multi-User Double Scan), In
               }
             }
           } else if (!isLinkMode) {
-            // ⚡ ทันทีที่เครื่องแรกจับจอง QR สำเร็จ สั่งสลับหน้าจอหน้าร้านกลับเป็น Screen Saver ทันทีในเสี้ยววินาที!
-            db.ref('pos_display').update({
-              mode: 'idle',
-              points: 0,
-              timestamp: Date.now(),
-              hash: ''
+            // ⚡ ทันทีที่เครื่องแรกจับจอง QR สำเร็จ สั่งเปลี่ยนหน้าจอหน้าร้านกลับเป็น +1 แต้ม (รหัส QR ใหม่ทันที) โดยไม่กลับไป Screen Saver
+            fetch("https://kub-backend.nan23082526.workers.dev/api/pos-update", {
+              method: "POST",
+              headers: { "Content-Type": "application/json", "X-Admin-PIN": "2026" },
+              body: JSON.stringify({ mode: "points", points: 1, timestamp: Date.now(), pin: "2026" })
             }).catch(() => {});
           }
         } catch (lockErr) {
@@ -436,12 +435,16 @@ Changelog: Global Single-Use Atomic QR Lock (Prevent Multi-User Double Scan), In
             });
           }).catch(() => {});
 
-          // 🔄 รีเซ็ตหน้าจอ POS Display หน้าร้านกลับไปหน้าพักหน้าจอ (Screen Saver) ทันที
-          fetch("https://kub-backend.nan23082526.workers.dev/api/pos-update", {
-            method: "POST",
-            headers: { "Content-Type": "application/json", "X-Admin-PIN": "2026" },
-            body: JSON.stringify({ mode: "idle", points: 0, timestamp: Date.now(), pin: "2026" })
-          }).catch(()=>{});
+          // 🔄 รีเซ็ตหน้าจอ POS Display หน้าร้านกลับมาเป็น +1 แต้ม (QR ใหม่) ทันที (ยังไม่กลับไป Screen Saver)
+          const resetToOnePoint = () => {
+            fetch("https://kub-backend.nan23082526.workers.dev/api/pos-update", {
+              method: "POST",
+              headers: { "Content-Type": "application/json", "X-Admin-PIN": "2026" },
+              body: JSON.stringify({ mode: "points", points: 1, timestamp: Date.now(), pin: "2026" })
+            }).catch(()=>{});
+          };
+          resetToOnePoint();
+          setTimeout(resetToOnePoint, 350);
 
           // 📳 ระบบเสียงและระบบสั่นตอบสนอง (Haptic Feedback)
           try { document.getElementById('dingSound').play().catch(()=>{}); } catch(e) {}
