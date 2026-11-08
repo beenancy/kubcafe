@@ -385,7 +385,7 @@
           .then(r => r.json())
           .then(data => {
             if (!data) return;
-            const currentHash = `${data.mode}-${data.points}-${data.timestamp}`;
+            const currentHash = `${data.mode}-${data.points}-${data.timestamp}-${data.hash || ''}`;
             if (currentHash !== lastHash) {
               console.log("Fallback sync updated!");
               handleStateUpdate(data);
@@ -397,7 +397,8 @@
       setInterval(pollDatabaseFallback, 2500);
 
       function handleStateUpdate(data) {
-        const currentHash = `${data.mode}-${data.points}-${data.timestamp}`;
+        const currentHash = `${data.mode}-${data.points}-${data.timestamp}-${data.hash || ''}`;
+        if (currentHash === lastHash) return;
         lastHash = currentHash;
         window.syncedState = data;
         

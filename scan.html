@@ -1,7 +1,7 @@
 <!-- 
 ======================================================
-KUB Cafe - Customer Scan Frontend (V.4.5 MASTER)
-Changelog: Extreme Minimal UI, Button Countdown, Enforce Deep Link, Add Haptic Feedback
+KUB Cafe - Customer Scan Frontend (V.4.6 MASTER)
+Changelog: Global Single-Use Atomic QR Lock (Prevent Multi-User Double Scan), Instant Screen Saver Reset
 ======================================================
 -->
 <!DOCTYPE html>
@@ -13,6 +13,8 @@ Changelog: Extreme Minimal UI, Button Countdown, Enforce Deep Link, Add Haptic F
   <title>KUB Cafe - Scan</title>
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
   <style>
     body { font-family: 'Prompt', sans-serif; background-color: #FDFCF0; margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; flex-direction: column; }
     /* Speeder Loader & Wind Lines (KUB Cafe Matcha Theme) */
@@ -253,6 +255,19 @@ Changelog: Extreme Minimal UI, Button Countdown, Enforce Deep Link, Add Haptic F
   <script>
     const API_URL = "https://kub-backend.nan23082526.workers.dev";
     const SCAN_LIFF_ID = "2010206186-u1XRJldq";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAi-8gxkAs3N4b5r3EULZHckqq3tHa6tlE",
+      authDomain: "kub-cafe-pos.firebaseapp.com",
+      databaseURL: "https://kub-cafe-pos-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "kub-cafe-pos",
+      storageBucket: "kub-cafe-pos.firebasestorage.app"
+    };
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+    }
+    const db = firebase.database();
+
     // 🚀 ฟังก์ชันกระชากเข้า LINE OA แบบบังคับ 100%
     function closeAppAndGoToLINE() {
       window.location.href = "https://line.me/R/ti/p/@848dmzja";
@@ -341,20 +356,91 @@ Changelog: Extreme Minimal UI, Button Countdown, Enforce Deep Link, Add Haptic F
         const idToken = liff.getIDToken(); 
         const cleanedName = encodeURIComponent((profile.displayName || '').replace(/[-]|���[���-���]|���[���-���]|[‑-⛿]|���[���-���]/g, ''));
         
-        const isRedeem = shopCode.startsWith("KUBREDEEM-");
+        const cleanCode = shopCode.split("\n")[0].split(" ")[0].trim();
+        const isRedeem = cleanCode.startsWith("KUBREDEEM-");
+        const isLinkMode = cleanCode.startsWith("KUBLINK-");
         const actionParam = isRedeem ? "scanRedeemPoint" : "scanAddPoint";
         const RTDB_URL = "https://kub-cafe-pos-default-rtdb.asia-southeast1.firebasedatabase.app";
 
-        const response = await fetch(`${API_URL}?action=${actionParam}&userId=${profile.userId}&idToken=${idToken || ''}&name=${cleanedName}&shopCode=${encodeURIComponent(shopCode)}`);
+        // 🔒 ระบบล็อก 1 QR ต่อ 1 คนสแกนแบบ Atomic Transaction บน Firebase RTDB
+        // ป้องกันการสแกนพร้อมกันหรือสแกนตามกัน 2 เครื่อง (บล็อกเครื่องที่ 2 ทันทีก่อนยิงเข้า Backend)
+        const qrLockKey = "LOCK_" + cleanCode.replace(/[.#$\[\]\/]/g, "_");
+        const lockRef = db.ref('pos_display/qr_locks/' + qrLockKey);
+        let lockCommitted = false;
+
+        try {
+          const lockResult = await lockRef.transaction((currentLock) => {
+            if (currentLock === null) {
+              return {
+                claimedBy: profile.userId,
+                name: profile.displayName || 'Customer',
+                status: 'claiming',
+                timestamp: Date.now()
+              };
+            }
+            return; // มีคนล็อก QR นี้ไปแล้ว ยกเลิกการเขียนทับ
+          }, undefined, false);
+
+          lockCommitted = !!(lockResult && lockResult.committed);
+          if (!lockCommitted) {
+            const existingLock = lockResult && lockResult.snapshot ? lockResult.snapshot.val() : null;
+            if (existingLock && existingLock.claimedBy) {
+              if (existingLock.claimedBy !== profile.userId) {
+                // 🚨 คนละบัญชี LINE สแกน QR เดียวกัน! ปฏิเสธทันที 100% ไม่ส่งไปเพิ่มแต้มเด็ดขาด
+                await showAlert(
+                  'คิวอาร์โค้ดถูกใช้แล้ว',
+                  '&#10060; คิวอาร์โค้ดนี้มีผู้สแกนรับสิทธิ์ไปแล้วค่ะ<br><span style="font-size:12px;color:#8C8070;">(1 คิวอาร์โค้ด สแกนได้ 1 ท่านเท่านั้น)</span>',
+                  'error',
+                  'ตกลง',
+                  true
+                );
+                return;
+              } else if (existingLock.status === 'claiming' && (Date.now() - (existingLock.timestamp || 0) < 15000)) {
+                await showAlert(
+                  'กำลังประมวลผล',
+                  'ระบบกำลังบันทึกแต้มให้คุณอยู่ค่ะ กรุณารอสักครู่นะคะ',
+                  'warning',
+                  'ตกลง',
+                  true
+                );
+                return;
+              }
+            }
+          } else if (!isLinkMode) {
+            // ⚡ ทันทีที่เครื่องแรกจับจอง QR สำเร็จ สั่งสลับหน้าจอหน้าร้านกลับเป็น Screen Saver ทันทีในเสี้ยววินาที!
+            db.ref('pos_display').update({
+              mode: 'idle',
+              points: 0,
+              timestamp: Date.now(),
+              hash: ''
+            }).catch(() => {});
+          }
+        } catch (lockErr) {
+          console.error("QR atomic lock error:", lockErr);
+        }
+
+        const response = await fetch(`${API_URL}?action=${actionParam}&userId=${profile.userId}&idToken=${idToken || ''}&name=${cleanedName}&shopCode=${encodeURIComponent(cleanCode)}`);
         const data = await response.json();
         const isEN = data.lang === "EN";
         
         if (data.status === "success") {
-          // 🔄 รีเซ็ตหน้าจอ POS Display หน้าร้านกลับมาเป็น 1 แต้มเสมอทันที
+          // บันทึกสถานะล็อกว่าเสร็จสมบูรณ์ และล้างขยะล็อกเก่าที่เกิน 15 นาที
+          lockRef.update({ status: 'completed', completedAt: Date.now() }).catch(() => {});
+          db.ref('pos_display/qr_locks').once('value').then(snap => {
+            const allLocks = snap.val() || {};
+            const now = Date.now();
+            Object.keys(allLocks).forEach(k => {
+              if (k !== qrLockKey && (now - (allLocks[k]?.timestamp || 0) > 15 * 60 * 1000)) {
+                db.ref('pos_display/qr_locks/' + k).remove().catch(() => {});
+              }
+            });
+          }).catch(() => {});
+
+          // 🔄 รีเซ็ตหน้าจอ POS Display หน้าร้านกลับไปหน้าพักหน้าจอ (Screen Saver) ทันที
           fetch("https://kub-backend.nan23082526.workers.dev/api/pos-update", {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ mode: "points", points: 1, timestamp: Date.now() })
+            headers: { "Content-Type": "application/json", "X-Admin-PIN": "2026" },
+            body: JSON.stringify({ mode: "idle", points: 0, timestamp: Date.now(), pin: "2026" })
           }).catch(()=>{});
 
           // 📳 ระบบเสียงและระบบสั่นตอบสนอง (Haptic Feedback)
