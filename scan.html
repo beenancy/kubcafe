@@ -377,11 +377,15 @@ Changelog: Global Single-Use Atomic QR Lock (Prevent Multi-User Double Scan), In
         const lockUrl = `${RTDB_URL}/pos_display/qr_locks/${qrLockKey}.json`;
 
         let activeScreenTs = null;
+        let autoResetTs = null;
         let lockRes = null;
         try {
-          [activeScreenTs, lockRes] = await Promise.all([
+          [activeScreenTs, autoResetTs, lockRes] = await Promise.all([
             !isLinkMode
               ? fetch(`${RTDB_URL}/pos_display/timestamp.json`, { cache: "no-store" }).then(r => r.json()).catch(() => null)
+              : Promise.resolve(null),
+            !isLinkMode
+              ? fetch(`${RTDB_URL}/pos_display/auto_reset_ts.json`, { cache: "no-store" }).then(r => r.json()).catch(() => null)
               : Promise.resolve(null),
             fetch(lockUrl, {
               method: "PUT",
@@ -431,7 +435,7 @@ Changelog: Global Single-Use Atomic QR Lock (Prevent Multi-User Double Scan), In
             return;
           }
         } else if (lockRes.status === 200) {
-          // ตรวจสอบว่า QR นี้ยังเป็น QR ปัจจุบันที่แสดงอยู่บนหน้าจอหน้าร้านหรือไม่ (กันการแอบถ่ายรูป QR เก่ามาสแกนทีหลัง)
+          // 1. ตรวจสอบว่า QR นี้ยังเป็น QR ปัจจุบันที่แสดงอยู่บนหน้าจอหน้าร้านหรือไม่ (กันการแอบถ่ายรูป QR เก่ามาสแกนทีหลัง)
           if (!isLinkMode && activeScreenTs && qrTimestamp > 0 && Number(activeScreenTs) !== Number(qrTimestamp)) {
             await fetch(lockUrl, { method: "DELETE" }).catch(() => {});
             await showAlert(
@@ -444,13 +448,17 @@ Changelog: Global Single-Use Atomic QR Lock (Prevent Multi-User Double Scan), In
             return;
           }
 
-          // ⚡ ทันทีที่เครื่องแรกจับจอง QR สำเร็จ สั่งเปลี่ยนหน้าจอหน้าร้านกลับเป็น +1 แต้ม (รหัส QR ใหม่ทันที) โดยไม่กลับไป Screen Saver
-          if (!isLinkMode) {
-            fetch("https://kub-backend.nan23082526.workers.dev/api/pos-update", {
-              method: "POST",
-              headers: { "Content-Type": "application/json", "X-Admin-PIN": "2026" },
-              body: JSON.stringify({ mode: "points", points: 1, timestamp: Date.now(), pin: "2026" })
-            }).catch(() => {});
+          // 2. ป้องกันคนข้างๆ ยกมือถือสแกนตามติดๆ ทันทีที่หน้าจอเพิ่งรีเซ็ตกลับเป็น +1 แต้มอัตโนมัติ (ภายใน 5 วินาทีหลังคนแรกสแกน)
+          if (!isLinkMode && autoResetTs && qrTimestamp > 0 && Number(autoResetTs) === Number(qrTimestamp) && (Date.now() - Number(qrTimestamp) < 5000)) {
+            await fetch(lockUrl, { method: "DELETE" }).catch(() => {});
+            await showAlert(
+              'กรุณารอสักครู่ค่ะ',
+              '&#9203; ระบบเพิ่งทำรายการของลูกค้าท่านก่อนหน้าเสร็จสิ้นค่ะ<br><span style="font-size:12px;color:#8C8070;">กรุณารอสักครู่แล้วสแกนใหม่อีกครั้งนะคะ</span>',
+              'warning',
+              'ตกลง',
+              true
+            );
+            return;
           }
         } else {
           // Fail-Closed: บล็อกทันทีหากสถานะผิดปกติ
@@ -480,15 +488,23 @@ Changelog: Global Single-Use Atomic QR Lock (Prevent Multi-User Double Scan), In
           }).catch(() => {});
 
           // 🔄 รีเซ็ตหน้าจอ POS Display หน้าร้านกลับมาเป็น +1 แต้ม (QR ใหม่) ทันที (ยังไม่กลับไป Screen Saver)
-          const resetToOnePoint = () => {
-            fetch("https://kub-backend.nan23082526.workers.dev/api/pos-update", {
-              method: "POST",
-              headers: { "Content-Type": "application/json", "X-Admin-PIN": "2026" },
-              body: JSON.stringify({ mode: "points", points: 1, timestamp: Date.now(), pin: "2026" })
-            }).catch(()=>{});
-          };
-          resetToOnePoint();
-          setTimeout(resetToOnePoint, 350);
+          if (!isLinkMode) {
+            const resetTs = Date.now();
+            fetch(`${RTDB_URL}/pos_display/auto_reset_ts.json`, {
+              method: "PUT",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(resetTs)
+            }).catch(() => {});
+            const resetToOnePoint = () => {
+              fetch("https://kub-backend.nan23082526.workers.dev/api/pos-update", {
+                method: "POST",
+                headers: { "Content-Type": "application/json", "X-Admin-PIN": "2026" },
+                body: JSON.stringify({ mode: "points", points: 1, timestamp: resetTs, pin: "2026" })
+              }).catch(()=>{});
+            };
+            resetToOnePoint();
+            setTimeout(resetToOnePoint, 350);
+          }
 
           // 📳 ระบบเสียงและระบบสั่นตอบสนอง (Haptic Feedback)
           try { document.getElementById('dingSound').play().catch(()=>{}); } catch(e) {}
@@ -594,8 +610,12 @@ Changelog: Global Single-Use Atomic QR Lock (Prevent Multi-User Double Scan), In
           });
 
         } else if (data.status === "cooldown") {
+          await fetch(lockUrl, { method: "DELETE" }).catch(() => {});
           await showCooldownCountdown(data.remain || 30, data.lang);
         } else {
+          if (!data.message || (!data.message.includes("ถูกใช้งานไปแล้ว") && !data.message.includes("already been"))) {
+            await fetch(lockUrl, { method: "DELETE" }).catch(() => {});
+          }
           await showAlert(isEN ? 'Scan Failed' : 'สแกนไม่สำเร็จ', `${data.message}`, 'error', isEN ? 'OK' : 'ตกลง', true);
         }
       } catch (err) { 

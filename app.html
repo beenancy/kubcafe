@@ -1713,13 +1713,114 @@
       try {
         const idToken = liff.getIDToken();
         const cleanedName = encodeURIComponent((globalUserName || '').replace(/[-]|[^a-zA-Z0-9\u0e00-\u0e7f\s]/g, ''));
-        const isRedeem = code.startsWith("KUBREDEEM-");
+        const cleanCode = code.split("\n")[0].split(" ")[0].trim();
+        const isRedeem = cleanCode.startsWith("KUBREDEEM-");
+        const isLinkMode = cleanCode.startsWith("KUBLINK-");
         const actionParam = isRedeem ? "scanRedeemPoint" : "scanAddPoint";
-        const response = await fetch(`${API_URL}?action=${actionParam}&userId=${globalUserId}&idToken=${idToken || ''}&name=${cleanedName}&shopCode=${encodeURIComponent(code)}`);
+        const RTDB_URL = "https://kub-cafe-pos-default-rtdb.asia-southeast1.firebasedatabase.app";
+
+        // แยกดึง timestamp จากรหัส QR เพื่อตรวจสอบว่าเป็น QR ปัจจุบันบนหน้าจอหน้าร้านจริงหรือไม่
+        const codeParts = cleanCode.split("-");
+        let qrTimestamp = 0;
+        if (cleanCode.startsWith("KUBBAR-") || cleanCode.startsWith("KUBLINK-") || cleanCode.startsWith("KUBREDEEM-")) {
+          qrTimestamp = parseInt(codeParts[2]) || 0;
+        } else if (codeParts.length === 3) {
+          qrTimestamp = parseInt(codeParts[1], 36) || 0;
+        }
+
+        // 🔒 ระบบล็อก 2 ชั้นระดับ Server (Fail-Closed Atomic REST ETag If-Match: null_etag + เช็ก QR ปัจจุบันบนหน้าจอ)
+        const qrLockKey = "LOCK_" + cleanCode.replace(/[^a-zA-Z0-9_-]/g, "_");
+        const lockUrl = `${RTDB_URL}/pos_display/qr_locks/${qrLockKey}.json`;
+
+        let activeScreenTs = null;
+        let autoResetTs = null;
+        let lockRes = null;
+        try {
+          [activeScreenTs, autoResetTs, lockRes] = await Promise.all([
+            !isLinkMode
+              ? fetch(`${RTDB_URL}/pos_display/timestamp.json`, { cache: "no-store" }).then(r => r.json()).catch(() => null)
+              : Promise.resolve(null),
+            !isLinkMode
+              ? fetch(`${RTDB_URL}/pos_display/auto_reset_ts.json`, { cache: "no-store" }).then(r => r.json()).catch(() => null)
+              : Promise.resolve(null),
+            fetch(lockUrl, {
+              method: "PUT",
+              headers: {
+                "Content-Type": "application/json",
+                "If-Match": "null_etag"
+              },
+              body: JSON.stringify({
+                claimedBy: globalUserId,
+                name: globalUserName || "Customer",
+                status: "claiming",
+                timestamp: Date.now()
+              })
+            })
+          ]);
+        } catch (lockErr) {
+          showMinimalAlert('❌', 'การเชื่อมต่อขัดข้อง', 'กรุณาตรวจสอบอินเทอร์เน็ตแล้วสแกนใหม่อีกครั้งค่ะ', 'ตกลง', true);
+          return;
+        }
+
+        if (!lockRes) {
+          showMinimalAlert('❌', 'การเชื่อมต่อขัดข้อง', 'กรุณาสแกนใหม่อีกครั้งค่ะ', 'ตกลง', true);
+          return;
+        }
+
+        if (lockRes.status === 412) {
+          const existingLock = await lockRes.json().catch(() => null);
+          if (!existingLock || existingLock.claimedBy !== globalUserId) {
+            showMinimalAlert('❌', 'คิวอาร์โค้ดถูกใช้แล้ว', 'คิวอาร์โค้ดนี้มีผู้สแกนรับสิทธิ์ไปแล้วค่ะ (1 คิวอาร์โค้ด สแกนได้ 1 ท่านเท่านั้น)', 'ตกลง', true);
+            return;
+          } else if (existingLock.status === "claiming" && (Date.now() - (existingLock.timestamp || 0) < 15000)) {
+            showMinimalAlert('⏳', 'กำลังประมวลผล', 'ระบบกำลังบันทึกแต้มให้คุณอยู่ค่ะ กรุณารอสักครู่นะคะ', 'ตกลง', true);
+            return;
+          }
+        } else if (lockRes.status === 200) {
+          if (!isLinkMode && activeScreenTs && qrTimestamp > 0 && Number(activeScreenTs) !== Number(qrTimestamp)) {
+            await fetch(lockUrl, { method: "DELETE" }).catch(() => {});
+            showMinimalAlert('❌', 'คิวอาร์โค้ดเปลี่ยนใหม่แล้ว', 'คิวอาร์โค้ดนี้ถูกเปลี่ยนหรือยกเลิกไปแล้วค่ะ กรุณาสแกนคิวอาร์โค้ดปัจจุบันบนหน้าจอค่ะ', 'ตกลง', true);
+            return;
+          }
+          if (!isLinkMode && autoResetTs && qrTimestamp > 0 && Number(autoResetTs) === Number(qrTimestamp) && (Date.now() - Number(qrTimestamp) < 5000)) {
+            await fetch(lockUrl, { method: "DELETE" }).catch(() => {});
+            showMinimalAlert('⏳', 'กรุณารอสักครู่ค่ะ', 'ระบบเพิ่งทำรายการของลูกค้าท่านก่อนหน้าเสร็จสิ้นค่ะ กรุณารอสักครู่แล้วสแกนใหม่อีกครั้งนะคะ', 'ตกลง', true);
+            return;
+          }
+        } else {
+          showMinimalAlert('❌', 'ระบบป้องกันทำงาน', 'กรุณาสแกนคิวอาร์โค้ดใหม่อีกครั้งค่ะ', 'ตกลง', true);
+          return;
+        }
+
+        const response = await fetch(`${API_URL}?action=${actionParam}&userId=${globalUserId}&idToken=${idToken || ''}&name=${cleanedName}&shopCode=${encodeURIComponent(cleanCode)}`);
         const data = await response.json();
         const isEN = data.lang === "EN";
 
         if (data.status === "success") {
+          fetch(lockUrl, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ status: "completed", completedAt: Date.now() })
+          }).catch(() => {});
+
+          if (!isLinkMode) {
+            const resetTs = Date.now();
+            fetch(`${RTDB_URL}/pos_display/auto_reset_ts.json`, {
+              method: "PUT",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(resetTs)
+            }).catch(() => {});
+            const resetToOnePoint = () => {
+              fetch("https://kub-backend.nan23082526.workers.dev/api/pos-update", {
+                method: "POST",
+                headers: { "Content-Type": "application/json", "X-Admin-PIN": "2026" },
+                body: JSON.stringify({ mode: "points", points: 1, timestamp: resetTs, pin: "2026" })
+              }).catch(() => {});
+            };
+            resetToOnePoint();
+            setTimeout(resetToOnePoint, 350);
+          }
+
           try { if (navigator.vibrate) navigator.vibrate([100, 50, 150]); } catch(e) {}
           
           const successHtml = isRedeem ? `
@@ -1760,8 +1861,12 @@
           // อัปเดตข้อมูลแต้มในหน้าสมาชิกโดยตรงทันที
           await fetchMemberData();
         } else if (data.status === "cooldown") {
+          await fetch(lockUrl, { method: "DELETE" }).catch(() => {});
           showCooldownSwal(data.remain || 30, data.lang);
         } else {
+          if (!data.message || (!data.message.includes("ถูกใช้งานไปแล้ว") && !data.message.includes("already been"))) {
+            await fetch(lockUrl, { method: "DELETE" }).catch(() => {});
+          }
           showMinimalAlert('❌', isEN ? 'Scan Failed' : 'สแกนไม่สำเร็จ', data.message, 'ตกลง', true);
         }
       } catch (err) {
