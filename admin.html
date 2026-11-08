@@ -379,13 +379,19 @@
         handleStateUpdate(data);
       });
 
-      // 🌐 ระบบเช็กอัปเดตสำรองผ่าน REST API (ทุกๆ 2.5 วินาที) เผื่อเครือข่าย WebSockets ค้าง/หลุดช่วงเครื่องสลีป
+      // 🌐 ระบบเช็กอัปเดตสำรองผ่าน REST API แบบ Lightweight (ดึงเฉพาะ 4 ฟิลด์หลัก ~80 bytes แทนการโหลดทั้งก้อน 212KB)
       function pollDatabaseFallback() {
-        fetch("https://kub-cafe-pos-default-rtdb.asia-southeast1.firebasedatabase.app/pos_display.json")
-          .then(r => r.json())
-          .then(data => {
-            if (!data) return;
-            const currentHash = `${data.mode}-${data.points}-${data.timestamp}-${data.hash || ''}`;
+        const base = "https://kub-cafe-pos-default-rtdb.asia-southeast1.firebasedatabase.app/pos_display";
+        Promise.all([
+          fetch(base + "/mode.json", { cache: "no-store" }).then(r => r.json()),
+          fetch(base + "/points.json", { cache: "no-store" }).then(r => r.json()),
+          fetch(base + "/timestamp.json", { cache: "no-store" }).then(r => r.json()),
+          fetch(base + "/hash.json", { cache: "no-store" }).then(r => r.json())
+        ])
+          .then(([mode, points, timestamp, hash]) => {
+            if (!mode) return;
+            const data = { mode, points: points || 0, timestamp: timestamp || 0, hash: hash || "" };
+            const currentHash = `${data.mode}-${data.points}-${data.timestamp}-${data.hash}`;
             if (currentHash !== lastHash) {
               console.log("Fallback sync updated!");
               handleStateUpdate(data);

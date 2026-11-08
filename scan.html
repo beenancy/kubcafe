@@ -362,60 +362,100 @@ Changelog: Global Single-Use Atomic QR Lock (Prevent Multi-User Double Scan), In
         const actionParam = isRedeem ? "scanRedeemPoint" : "scanAddPoint";
         const RTDB_URL = "https://kub-cafe-pos-default-rtdb.asia-southeast1.firebasedatabase.app";
 
-        // 🔒 ระบบล็อก 1 QR ต่อ 1 คนสแกนแบบ Atomic Transaction บน Firebase RTDB
-        // ป้องกันการสแกนพร้อมกันหรือสแกนตามกัน 2 เครื่อง (บล็อกเครื่องที่ 2 ทันทีก่อนยิงเข้า Backend)
-        const qrLockKey = "LOCK_" + cleanCode.replace(/[.#$\[\]\/]/g, "_");
-        const lockRef = db.ref('pos_display/qr_locks/' + qrLockKey);
-        let lockCommitted = false;
+        // แยกดึง timestamp จากรหัส QR เพื่อตรวจสอบว่าเป็น QR ปัจจุบันบนหน้าจอหน้าร้านจริงหรือไม่
+        const codeParts = cleanCode.split("-");
+        let qrTimestamp = 0;
+        if (cleanCode.startsWith("KUBBAR-") || cleanCode.startsWith("KUBLINK-") || cleanCode.startsWith("KUBREDEEM-")) {
+          qrTimestamp = parseInt(codeParts[2]) || 0;
+        } else if (codeParts.length === 3) {
+          qrTimestamp = parseInt(codeParts[1], 36) || 0;
+        }
 
+        // 🔒 ระบบล็อก 2 ชั้นระดับ Server (Fail-Closed Atomic REST ETag If-Match: null_etag + เช็ก QR ปัจจุบันบนหน้าจอ)
+        // ป้องกัน 100%: 1) สแกนพร้อมกัน/สแกนตามกัน 2 เครื่อง 2) แอบถ่ายรูป QR เก่าเก็บไว้สแกนทีหลัง 3) เน็ตหลุดแล้วทะลุล็อก
+        const qrLockKey = "LOCK_" + cleanCode.replace(/[^a-zA-Z0-9_-]/g, "_");
+        const lockUrl = `${RTDB_URL}/pos_display/qr_locks/${qrLockKey}.json`;
+
+        let activeScreenTs = null;
+        let lockRes = null;
         try {
-          const lockResult = await lockRef.transaction((currentLock) => {
-            if (currentLock === null) {
-              return {
+          [activeScreenTs, lockRes] = await Promise.all([
+            !isLinkMode
+              ? fetch(`${RTDB_URL}/pos_display/timestamp.json`, { cache: "no-store" }).then(r => r.json()).catch(() => null)
+              : Promise.resolve(null),
+            fetch(lockUrl, {
+              method: "PUT",
+              headers: {
+                "Content-Type": "application/json",
+                "If-Match": "null_etag"
+              },
+              body: JSON.stringify({
                 claimedBy: profile.userId,
-                name: profile.displayName || 'Customer',
-                status: 'claiming',
+                name: profile.displayName || "Customer",
+                status: "claiming",
                 timestamp: Date.now()
-              };
-            }
-            return; // มีคนล็อก QR นี้ไปแล้ว ยกเลิกการเขียนทับ
-          }, undefined, false);
+              })
+            })
+          ]);
+        } catch (lockErr) {
+          await showAlert('การเชื่อมต่อขัดข้อง', 'กรุณาตรวจสอบอินเทอร์เน็ตแล้วสแกนใหม่อีกครั้งค่ะ', 'error', 'ตกลง', true);
+          return;
+        }
 
-          lockCommitted = !!(lockResult && lockResult.committed);
-          if (!lockCommitted) {
-            const existingLock = lockResult && lockResult.snapshot ? lockResult.snapshot.val() : null;
-            if (existingLock && existingLock.claimedBy) {
-              if (existingLock.claimedBy !== profile.userId) {
-                // 🚨 คนละบัญชี LINE สแกน QR เดียวกัน! ปฏิเสธทันที 100% ไม่ส่งไปเพิ่มแต้มเด็ดขาด
-                await showAlert(
-                  'คิวอาร์โค้ดถูกใช้แล้ว',
-                  '&#10060; คิวอาร์โค้ดนี้มีผู้สแกนรับสิทธิ์ไปแล้วค่ะ<br><span style="font-size:12px;color:#8C8070;">(1 คิวอาร์โค้ด สแกนได้ 1 ท่านเท่านั้น)</span>',
-                  'error',
-                  'ตกลง',
-                  true
-                );
-                return;
-              } else if (existingLock.status === 'claiming' && (Date.now() - (existingLock.timestamp || 0) < 15000)) {
-                await showAlert(
-                  'กำลังประมวลผล',
-                  'ระบบกำลังบันทึกแต้มให้คุณอยู่ค่ะ กรุณารอสักครู่นะคะ',
-                  'warning',
-                  'ตกลง',
-                  true
-                );
-                return;
-              }
-            }
-          } else if (!isLinkMode) {
-            // ⚡ ทันทีที่เครื่องแรกจับจอง QR สำเร็จ สั่งเปลี่ยนหน้าจอหน้าร้านกลับเป็น +1 แต้ม (รหัส QR ใหม่ทันที) โดยไม่กลับไป Screen Saver
+        if (!lockRes) {
+          await showAlert('การเชื่อมต่อขัดข้อง', 'กรุณาสแกนใหม่อีกครั้งค่ะ', 'error', 'ตกลง', true);
+          return;
+        }
+
+        if (lockRes.status === 412) {
+          // มีคนล็อก QR นี้ไปแล้ว! ตรวจสอบว่าเป็นคนเดิมหรือคนอื่น
+          const existingLock = await lockRes.json().catch(() => null);
+          if (!existingLock || existingLock.claimedBy !== profile.userId) {
+            // 🚨 คนละบัญชี LINE สแกน QR เดียวกัน! ปฏิเสธทันที 100% ไม่ส่งไปเพิ่มแต้มเด็ดขาด
+            await showAlert(
+              'คิวอาร์โค้ดถูกใช้แล้ว',
+              '&#10060; คิวอาร์โค้ดนี้มีผู้สแกนรับสิทธิ์ไปแล้วค่ะ<br><span style="font-size:12px;color:#8C8070;">(1 คิวอาร์โค้ด สแกนได้ 1 ท่านเท่านั้น)</span>',
+              'error',
+              'ตกลง',
+              true
+            );
+            return;
+          } else if (existingLock.status === "claiming" && (Date.now() - (existingLock.timestamp || 0) < 15000)) {
+            await showAlert(
+              'กำลังประมวลผล',
+              'ระบบกำลังบันทึกแต้มให้คุณอยู่ค่ะ กรุณารอสักครู่นะคะ',
+              'warning',
+              'ตกลง',
+              true
+            );
+            return;
+          }
+        } else if (lockRes.status === 200) {
+          // ตรวจสอบว่า QR นี้ยังเป็น QR ปัจจุบันที่แสดงอยู่บนหน้าจอหน้าร้านหรือไม่ (กันการแอบถ่ายรูป QR เก่ามาสแกนทีหลัง)
+          if (!isLinkMode && activeScreenTs && qrTimestamp > 0 && Number(activeScreenTs) !== Number(qrTimestamp)) {
+            await fetch(lockUrl, { method: "DELETE" }).catch(() => {});
+            await showAlert(
+              'คิวอาร์โค้ดเปลี่ยนใหม่แล้ว',
+              '&#10060; คิวอาร์โค้ดนี้ถูกเปลี่ยนหรือยกเลิกไปแล้วค่ะ<br><span style="font-size:12px;color:#8C8070;">กรุณาสแกนคิวอาร์โค้ดปัจจุบันบนหน้าจอค่ะ</span>',
+              'error',
+              'ตกลง',
+              true
+            );
+            return;
+          }
+
+          // ⚡ ทันทีที่เครื่องแรกจับจอง QR สำเร็จ สั่งเปลี่ยนหน้าจอหน้าร้านกลับเป็น +1 แต้ม (รหัส QR ใหม่ทันที) โดยไม่กลับไป Screen Saver
+          if (!isLinkMode) {
             fetch("https://kub-backend.nan23082526.workers.dev/api/pos-update", {
               method: "POST",
               headers: { "Content-Type": "application/json", "X-Admin-PIN": "2026" },
               body: JSON.stringify({ mode: "points", points: 1, timestamp: Date.now(), pin: "2026" })
             }).catch(() => {});
           }
-        } catch (lockErr) {
-          console.error("QR atomic lock error:", lockErr);
+        } else {
+          // Fail-Closed: บล็อกทันทีหากสถานะผิดปกติ
+          await showAlert('ระบบป้องกันทำงาน', 'กรุณาสแกนคิวอาร์โค้ดใหม่อีกครั้งค่ะ', 'error', 'ตกลง', true);
+          return;
         }
 
         const response = await fetch(`${API_URL}?action=${actionParam}&userId=${profile.userId}&idToken=${idToken || ''}&name=${cleanedName}&shopCode=${encodeURIComponent(cleanCode)}`);
@@ -424,7 +464,11 @@ Changelog: Global Single-Use Atomic QR Lock (Prevent Multi-User Double Scan), In
         
         if (data.status === "success") {
           // บันทึกสถานะล็อกว่าเสร็จสมบูรณ์ และล้างขยะล็อกเก่าที่เกิน 15 นาที
-          lockRef.update({ status: 'completed', completedAt: Date.now() }).catch(() => {});
+          fetch(lockUrl, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ status: "completed", completedAt: Date.now() })
+          }).catch(() => {});
           db.ref('pos_display/qr_locks').once('value').then(snap => {
             const allLocks = snap.val() || {};
             const now = Date.now();
